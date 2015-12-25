@@ -111,7 +111,8 @@ def sim(state, spell):
         s2['mana'] -= spell.cost
         s2['spent'] += spell.cost
         sim(s2, spell)    
-        
+
+#Tried this when there was a bug in sim(). Eventually gets the right answer, but takes several minutes
 def sim2():
     for i in xrange(1000000):
         state = {'hit':[50,71], 'mana':500, 'armor': 0, 'spent':0, 'effects': {}, 'done': False}
