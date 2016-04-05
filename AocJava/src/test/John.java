@@ -44,12 +44,10 @@ public class John {
 	}
 	
 	public static String getFileAsString(String file) {
-		byte[] encoded = null;
 		try {
-			encoded = Files.readAllBytes(FileSystems.getDefault().getPath(".", file));
+			byte[] encoded = Files.readAllBytes(FileSystems.getDefault().getPath(".", file));
 			return new String(encoded, Charset.defaultCharset());
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return "";
 		}
