@@ -29,31 +29,31 @@ def validSpells(state):
 
 def checkEnd(state):
     global loseCount, winCount
-    if state['done']:
+    if state['part2Done']:
         return True
     if state['hit'][0] <= 0 or state['mana'] <= 0:
         loseCount += 1
-        state['done'] = True
+        state['part2Done'] = True
         return True
     if state['hit'][1] <= 0:
         wins.append(state['spent'])
         winCount += 1
-        state['done'] = True
+        state['part2Done'] = True
         return True
     return False
 
 def checkEnd2(state):
     global loseCount, winCount
-    if state['done']:
+    if state['part2Done']:
         return True
     if state['hit'][0] <= 0 or state['mana'] <= 0:
         loseCount += 1
-        state['done'] = True
+        state['part2Done'] = True
         return True, False
     if state['hit'][1] <= 0:
         wins.append(state['spent'])
         winCount += 1
-        state['done'] = True
+        state['part2Done'] = True
         return True, True
     return False, False
     
@@ -115,9 +115,9 @@ def sim(state, spell):
 #Tried this when there was a bug in sim(). Eventually gets the right answer, but takes several minutes
 def sim2():
     for i in xrange(1000000):
-        state = {'hit':[50,71], 'mana':500, 'armor': 0, 'spent':0, 'effects': {}, 'done': False}
-        done = False
-        while not done:
+        state = {'hit':[50,71], 'mana':500, 'armor': 0, 'spent':0, 'effects': {}, 'part2Done': False}
+        part2Done = False
+        while not part2Done:
             global simCount
             simCount += 1
             state['hit'][0] -= 1 # part 2
@@ -126,7 +126,7 @@ def sim2():
                 if res[1]:
                     wins.append(state['spent'])
                     winh[state['spent']] += 1
-                done = True
+                part2Done = True
             for e in state['effects'].keys():
                 state['hit'][1] -= e.damage
                 state['mana'] += e.recharge
@@ -142,11 +142,11 @@ def sim2():
                 if res[1]:
                     wins.append(state['spent'])
                     winh[state['spent']] += 1
-                done = True
+                part2Done = True
             spell = spells[random.randint(0,4)]
             if spell.cost > state['mana'] or (spell in state['effects'].keys() and state['effects'][spell] != 1):
                 if len(validSpells(state)) == 0:
-                    done = True
+                    part2Done = True
                 continue
             state['mana'] -= spell.cost
             state['spent'] += spell.cost
@@ -160,7 +160,7 @@ def sim2():
                 if res[1]:
                     wins.append(state['spent'])
                     winh[state['spent']] += 1
-                done = True
+                part2Done = True
             for e in state['effects'].keys():
                 state['hit'][1] -= e.damage
                 state['mana'] += e.recharge
@@ -176,12 +176,12 @@ def sim2():
                 if res[1]:
                     wins.append(state['spent'])
                     winh[state['spent']] += 1
-                done = True
+                part2Done = True
         if i % 10000 == 0:
             print i, min(wins) if len(wins) > 0 else None
 
 for s in spells:
-    state = {'hit':[50,71], 'mana':500, 'armor': 0, 'spent':0, 'effects': {}, 'done': False}
+    state = {'hit':[50,71], 'mana':500, 'armor': 0, 'spent':0, 'effects': {}, 'part2Done': False}
     state['mana'] -= s.cost
     state['spent'] += s.cost
     sim(state, s)

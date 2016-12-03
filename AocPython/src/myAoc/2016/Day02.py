@@ -20,7 +20,9 @@ btnMap = {"1":(None,None,3,None),
           "C":(8,None,None,"B"),
           "D":("B",None,None,None)
           }
+
 instrMap = {"U":0,"R":1,"D":2,"L":3}
+
 def p2(btn, instr):
     n = btnMap[str(btn)][instrMap[instr]]
     if n == None:
@@ -28,44 +30,34 @@ def p2(btn, instr):
     return n
 
 def p(btn, instr):
-    if btn == None:
-        btn = 5;
     if instr == "L":
         n = btn - 1
-        if n <1 or n % 3 == 0:
-            n = btn
-        return n
+        return btn if  n <1 or n % 3 == 0 else n
     elif instr == "R":
         n = btn + 1
-        if n > 9 or btn % 3 == 0:
-            n = btn
-        return n
+        return btn if n > 9 or btn % 3 == 0 else n
     elif instr == "U":
         n = btn - 3
-        if n < 2:
-            n = btn
-        return n
+        return btn if n < 2 else n
     elif instr == "D":
         n = btn + 3
-        if n > 9:
-            n = btn
-        return n
-    else:
-        print("BAD", btn, instr)
+        return btn if n > 9 else n
 
+#Part 1
 with open("data/day02") as f:
-    b = 5
+    button = 5
+    print("Part 1: ", end="")
     #part 1
     for line in f:
-        button = reduce(lambda x,y: p(x,y), list(line.strip()), b)
-        b = button
+        button = reduce(lambda x,y: p(x,y), list(line.strip()), button)
         print(button, end="")
+    print()
+    
 #part2
 with open("data/day02") as f:
-    b = 5
-    print("Part 2")
+    button = 5
+    print("Part 2: ", end="")
     for line in f:
-        button = reduce(lambda x,y: p2(x,y), list(line.strip()), b)
-        b = button
+        button = reduce(lambda x,y: p2(x,y), list(line.strip()), button)
         print(button, end="")      
     
