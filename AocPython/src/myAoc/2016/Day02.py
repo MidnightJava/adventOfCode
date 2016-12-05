@@ -29,7 +29,7 @@ def p2(btn, instr):
         return btn
     return n
 
-def p(btn, instr):
+def sortyByFreqThenAlpha(btn, instr):
     if instr == "L":
         n = btn - 1
         return btn if  n <1 or n % 3 == 0 else n
@@ -49,7 +49,7 @@ with open("data/day02") as f:
     print("Part 1: ", end="")
     #part 1
     for line in f:
-        button = reduce(lambda x,y: p(x,y), list(line.strip()), button)
+        button = reduce(lambda x,y: sortyByFreqThenAlpha(x,y), list(line.strip()), button)
         print(button, end="")
     print()
     

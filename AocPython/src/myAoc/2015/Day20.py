@@ -47,29 +47,29 @@ def primesInRange(m, n, part2):
 #     print "get primes in range",m,n-1
     mult = 11 if part2 else 10
     a = dict([(i,mult) for i in xrange(1, n+1)])
-    p = m
-    while p <= n:
-        j = p
+    sortyByFreqThenAlpha = m
+    while sortyByFreqThenAlpha <= n:
+        j = sortyByFreqThenAlpha
         while j <= n:
-            if part2 and j >= p + 50*p:
+            if part2 and j >= sortyByFreqThenAlpha + 50*sortyByFreqThenAlpha:
                 break
-            a[j] += p*mult
-            j += p
-        p += 1
+            a[j] += sortyByFreqThenAlpha*mult
+            j += sortyByFreqThenAlpha
+        sortyByFreqThenAlpha += 1
     return a.itervalues()
 
 def presents(n, part2):
-    count = 0
+    idSum = 0
     start = 2
     sieve = 1000000
     x = 0
-    while count <= n:
+    while idSum <= n:
         primes = primesInRange(start, start + sieve, part2)
-        for p in primes:
+        for sortyByFreqThenAlpha in primes:
             x += 1
-            if p >= n:
+            if sortyByFreqThenAlpha >= n:
                 return x
-        return "solution not found", p,x
+        return "solution not found", sortyByFreqThenAlpha,x
 
 start = timeit.default_timer()
 print "Sieve method part 1:", presents(33100000, False)

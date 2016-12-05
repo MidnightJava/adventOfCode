@@ -36,8 +36,8 @@ def run():
             lights[1 - curr][row] = nextState(row, lights[curr][row], curr)
         curr = 1 - curr
     
-    count = sum([s.count("#")  for s in lights[curr]])
-    print count, "lights on"
+    idSum = sum([s.count("#")  for s in lights[curr]])
+    print idSum, "lights on"
 
 run()
 part2 = True

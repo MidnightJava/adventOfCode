@@ -13,20 +13,20 @@ def checkTriange(t):
     return True
         
 with open("data/day03") as f:
-    count = 0
+    idSum = 0
     print("Part 1: ", end="")
     for line in f:
         t = line.split()
         if checkTriange(line.split()):
-            count+= 1
-    print(count)
+            idSum+= 1
+    print(idSum)
     
 with open("data/day03") as f:
-    count = 0
+    idSum = 0
     print("Part 2: ", end="")
     trans = [x.split() for x in f]
     for z in zip(*trans):
         for t in zip(*[iter(z)]*3):
             if checkTriange(t):
-                count += 1
-    print(count)
+                idSum += 1
+    print(idSum)

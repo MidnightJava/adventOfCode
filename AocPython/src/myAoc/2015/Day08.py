@@ -8,10 +8,10 @@ import re
 
 def memChars(l):
     l = l[1:-1]
-    count = 2
-    count += len(re.findall(r"\\\"|\\\\", l))
-    count += 3 * len(re.findall(r"\\x[0-9a-f]{2}", l))
-    return count
+    idSum = 2
+    idSum += len(re.findall(r"\\\"|\\\\", l))
+    idSum += 3 * len(re.findall(r"\\x[0-9a-f]{2}", l))
+    return idSum
 
 def countEscape(c):
     if c =="\\" or c == "\"":

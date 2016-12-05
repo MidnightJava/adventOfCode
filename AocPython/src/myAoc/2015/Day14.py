@@ -26,16 +26,16 @@ with open("reindeer.txt") as f:
     for deer in reindeer.keys(): reindeer[deer]['dist'] = 0
     for t in xrange(1, 2504):
         for deer in reindeer.keys():
-            p = reindeer[deer]['props']
-            time, delta = divmod(t, p.flyDur + p.restDur)
-            flying = 1 if delta != 0 and delta <= p.flyDur else 0
-            reindeer[deer]['dist'] += p.vel if flying == 1 else 0
+            sortyByFreqThenAlpha = reindeer[deer]['props']
+            time, delta = divmod(t, sortyByFreqThenAlpha.flyDur + sortyByFreqThenAlpha.restDur)
+            flying = 1 if delta != 0 and delta <= sortyByFreqThenAlpha.flyDur else 0
+            reindeer[deer]['dist'] += sortyByFreqThenAlpha.vel if flying == 1 else 0
         maxDist = max([reindeer[deer]['dist'] for deer in reindeer.keys()])
         for deer in reindeer.keys():
             if reindeer[deer]['dist'] >= maxDist:
                 points[deer] += 1
             
-    print "Part 2 winning points score: ", max([p for p in points.values()])
+    print "Part 2 winning points score: ", max([sortyByFreqThenAlpha for sortyByFreqThenAlpha in points.values()])
         
                 
                 

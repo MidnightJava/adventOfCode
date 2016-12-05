@@ -18,7 +18,7 @@ def checkPart2(x, y):
         print("PART 2: ", sum([abs(x), abs(y)]))
         part2Done = True
 
-def p(cum, pos):
+def sortyByFreqThenAlpha(cum, pos):
     global direction
     m = re.search("([LR])(\d+)", pos.strip())
     direc = m.group(1)
@@ -53,6 +53,6 @@ def p(cum, pos):
 
 with open("data/day01") as f:
     for line in f:
-        res = reduce(lambda x,y: p(x,y), line.split(","), [0,0])
+        res = reduce(lambda x,y: sortyByFreqThenAlpha(x,y), line.split(","), [0,0])
         print("Part 1: ", sum([abs(res[0]), abs(res[1])]))
     
