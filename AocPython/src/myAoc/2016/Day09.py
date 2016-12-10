@@ -4,72 +4,75 @@ Created on Dec 9, 2016
 @author: maleone
 '''
 
-import re, time
+import re, copy
 
+#Part 1
 with open("data/day09", "r") as f:
     expanded = ""
     data=f.read().replace('\n', '')
-    data = " ".join(data.split())
+    data = "".join(data.split())
     index = 0
-    while index < (len(data)-1):
-#         print "Expanded len", len(expanded)
+    while index < (len(data) - 1):
         if data[index] == "(":
-            m = re.search("\(([^)]+)\)", data[index:])
-            if m:
-                s = m.group(1).split("x")
-                ccount = int(s[0])
-                reps = int(s[1])
-                index+= (len(m.group(1)) + 2)
-                toAdd = data[index:index+ccount]
-                for x in xrange(reps):
-                    expanded+= toAdd
-                index+= ccount
-            else:
-                expanded+= data[index]
-                index+= 1
+            m = re.search("\((\d+)[xX](\d+)\)", data[index:])
+            ccount = int(m.group(1))
+            reps = int(m.group(2))
+            index+= len(m.group(0))
+            toAdd = data[index:index + ccount]
+            expanded+= toAdd*reps
+            index+= ccount
         else:
             expanded+= data[index]
             index+= 1
-    print len(expanded)
-    
-def decompress(m, data, index):
+    print "Part 1:", len(expanded)
+
+#Recursive approach. Probably correct, but will take forever
+def expand2(data):
+    index = 0
     count = 0
-    added = ""
-    startTime = time.time()
-    while m and time.time() - startTime < 30:
-        s = m.group(1).split("x")
-        ccount = int(s[0])
-        reps = int(s[1])
-        count+= (len(m.group(1)) + 2)
-        toAdd = data[index:index+ccount]
-        for x in xrange(reps):
-            added+= toAdd
-        count+= ccount
-        index = len(m.group(1))
-#         m = re.search("\(([^)]+)\)", data[index:])
-        m = None
-    return added, count
+    while index < len(data):
+        if data[index] == "(":
+            m = re.search("\((\d+)[Xx](\d+)\)", data[index:])
+            if m:
+                ccount = int(m.group(1))
+                reps = int(m.group(2))
+                index+= len(m.group(0))
+                toAdd = copy.deepcopy(data[index:index+ccount])
+                index+= ccount
+                count+= expand2(toAdd*reps)
+        else:
+            count+= 1
+            index+= 1
+    return count
+
+def getStackMult(stck, index):
+    mult = 1
+    for t in stck:
+        f,l,i = t[0], t[1], t[2]
+        if index - i < l:
+            mult*= f
+    return mult
+    
+def expand(data):
+    index = 0
+    count = 0
+    stck = []
+    while index < len(data):
+#         print "index: ", index
+        if data[index] == "(":
+            m = re.search("\((\d+)[Xx](\d+)\)", data[index:])
+            if m:
+                ccount = int(m.group(1))
+                reps = int(m.group(2))
+                index+= len(m.group(0))
+                stck.append((reps, ccount, index))
+        else:
+            count+= getStackMult(stck, index)
+            index+= 1
+    return count
 
 #Part 2
 with open("data/day09", "r") as f:
-    expandedCount = 0
     data=f.read().replace('\n', '')
-    data = " ".join(data.split())
-    index = 0
-    while index < (len(data)-1):
-    #         print "Expanded len", len(expanded)
-        if data[index] == "(":
-            m = re.search("\(([^)]+)\)", data[index:])
-            index2 = index
-            if m:
-                start = time.time()
-                while m:# and time.time() - start < 60:
-                    added,count = decompress(m, data, index2)
-                    expandedCount+= len(added)
-                    index+= count
-                    index2 = 0
-                    m = re.search("\(([^)]+)\)", added)
-        else:
-            expandedCount+= 1
-            index+= 1
-    print expandedCount
+    data = "".join(data.split())
+    print "Part 2:", expand(data)
