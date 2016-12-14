@@ -8,9 +8,26 @@ from itertools import combinations
 import copy
 
 def valid(state):
+    if len(state["e"]) < 1 or len(state["e"]) > 2:
+        return False
+    eItems = state["e"]
+    gens = state[str(state["floor"])]["gens"]
+    chips = state[str(state["floor"])]["chips"]
+    for item in eItems:
+        if "-compatible microchip" in item:
+            chip = item.replace("-compatible microchip", "")
+            if not (chip + " generator") in gens and len(gens) > 0:
+                return False
+        elif " generator" in item:
+            gen = item.replace(" generator", "")
+            for chip in chips:
+                if not chip.startswith(gen) and not chip + " generator" in gens:
+                    return False
     return True
 
 def done(state):
+    if len(state["4"]["chips"]) + len(state["4"]["gens"]) >= 10:
+        return True
     for x in xrange(1, 4):
         if len(state[str(x)]["chips"]) != 0 or len(state[str(x)]["gens"]) != 0:
             return False
@@ -18,56 +35,116 @@ def done(state):
 
 def moves(state):
     states = []
-    nextFloors = [(state["floor"] % 4) + 1, ((state["floor"]) - 2 % 4) + 1]
+    nextFloors = []
+    if state["floor"] == 1:
+        nextFloors.append(2)
+    elif state["floor"] == 2:
+        nextFloors.extend([1, 3])
+    elif state["floor"] == 3:
+        nextFloors.extend([2, 4])
+    elif state["floor"] == 4:
+        nextFloors.apped(3)
+        
+    for floor in nextFloors:
+        possState = copy.deepcopy(state)
+        possState["floor"] = floor
+        if valid(possState):
+            states.append(possState)
+    
     items = []
     if len(state["e"]) > 0:
-        items.extend(list(state["e"]))
+        items.extend(state["e"])
     if len(state[str(state["floor"])]["chips"]) > 0:
-        items.extend(list(state[str(state["floor"])]["chips"]))
+        items.extend(state[str(state["floor"])]["chips"])
     if len(state[str(state["floor"])]["gens"]) > 0:
-        items.extend(list(state[str(state["floor"])]["gens"]))
+        items.extend(state[str(state["floor"])]["gens"])
     for floor in nextFloors:
         for item in items:
             possState = copy.deepcopy(state)
-            possState["e"] = item
-            possState[str(state["floor"])]["chips"] = possState[str(state["floor"])]["chips"] - set(item)
-            possState[str(state["floor"])]["gens"] = possState[str(state["floor"])]["gens"] - set(item)
+            possState["e"].add(item)
+            if item in possState[str(state["floor"])]["chips"]:
+                possState[str(state["floor"])]["chips"].remove(item)
+            if item in possState[str(state["floor"])]["gens"]:
+                possState[str(state["floor"])]["gens"].remove(item)
             possState["floor"] = floor
             if valid(possState):
                 states.append(possState)
-        for item in combinations(items, 2):
+                
             possState = copy.deepcopy(state)
+            possState[str(state["floor"])]["chips"].add(item)
+            if item in possState["e"]:
+                possState["e"].remove(item)
+            if item in possState[str(state["floor"])]["gens"]:
+                possState[str(state["floor"])]["gens"].remove(item)
             possState["floor"] = floor
-            possState["e"] = item
+            if valid(possState):
+                states.append(possState)
+                
+            possState = copy.deepcopy(state)
+            possState[str(state["floor"])]["gens"].add(item)
+            if item in possState["e"]:
+                possState["e"].remove(item)
+            if item in possState[str(state["floor"])]["chips"]:
+                possState[str(state["floor"])]["chips"].remove(item)
+            possState["floor"] = floor
+            if valid(possState):
+                states.append(possState)
+        for combo in combinations(items, 2):
+            possState = copy.deepcopy(state)
+            possState["e"].update(combo)
+            for item in combo:
+                if item in possState[str(state["floor"])]["chips"]:
+                    possState[str(state["floor"])]["chips"].remove(item)
+                if item in possState[str(state["floor"])]["gens"]:
+                    possState[str(state["floor"])]["gens"].remove(item)
+            possState["floor"] = floor
+            if valid(possState):
+                states.append(possState)
+                
+            possState = copy.deepcopy(state)
+            possState[str(state["floor"])]["chips"].update(set(combo))
+            for item in combo:
+                if item in possState["e"]:
+                    possState["e"].remove(item)
+                if item in possState[str(state["floor"])]["gens"]:
+                    possState[str(state["floor"])]["gens"].remove(item)
+            possState["floor"] = floor
+            if valid(possState):
+                states.append(possState)
+                
+            possState = copy.deepcopy(state)
+            possState[str(state["floor"])]["gens"].update(set(combo))
+            for item in combo:
+                if item in possState["e"]:
+                    possState["e"].remove(item)
+                if item in possState[str(state["floor"])]["chips"]:
+                    possState[str(state["floor"])]["chips"].remove(item)
+            possState["floor"] = floor
             if valid(possState):
                 states.append(possState)
     return states
 
 def move(state):
+    print "Count:", state["count"]
     if done(state) :
-            print "Moves:", state["count"]
+            print "\t***********Moves*************:", state["count"]
             state["done"] = True
-    for st in moves(state):
-        st["count"]+= 1
-        move(st)
-
-# count = 1
-# for x in xrange(10):
-#     print "count", (count % 4) + 1
-#     count+=1
-# print
-# 
-# count = 1
-# for x in xrange(10):
-#     print "count", ((count - 2) % 4) + 1
-#     count -= 1
-# exit()
+    states = moves(state)
+    if len(states) > 0:
+        print len(states), "states"
+    for st in states:
+        if done(st) :
+            print "\t***********Moves*************:", st["count"]
+            st["done"] = True
+        else:
+            st["count"]+= 1
+            move(st)
 
 with open("data/day11") as f:
-    origState = {"e":set(), "floor":1, "done": False,
-             "1": {"chips": set(), "gens":set()},
-             "2": {"chips": set(), "gens":set()},
-             "3": {"chips": set(), "gens":set()},
+    origState = {"e": set(), "floor":1, "done": False,
+             "1": {"chips": set(), "gens": set()},
+             "2": {"chips": set(), "gens": set()},
+             "3": {"chips": set(), "gens": set()},
              "4": {"chips": set(), "gens":set()},
              "count": 0}
     
@@ -75,7 +152,6 @@ with open("data/day11") as f:
     for line in f:
         gens = re.findall("(\w+ generator)", line)
         chips = re.findall("(\w+-compatible microchip)", line)
-        c = origState[str(i)]
         origState[str(i)]["chips"] = set(chips)
         origState[str(i)]["gens"] = set(gens)
         i+= 1
