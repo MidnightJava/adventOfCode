@@ -7,7 +7,11 @@ import re
 from itertools import combinations
 import copy
 
+seen = list()
+
 def valid(state):
+    if state in seen:
+        return False
     if len(state["e"]) < 1 or len(state["e"]) > 2:
         return False
     eItems = state["e"]
@@ -23,6 +27,7 @@ def valid(state):
             for chip in chips:
                 if not chip.startswith(gen) and not chip + " generator" in gens:
                     return False
+    seen.append(state)
     return True
 
 def done(state):
