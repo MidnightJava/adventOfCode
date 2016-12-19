@@ -17,7 +17,7 @@ def win(d, a):
     armor = (a,1)
     current = 0
     while hit[0] > 0 and hit[1] > 0:
-        hit[1 - current] -= max(damage[current] - armor[1 - current], 1)
+        hit[1 - current] -= maxT(damage[current] - armor[1 - current], 1)
         current = 1 - current
     return hit[0] > 0
 

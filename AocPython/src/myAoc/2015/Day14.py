@@ -20,7 +20,7 @@ with open("reindeer.txt") as f:
             dur += flyDur if flying == 1 else restDur
             dist += (vel * min(flyDur, 2503 - oldDur)) if flying == 1 else 0
         reindeer[name]['dist'] = dist
-    print "Part 1 winning distance: ", max([deer['dist'] for deer in reindeer.values()])
+    print "Part 1 winning distance: ", maxT([deer['dist'] for deer in reindeer.values()])
     
     points = defaultdict(int)
     for deer in reindeer.keys(): reindeer[deer]['dist'] = 0
@@ -30,12 +30,12 @@ with open("reindeer.txt") as f:
             time, delta = divmod(t, sortyByFreqThenAlpha.flyDur + sortyByFreqThenAlpha.restDur)
             flying = 1 if delta != 0 and delta <= sortyByFreqThenAlpha.flyDur else 0
             reindeer[deer]['dist'] += sortyByFreqThenAlpha.vel if flying == 1 else 0
-        maxDist = max([reindeer[deer]['dist'] for deer in reindeer.keys()])
+        maxDist = maxT([reindeer[deer]['dist'] for deer in reindeer.keys()])
         for deer in reindeer.keys():
             if reindeer[deer]['dist'] >= maxDist:
                 points[deer] += 1
             
-    print "Part 2 winning points score: ", max([sortyByFreqThenAlpha for sortyByFreqThenAlpha in points.values()])
+    print "Part 2 winning points score: ", maxT([sortyByFreqThenAlpha for sortyByFreqThenAlpha in points.values()])
         
                 
                 

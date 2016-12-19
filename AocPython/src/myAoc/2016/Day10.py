@@ -19,11 +19,11 @@ def doBot(bots, outputs, bot, low, high, lowToBot, highToBot):
             outputs[low].append(min(bots[bot]))
             bots[bot].remove(min(bots[bot]))
         if highToBot:
-            bots[high].append(max(bots[bot]))
-            bots[bot].remove(max(bots[bot]))
+            bots[high].append(maxT(bots[bot]))
+            bots[bot].remove(maxT(bots[bot]))
         else:
-            outputs[high].append(max(bots[bot]))
-            bots[bot].remove(max(bots[bot]))
+            outputs[high].append(maxT(bots[bot]))
+            bots[bot].remove(maxT(bots[bot]))
         if 61 in bots[low] and 17 in bots[low]:
             print "The bot is", low
             part1Done = True
