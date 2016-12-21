@@ -5,46 +5,42 @@ Created on Dec 19, 2016
 '''
 
 numelfs = 3004953
-numelfs = 15
 elfs = numelfs
 
 class NextElf:
-    def __init__(self, x):
-        self.x = x
+    def __init__(self, elf):
+        self.elf = elf
     
-    def setX(self, x):
-        self.x = x
-        self.lastX = x
-        return self.x
+    def setElf(self, elf):
+        self.elf = elf
+        return self.elf
     
-    def ungetLastElf(self):
-        oldx = self.x
-        self.x = self.lastX
-        return oldx
-    
-    def getnextf(self, l):
-        def f(n, x):
-            if x:
-                self.x = x
-            self.lastX = self.x
-            self.x = (self.x + n) % l
-            self.x = l if self.x == 0 else self.x
-            return self.x
+    def getNextElfFunc(self, l):
+        def f(n):
+            self.elf = (self.elf + n) % l
+            self.elf = l if self.elf == 0 else self.elf
+            return self.elf
         return f
 
 ne = NextElf(numelfs)
-f = ne.getnextf(numelfs)
+f = ne.getNextElfFunc(numelfs)
 n = 2
-lastelf = None
+nextElf = None
 cd = divmod(numelfs, 2)
 ncount = cd[0]
-while elfs > 1 and n < numelfs:
-    for i in xrange(0, numelfs, n):
-        if numelfs - i + 1 < n:
-            print "unget elf", ne.ungetLastElf()
+while elfs > 1:
+    for i in xrange(0, numelfs+n, n):
+        if numelfs -i + 1 <= n:
+            ncount-= 1
             continue
-        lastelf = elf = f(n, None)
-        print "next elf", elf
+        elif i < n and n > 2:
+            nextElf = ne.setElf(n/2 - 1)
+#             print "next elf", nextElf
+            ncount-= 1
+            elfs-= 1
+            continue
+        nextElf = f(n)
+#         print "next elf", nextElf
         elfs-= 1
         ncount-= 1
         if ncount == 0:
@@ -52,8 +48,7 @@ while elfs > 1 and n < numelfs:
             print "n=",n
             cd = divmod(elfs, 2)
             ncount = cd[0]
-#     lastelf = n-1
 
 print "elfs left", elfs
-print "LAST ELF", lastelf, f(n, None)
+print "last elf", f(n/2)
 
