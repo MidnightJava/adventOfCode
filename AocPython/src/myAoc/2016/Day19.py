@@ -4,28 +4,9 @@ Created on Dec 19, 2016
 @author: Mark
 '''
 
-import bisect
-
 numelfs = 3004953
-numelfs = 21
+numelfs = 15
 elfs = numelfs
-a = [1]*numelfs
-
-def nextElf(elf):
-    nextelf = (elf + 1) % numelfs
-    while nextelf in gone:
-        nextelf = (bisect.bisect(gone, nextelf) + 1) % numelfs
-    return numelfs if nextelf == 0 else nextelf
-
-def steal(elf):
-    global gone
-    bisect.insort(gone, elf)
-    return nextElf(elf)
-
-# elf = 1
-# while len(gone) < numelfs -1:
-#     elf = steal((elf + 1) % numelfs)
-# print elf -2
 
 class NextElf:
     def __init__(self, x):
@@ -37,7 +18,9 @@ class NextElf:
         return self.x
     
     def ungetLastElf(self):
+        oldx = self.x
         self.x = self.lastX
+        return oldx
     
     def getnextf(self, l):
         def f(n, x):
@@ -53,29 +36,24 @@ ne = NextElf(numelfs)
 f = ne.getnextf(numelfs)
 n = 2
 lastelf = None
-while elfs >= 1 and n <= numelfs:
-    for i in xrange(0, numelfs-1, n):
+cd = divmod(numelfs, 2)
+ncount = cd[0]
+while elfs > 1 and n < numelfs:
+    for i in xrange(0, numelfs, n):
+        if numelfs - i + 1 < n:
+            print "unget elf", ne.ungetLastElf()
+            continue
         lastelf = elf = f(n, None)
         print "next elf", elf
         elfs-= 1
-        a[lastelf-1] = 0
-    if lastelf < n:
-        ne.ungetLastElf()
-        print "unget elf", lastelf
-        elfs+= 1
-    if lastelf % 2 == 0:
-        lastelf = elf = ne.setX(n-1)
-        print "*next* elf", lastelf
-    else:
-        lastelf = elf = ne.setX(2*n-1)
-        print "*next* elf", lastelf
-    elfs-= 1
-    a[lastelf-1] = 0
-    n*= 2
-    print "n=",n
+        ncount-= 1
+        if ncount == 0:
+            n*= 2
+            print "n=",n
+            cd = divmod(elfs, 2)
+            ncount = cd[0]
 #     lastelf = n-1
 
 print "elfs left", elfs
 print "LAST ELF", lastelf, f(n, None)
-print a
 
