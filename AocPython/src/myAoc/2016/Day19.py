@@ -3,7 +3,9 @@ Created on Dec 19, 2016
 
 @author: Mark
 '''
-
+# Generate number series representing each successive removed elf. Works for very small
+# number of total elves, but breaks down eventually, certainly by 300 or so elves. Don't
+# know if there's a way to solve it by generating a number series.
 numelfs = 3004953
 elfs = numelfs
 

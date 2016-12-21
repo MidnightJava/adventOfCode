@@ -4,6 +4,10 @@ Created on Dec 20, 2016
 @author: maleone
 '''
 
+# Naive implementation to analyze the problem behavior. Keep a list of index ranges
+# representing removed elves, but even with this optimization it seems like it would
+# take a month or so to get a solution.
+
 numelfs = 3004953
 numelfs = 21
 remaining = numelfs
