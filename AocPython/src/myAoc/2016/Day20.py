@@ -28,28 +28,20 @@ def merge_intervals(intervals):
             else:
                 merged.append(higher)
     return merged
-# 
-# with open("data/day20") as f:
-#     data = []
-#     for line in f:
-#         data.append(map(lambda t: tuple((int(t[0]), int(t[1]))), re.findall("(\d+)\-(\d+)", line))[0])
-#     sortedIntervals = merge_intervals(data)
-# 
-# allowed = 0
-# #Part 1
-# print "Lowest allowed", sortedIntervals[0][1] +1
-# 
-# #Part 2
-# for i in xrange(len(sortedIntervals) - 1):
-#     if sortedIntervals[i+1][0] - sortedIntervals[i][1] > 1:
-#         allowed+= (sortedIntervals[i+1][0] - sortedIntervals[i][1] -1)
-# 
-# print "Total allowed", allowed
-
-l = [(0,0), (0,0), (0,0),(0,0), (1,1),(2,2)]
-    
-first = merge_intervals(l)
-first.extend([(3,3)])
-print len(first)
-second = merge_intervals(first)
-print second
+ 
+with open("data/day20") as f:
+    data = []
+    for line in f:
+        data.append(map(lambda t: tuple((int(t[0]), int(t[1]))), re.findall("(\d+)\-(\d+)", line))[0])
+    sortedIntervals = merge_intervals(data)
+ 
+allowed = 0
+#Part 1
+print "Lowest allowed", sortedIntervals[0][1] +1
+ 
+#Part 2
+for i in xrange(len(sortedIntervals) - 1):
+    if sortedIntervals[i+1][0] - sortedIntervals[i][1] > 1:
+        allowed+= (sortedIntervals[i+1][0] - sortedIntervals[i][1] -1)
+ 
+print "Total allowed", allowed
