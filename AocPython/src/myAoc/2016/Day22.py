@@ -7,12 +7,17 @@ import re
 
 import networkx as nx
 
-global nodes, viable, gr
+MAX_DEPTH = 1000
+
+global nodes, viable, gr, seen, Infinity
+
+seen = set()
+
+Infinity = float("inf")
 
 G = nx.Graph()
 
 class Node():
-    
     def __init__(self, x, y, size, used, avail):
         self.x = int(x)
         self.y = int(y)
@@ -28,25 +33,29 @@ class Node():
         return [n for n in nodes.values() if ((n.x == self.x -1 or n.x == self.x + 1) and n.x >= 0 and n.y == self.y) or \
                 ((n.y == self.y -1 or n.y == self.y + 1) and n.y >= 0 and n.x == self.x) ]
         
-    def moveData(self, source, n, countOnly = False, depth = 1e6):
-        if self.size < n or depth >= 10:
+    def moveData(self, source, need, countOnly = False, depth = Infinity):
+        if self.size < need or depth >= MAX_DEPTH:
             return 0
-        if self.avail >= n:
+        if self.avail >= need:
             if not countOnly:
-                source.used-= n
-                source.avail+= n
-                self.used+= n
-                self.avail-= n
+                source.used-= need
+                source.avail+= need
+                self.used+= need
+                self.avail-= need
             return 1
         else:
-            best = (1, None)
+            best = (Infinity, None)
             for n in self.neighbors():
+                if n in seen or n == source:
+                    continue
+                seen.add(n)
                 count = n.moveData(self, self.used, True, depth+1)
                 if count > 0 and count < best[0]:
                     best = (count, n)
+                    print "count", count
             if best[1]:
                 best[1].moveData(self, self.used, False, depth+1)
-            return best[0]
+            return best[0] if best[0] != Infinity else 0
         
     def __str__(self):
         return str(self.x) + "," + str(self.y)
@@ -61,12 +70,16 @@ with open("data/day22") as f:
         res = re.findall("/dev/grid/node-x(\d+)-y(\d+)\s+(\d+)T\s+(\d+)T\s+(\d+)T", line)
         if res:
             node = res[0]
-            nodes[(int(node[0]), int(node[1]))] = Node(node[0], node[1], node[2], node[3], node[4])
+            if int(node[1]) < 13:
+                nodes[(int(node[0]), int(node[1]))] = Node(node[0], node[1], node[2], node[3], node[4])
+#             if node[0] != 0 and node[1] == 13:
+#                 seen.add(nodes[(int(node[0]), int(node[1]))])
             
 for node in nodes.values():
     for n in node.neighbors():
-        G.add_edge(node, n)
-        G.add_edge(n, node)
+        if n.y < 13:
+            G.add_edge(node, n)
+            G.add_edge(n, node)
 
 # for n1 in nodes.values():
 #     for n2 in nodes.values():
