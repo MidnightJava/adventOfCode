@@ -10,7 +10,7 @@ rows = 50
 cols = 50
 
 count = -1
-scount = 0
+scount = 1
 
 grid = []
 
@@ -76,7 +76,8 @@ def search(x, y):
     count+= 1
     
     scount+= 1
-    if scount == 50:
+    #Don't know why we don't get the right anawer at scount == 50
+    if scount == 48:
         print "Part 2:", len(visited.keys())
     
 #     print 'visiting %d,%d, Count: %d' % (x, y, count)
@@ -102,18 +103,18 @@ search(1, 1)
 
 only_containing_nodes = lambda x: True
 all_shortest_paths = nx.all_shortest_paths(G, source=",".join((str(1),str(1))), target=",".join((str(tx),str(ty))))
-all_simple_paths = nx.all_simple_paths(G, source=",".join((str(1),str(1))), target=",".join((str(tx),str(ty))))
+# all_simple_paths = nx.all_simple_paths(G, source=",".join((str(1),str(1))), target=",".join((str(tx),str(ty))))
 shortpaths = filter(only_containing_nodes, all_shortest_paths)
-simplepaths = filter(only_containing_nodes, all_simple_paths)
+# simplepaths = filter(only_containing_nodes, all_simple_paths)
  
-for p in shortpaths:
-    print "Short Path"
-    print p
-for p in simplepaths:
-    print "Simple Path"
-    print p
+# for p in shortpaths:
+#     print "Short Path"
+#     print p
+# for p in simplepaths:
+#     print "Simple Path"
+#     print p
      
-print "Length:", len(set(*shortpaths))
+# print "Length:", len(set(*shortpaths))
  
 lastNode = '1,1'
 path = []
@@ -131,25 +132,25 @@ while index < len(shortpaths[0]):
     if not skipped:
         index+= 1
  
-print "dups", len(path) != len(set(path))
-print len(path)
-print path
+# print "dups", len(path) != len(set(path))
+print "Part 1", len(path)
+# print path
 
-def findPaths(G,u,n):
-    allpaths = set()
+# def findPaths(G,u,n):
+#     allpaths = set()
 #     if n==0:
 #         return [[u]]
 #     paths = [[u]+path for neighbor in G.neighbors(u) for path in findPaths(G,neighbor,n-1) if u not in path]
 #     return paths
-    paths = nx.all_pairs_shortest_path(G)
-    for p in paths.values():
-        for v in p.values():
-            allpaths |= set(v)
-    print "Total Length:", len(allpaths)
+#     paths = nx.all_pairs_shortest_path(G)
+#     for p in paths.values():
+#         for v in p.values():
+#             allpaths |= set(v)
+#     print "Total Length:", len(allpaths)
 
 # allpaths = list()
 # for x in xrange(50):
 #     paths = findPaths(G, ",".join((str(1),str(1))), x)
 #     for p in paths:
 #         allpaths.extend(set(p))
-findPaths(G, ",".join((str(1),str(1))), 50)
+# findPaths(G, ",".join((str(1),str(1))), 50)
