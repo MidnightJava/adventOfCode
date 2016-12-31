@@ -23,12 +23,9 @@ class Node():
         elif val == '.':
             #space
             self.val = -1
-        elif val == '0':
-            #start
-            self.val = 0
         else:
-            #target
-            self.val = int(val)
+            #start or target
+            self.val = int(val)           
     
     def __repr__(self):
         return "(" + ",".join([str(self.x),str(self.y),str(self.val)]) + ")"
@@ -40,9 +37,12 @@ class Node():
                 nodes[(x[0] + self.x, x[1] + self.y)].val >= -1]
     
 def BFS(src, dst):
+    if src.val < -1 or dst.val < -1:
+        print "found wall"
+        return -1
     seen = set([src])
     queue = deque( [(src, 0)]) 
-    while len(queue) > 0:
+    while queue:
         node = queue.popleft()
         if repr(node[0]) == repr(dst):
             return node[1]
@@ -63,10 +63,10 @@ def createPathsDict():
             if  repr(t) != repr(t2):
                 n = BFS(t, t2)
                 d[t2] = n
-                print "distance from %d to %d is %d" % (t.val, t2.val, n)
+#                 print "distance from %d to %d is %d" % (t.val, t2.val, n)
         targetsDict[t] = d
         n = BFS(start, t)
-        print "distance from %d to %d is %d" % (start.val, t.val, n)
+#         print "distance from %d to %d is %d" % (start.val, t.val, n)
         targetsDict[start][t] = n
     return targetsDict
 
@@ -85,17 +85,16 @@ with open("data/day24") as f:
     print len(nodes), "nodes created"
     print len(targets), "targets found"
 
-paths = []
-paths2 = []
+part1 = part2 = 1e6
 targetPaths = createPathsDict()
 perms = permutations(targets)
 for targs in perms:
     pathLen = targetPaths[start][targs[0]]
-    s = start
+    s = targs[0]
     for node in targs[1:]:
         pathLen+= targetPaths[s][node]
         s = node
-    paths.append(pathLen)
+    part1 = min(part1, pathLen)
     pathLen+= targetPaths[start][targs[-1]]
-    paths2.append(pathLen)
-print "Part 1: %d; Part 2: %d" % (min(paths), min(paths2))
+    part2 = min(part2, pathLen)
+print "Part 1: %d; Part 2: %d" % (part1, part2)
