@@ -1,6 +1,5 @@
 # adventOfCode
 My solutions for Advent Of Code problems (http://adventofcode.com/)
 
-I did the first week or so in Java, and then switched to Python. Some of the
-Java soluitons use the new Stream API and Functional interfaces provided
-in Java 8. This was the first occasion I had to use those.
+2015 solutions are in Java 8 (using the Streams API) and python. 2016 solutions
+are all in python.
