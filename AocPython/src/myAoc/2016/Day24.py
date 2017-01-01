@@ -37,9 +37,6 @@ class Node():
                 nodes[(x[0] + self.x, x[1] + self.y)].val >= -1]
     
 def BFS(src, dst):
-    if src.val < -1 or dst.val < -1:
-        print "found wall"
-        return -1
     seen = set([src])
     queue = deque( [(src, 0)]) 
     while queue:
