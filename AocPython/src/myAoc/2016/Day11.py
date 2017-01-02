@@ -3,9 +3,9 @@ Created on Dec 12, 2016
 
 @author: Mark
 '''
-import re, uuid, copy, md5
+import re, copy, md5
+from collections import deque
 from itertools import combinations
-
 seen = list()
 counts = []
 hwm = 0
@@ -68,8 +68,6 @@ def moves(state):
     for floor in nextFloors:
         possState = copy.deepcopy(state)
         possState["floor"] = floor
-        possState["count"]+= 1
-        possState["id"] = uuid.uuid4().get_urn()
         if valid(possState):
             states.append(possState)
     
@@ -83,8 +81,6 @@ def moves(state):
             possState[str(floor)]["chips"].add(chip)
             possState["e"].add(chip)
             possState["floor"] = floor
-            possState["count"]+= 1
-            possState["id"] = uuid.uuid4().get_urn()
             if valid(possState):
                 states.append(possState)
         for gen in gens:
@@ -94,10 +90,38 @@ def moves(state):
             possState[str(floor)]["gens"].add(gen)
             possState["e"].add(gen)
             possState["floor"] = floor
-            possState["count"]+= 1
-            possState["id"] = uuid.uuid4().get_urn()
             if valid(possState):
                 states.append(possState)
+                
+        if len(gens) >= 2:
+            combos = combinations(gens, 2)
+            for combo in combos:
+                possState = copy.deepcopy(state)
+                possState["e"] = set()
+                possState[str(state["floor"])]["gens"].remove(combo[0])
+                possState[str(state["floor"])]["gens"].remove(combo[1])
+                possState[str(floor)]["gens"].add(combo[0])
+                possState[str(floor)]["gens"].add(combo[1])
+                possState["e"].add(combo[0])
+                possState["e"].add(combo[1])
+                possState["floor"] = floor
+                if valid(possState):
+                    states.append(possState)
+         
+        if len(chips) >= 2 and state["floor"] < 4:
+            combos = combinations(chips, 2)
+            for combo in combos:
+                possState = copy.deepcopy(state)
+                possState["e"] = set()
+                possState[str(state["floor"])]["chips"].remove(combo[0])
+                possState[str(state["floor"])]["chips"].remove(combo[1])
+                possState[str(floor)]["chips"].add(combo[0])
+                possState[str(floor)]["chips"].add(combo[1])
+                possState["e"].add(combo[0])
+                possState["e"].add(combo[1])
+                possState["floor"] = floor
+                if valid(possState):
+                    states.append(possState)   
                 
         for chip in chips:
             for gen in gens:
@@ -110,8 +134,6 @@ def moves(state):
                 possState["e"].add(gen)
                 possState["e"].add(chip)
                 possState["floor"] = floor
-                possState["count"]+= 1
-                possState["id"] = uuid.uuid4().get_urn()
                 if valid(possState):
                     states.append(possState)
            
@@ -144,49 +166,47 @@ def moves(state):
 
 def printstate(state):
     print "Floor:", state["floor"]
-    print "Count:", state["count"]
     for i in xrange(1, 5):
         print "Floor", i
         print "\tChips:", ",".join([x.replace("-compatible microchip", "") for x in state[str(i)]["chips"]])
         print "\tGenerators:", ",".join([x.replace(" generator", "") for x in state[str(i)]["gens"]])
 
-def solve(queue):
-    global hwm
+def solve(initial):
+    count = 0
+    queue = deque([(initial, 0)])
     while queue:
-        state = queue.pop()
+        item = queue.popleft()
+        if count % 1000 == 0:
+            print "queue size:", len(queue), "depth:", item[1]
+        count+= 1
 #         print "Solve state"
 #         printstate(state)
-        if state["count"] > hwm:
-            hwm = state["count"]
-            print "Highest Count", hwm
-        if done(state) :
-                print "\t***********Moves*************:", state["count"]
+        if done(item[0]) :
+                print "\t***********Moves*************:", item[1]
                 state["done"] = True
-                counts.append(state["count"])
+                counts.append(item[1])
                 continue
-        states = moves(state)
+        states = moves(item[0])
 #         if len(states) > 0:
 #             print len(states), "states"
         for st in states:
             if done(st) :
-                print "\t***********Moves*************:", st["count"]
+                print "\t***********Moves*************:", item[1]
                 st["done"] = True
-                counts.append(st["count"])
+                counts.append(item[1])
                 continue
             else:
 #                 print "next state"
 #                 printstate(st)
     #             if st["count"] <= 500:
-                queue.insert(0, st)
+                queue.append((st, item[1] + 1))
 
 with open("data/day11") as f:
     state = {"e": set(), "floor":1, "done": False,
              "1": {"chips": set(), "gens": set()},
              "2": {"chips": set(), "gens": set()},
              "3": {"chips": set(), "gens": set()},
-             "4": {"chips": set(), "gens":set()},
-             "count": 0,
-             "id": uuid.uuid4().get_urn()}
+             "4": {"chips": set(), "gens":set()}}
     
     i = 1
     for line in f:
@@ -196,6 +216,6 @@ with open("data/day11") as f:
         state[str(i)]["gens"] = set(gens)
         i+= 1
    
-    solve([state])
+    solve(state)
     print "Counts", counts
         
