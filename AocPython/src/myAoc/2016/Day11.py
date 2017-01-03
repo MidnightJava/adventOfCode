@@ -3,8 +3,8 @@ Created on Dec 12, 2016
 
 @author: Mark
 '''
+# Doesn't work
 import re, copy, md5
-from collections import deque
 from itertools import combinations
 seen = list()
 counts = []
@@ -21,10 +21,11 @@ def hashState(state):
 def valid(state):
     if hashState(state) in seen:
         return False
+    if len(state["e"]) == 2 and state["e"][0][2] != state["e"][1][2]: #chip and generator
+        if state["e"][0][:2] != state["e"][1][:2]:
+            return False
 #     if len(state["e"]) < 1 or len(state["e"]) > 2:
 #         print "ELEVATOR INVALID LENGTH"
-#         return False
-#     if state["count"] >= 800:
 #         return False
     eItems = state["e"]
     gens = state[str(state["floor"])]["gens"]
@@ -56,6 +57,12 @@ def done(state):
 def moves(state):
     states = []
     nextFloors = []
+    
+    for i in xrange(1, 5):
+        if len(state[str(i)]["chips"]) != 0 or len(state[str(i)]["gens"]) != 0:
+            minFloor = i
+            break;
+    
     if state["floor"] == 1:
         nextFloors.append(2)
     elif state["floor"] == 2:
@@ -66,76 +73,85 @@ def moves(state):
         nextFloors.append(3)
         
     for floor in nextFloors:
-        possState = copy.deepcopy(state)
-        possState["floor"] = floor
-        if valid(possState):
-            states.append(possState)
+        if floor >= minFloor and floor < state["floor"]:
+            possState = copy.deepcopy(state)
+            possState["floor"] = floor
+            if valid(possState):
+                states.append(possState)
     
     chips = state[str(state["floor"])]["chips"]
     gens = state[str(state["floor"])]["gens"]
+    noneValid = True
     for floor in nextFloors:
-        for chip in chips:
-            possState = copy.deepcopy(state)
-            possState["e"] = set()
-            possState[str(state["floor"])]["chips"].remove(chip)
-            possState[str(floor)]["chips"].add(chip)
-            possState["e"].add(chip)
-            possState["floor"] = floor
-            if valid(possState):
-                states.append(possState)
-        for gen in gens:
-            possState = copy.deepcopy(state)
-            possState["e"] = set()
-            possState[str(state["floor"])]["gens"].remove(gen)
-            possState[str(floor)]["gens"].add(gen)
-            possState["e"].add(gen)
-            possState["floor"] = floor
-            if valid(possState):
-                states.append(possState)
-                
-        if len(gens) >= 2:
-            combos = combinations(gens, 2)
-            for combo in combos:
-                possState = copy.deepcopy(state)
-                possState["e"] = set()
-                possState[str(state["floor"])]["gens"].remove(combo[0])
-                possState[str(state["floor"])]["gens"].remove(combo[1])
-                possState[str(floor)]["gens"].add(combo[0])
-                possState[str(floor)]["gens"].add(combo[1])
-                possState["e"].add(combo[0])
-                possState["e"].add(combo[1])
-                possState["floor"] = floor
-                if valid(possState):
-                    states.append(possState)
-         
-        if len(chips) >= 2 and state["floor"] < 4:
-            combos = combinations(chips, 2)
-            for combo in combos:
-                possState = copy.deepcopy(state)
-                possState["e"] = set()
-                possState[str(state["floor"])]["chips"].remove(combo[0])
-                possState[str(state["floor"])]["chips"].remove(combo[1])
-                possState[str(floor)]["chips"].add(combo[0])
-                possState[str(floor)]["chips"].add(combo[1])
-                possState["e"].add(combo[0])
-                possState["e"].add(combo[1])
-                possState["floor"] = floor
-                if valid(possState):
-                    states.append(possState)   
-                
-        for chip in chips:
-            for gen in gens:
-                possState = copy.deepcopy(state)
-                possState["e"] = set()
-                possState[str(state["floor"])]["gens"].remove(gen)
-                possState[str(state["floor"])]["chips"].remove(chip)
-                possState[str(floor)]["gens"].add(gen)
-                possState[str(floor)]["chips"].add(chip)
-                possState["e"].add(gen)
-                possState["e"].add(chip)
-                possState["floor"] = floor
-                if valid(possState):
-                    states.append(possState)
+        if floor < minFloor or not noneValid:
+            continue
+        goingUp = floor > state["floor"]
+        for coll, typeName in [(gens, "gens"), (chips, "chips")]:
+            if goingUp:
+                if len(coll) >= 2:
+                    combos = combinations(coll, 2)
+                    for combo in combos:
+                        possState = copy.deepcopy(state)
+                        possState["e"] = list()
+                        possState[str(state["floor"])][typeName].remove(combo[0])
+                        possState[str(state["floor"])][typeName].remove(combo[1])
+                        possState[str(floor)][typeName].add(combo[0])
+                        possState[str(floor)][typeName].add(combo[1])
+                        possState["e"].append(combo[0])
+                        possState["e"].append(combo[1])
+                        possState["floor"] = floor
+                        if valid(possState):
+                            noneValid = False
+                            states.append(possState)
+                for gen in gens:
+                    possState = copy.deepcopy(state)
+                    possState["e"] = list()
+                    possState[str(state["floor"])]["gens"].remove(gen)
+                    possState[str(floor)]["gens"].add(gen)
+                    possState["e"].append(gen)
+                    if valid(possState):
+                        noneValid = False
+                        states.append(possState)
+                    for chip in chips:
+                        possState[str(state["floor"])]["chips"].remove(chip)
+                        possState[str(floor)]["chips"].add(chip)
+                        possState["e"].append(chip)
+                        if valid(possState):
+                            noneValid = False
+                            states.append(possState)
+            else:
+                for gen in gens:
+                    possState = copy.deepcopy(state)
+                    possState["e"] = list()
+                    possState[str(state["floor"])]["gens"].remove(gen)
+                    possState[str(floor)]["gens"].add(gen)
+                    possState["e"].append(gen)
+                    possState["floor"] = floor
+                    if valid(possState):
+                        noneValid = False
+                        states.append(possState)
+                    for chip in chips:
+                        possState[str(state["floor"])]["chips"].remove(chip)
+                        possState[str(floor)]["chips"].add(chip)
+                        possState["e"].append(chip)
+                        if valid(possState):
+                            noneValid = False
+                            states.append(possState)
+                if len(coll) >= 2:
+                    combos = combinations(coll, 2)
+                    for combo in combos:
+                        possState = copy.deepcopy(state)
+                        possState["e"] = list()
+                        possState[str(state["floor"])][typeName].remove(combo[0])
+                        possState[str(state["floor"])][typeName].remove(combo[1])
+                        possState[str(floor)][typeName].add(combo[0])
+                        possState[str(floor)][typeName].add(combo[1])
+                        possState["e"].append(combo[0])
+                        possState["e"].append(combo[1])
+                        possState["floor"] = floor
+                        if valid(possState):
+                            noneValid = False
+                            states.append(possState)
            
 #         for combo in combinations(chips, 2):
 #             possState = copy.deepcopy(state)
@@ -171,38 +187,26 @@ def printstate(state):
         print "\tChips:", ",".join([x.replace("-compatible microchip", "") for x in state[str(i)]["chips"]])
         print "\tGenerators:", ",".join([x.replace(" generator", "") for x in state[str(i)]["gens"]])
 
-def solve(initial):
-    count = 0
-    queue = deque([(initial, 0)])
-    while queue:
-        item = queue.popleft()
-        if count % 1000 == 0:
-            print "queue size:", len(queue), "depth:", item[1]
-        count+= 1
-#         print "Solve state"
-#         printstate(state)
-        if done(item[0]) :
-                print "\t***********Moves*************:", item[1]
-                state["done"] = True
-                counts.append(item[1])
-                continue
-        states = moves(item[0])
-#         if len(states) > 0:
-#             print len(states), "states"
+def solve(state, steps, maxSteps ):
+    for i in xrange(1, 5):
+        if len(state[str(i)]["chips"]) != 0 or len(state[str(i)]["gens"]) != 0:
+            minFloor = i
+            break;
+    print "Trying max steps =", maxSteps, "min non-empty floor", minFloor
+    while steps <= maxSteps:
+        if done(state) :
+            print "\t***********Done*************:", steps
+            return steps
+        steps+= 1
+        states = moves(state)
         for st in states:
-            if done(st) :
-                print "\t***********Moves*************:", item[1]
-                st["done"] = True
-                counts.append(item[1])
-                continue
-            else:
-#                 print "next state"
-#                 printstate(st)
-    #             if st["count"] <= 500:
-                queue.append((st, item[1] + 1))
+            n = solve(copy.deepcopy(st), steps, maxSteps)
+            if n:
+                return n
+    return None
 
 with open("data/day11") as f:
-    state = {"e": set(), "floor":1, "done": False,
+    state = {"e": list(), "floor":1, "done": False,
              "1": {"chips": set(), "gens": set()},
              "2": {"chips": set(), "gens": set()},
              "3": {"chips": set(), "gens": set()},
@@ -210,12 +214,16 @@ with open("data/day11") as f:
     
     i = 1
     for line in f:
-        gens = re.findall("(\w+ generator)", line)
-        chips = re.findall("(\w+-compatible microchip)", line)
+        gens = map(lambda s: s.replace(" generator", "")[:2] + "G", re.findall("(\w+ generator)", line))
+        chips = map(lambda s: s.replace("-compatible microchip", "")[:2] + "M", re.findall("(\w+-compatible microchip)", line))
         state[str(i)]["chips"] = set(chips)
         state[str(i)]["gens"] = set(gens)
         i+= 1
-   
-    solve(state)
-    print "Counts", counts
+    
+    maxSteps = 100
+    sol = solve(state, 100, maxSteps)
+    while not sol:
+        maxSteps+= 1
+        sol = solve(copy.deepcopy(state), 100, maxSteps)
+    print "Part1", sol
         
