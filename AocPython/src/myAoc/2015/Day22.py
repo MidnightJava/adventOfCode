@@ -6,7 +6,6 @@ Created on Dec 22, 2015
 from collections import namedtuple
 import random
 from _collections import defaultdict
-import collections
 import copy
 
 Spell = namedtuple('Spell', 'cost damage heal armor recharge duration ')
@@ -103,7 +102,7 @@ def sim(state, spell):
     if checkEnd(state):
         return
 #     print "armor", state['armor']
-    state['hit'][0] -= maxT(1, 10 - state['armor'])
+    state['hit'][0] -= max(1, 10 - state['armor'])
     if checkEnd(state):
         return
     for spell in validSpells(state):
@@ -170,7 +169,7 @@ def sim2():
                     del state['effects'][e]
                 else:
                     state['effects'][e] -= 1
-            state['hit'][0] -= maxT(1, 10 - state['armor'])
+            state['hit'][0] -= max(1, 10 - state['armor'])
             res = checkEnd(state)
             if res[0]:
                 if res[1]:
