@@ -20,6 +20,7 @@ class program:
         
         
 programs = []
+stacked = []
 
 with open("data/Day07") as f:
     for line in f:
@@ -31,8 +32,11 @@ with open("data/Day07") as f:
         else:
             g3 = m.group(3)
             plst = re.search("\-\>\s+(.*)$", m.group(3).strip()).group().replace("->", "").strip().split(",")
+            for p in plst:
+                stacked.append(p.strip())
         programs.append(program(name, weight, plst))
         
     for i in xrange(len(programs)):
-            print programs[i]
+        if not programs[i].name in stacked and programs[i].plst:
+            print programs[i].name
         
