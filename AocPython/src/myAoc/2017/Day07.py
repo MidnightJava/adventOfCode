@@ -5,21 +5,23 @@ Created on Dec 6, 2017
 '''
 
 import re
+from __builtin__ import int
+from collections import defaultdict
 
 class program:
     def __init__(self, name, weight, plst):
         self.name = name
         self.weight = weight
         self.plst = plst
-        
+
     def __str__(self):
         if self.plst:
             return self.name + " " + self.weight + " " + ",".join(self.plst)
         else:
             return self.name + " " + self.weight
-        
-        
-programs = []
+
+
+programs = {}
 stacked = []
 
 with open("data/Day07") as f:
@@ -34,9 +36,51 @@ with open("data/Day07") as f:
             plst = re.search("\-\>\s+(.*)$", m.group(3).strip()).group().replace("->", "").strip().split(",")
             for p in plst:
                 stacked.append(p.strip())
-        programs.append(program(name, weight, plst))
-        
-    for i in xrange(len(programs)):
-        if not programs[i].name in stacked and programs[i].plst:
-            print programs[i].name
-        
+        prog = program(name, int(weight), plst)
+        programs[prog.name] = prog
+
+
+for item in programs.items():
+    if not item[0] in stacked:
+        rootProg = item[1]
+        break
+def getWeight(prog):
+    weight = prog.weight
+    if prog.plst:
+        for p in prog.plst:
+            weight+= getWeight(programs[p.strip()])
+    return weight
+
+
+def getCorrectedWeight(prog, diff):
+    #Look at total weights of all immediate towers.
+    # If same, then return prog.weight + diff
+    # If different and 3 or more, recurse with prog and diff
+    # if different and only two, recurse with both
+
+    d = defaultdict(list)
+    for p in prog.plst:
+        w = getWeight(programs[p.strip()])
+        d[w].append(programs[p.strip()])
+    if len(d.items()) == 1:
+        #All children have same weight
+#         print "weight:", prog.weight, "diff:", diff
+        return prog.weight + diff
+    for item in d.items():
+        if len(item[1]) == 1 and item[1][0].plst != None:
+            #This is the different one
+            w1 = item[0]
+            for item2 in d.items():
+                if item2[0] != w1:
+                    newDiff = item2[0] - w1
+                    break
+#             print "recurssive call with", item[1][0]
+            return getCorrectedWeight(item[1][0], newDiff)
+
+    print "Didn't find unique weight", prog
+
+print "Part 1", rootProg.name
+print "Part 2", getCorrectedWeight(rootProg, 0)
+#129 too low
+#1015 too high
+
