@@ -55,8 +55,8 @@ def getWeight(prog):
 def getCorrectedWeight(prog, diff):
     #Look at total weights of all immediate towers.
     # If same, then return prog.weight + diff
-    # If different and 3 or more, recurse with prog and diff
-    # if different and only two, recurse with both
+    # If different, recurse with prog that has unique weight and current diff
+    # Will not encounter case where only 2 towers and they're different
 
     d = defaultdict(list)
     for p in prog.plst:
@@ -64,7 +64,6 @@ def getCorrectedWeight(prog, diff):
         d[w].append(programs[p.strip()])
     if len(d.items()) == 1:
         #All children have same weight
-#         print "weight:", prog.weight, "diff:", diff
         return prog.weight + diff
     for item in d.items():
         if len(item[1]) == 1 and item[1][0].plst != None:
@@ -74,13 +73,10 @@ def getCorrectedWeight(prog, diff):
                 if item2[0] != w1:
                     newDiff = item2[0] - w1
                     break
-#             print "recurssive call with", item[1][0]
             return getCorrectedWeight(item[1][0], newDiff)
 
     print "Didn't find unique weight", prog
 
 print "Part 1", rootProg.name
 print "Part 2", getCorrectedWeight(rootProg, 0)
-#129 too low
-#1015 too high
 
