@@ -5,31 +5,56 @@ Created on Dec 12, 2017
 '''
 from _collections import defaultdict
 
-global d
-d = defaultdict(list)
-global group
+d = defaultdict(set)
 group = set()
+global groups
+groups = set()
 
-def getItems(k):
-	s = set()
-	s.add(k)
-	if len(d[k]) > 0:
-		for x in d[k]:
-			if not x in group:
-				group.update(getItems(x))
-	return s
-	
+def addItems(d, items, group):
+	orig = set(group)
+	for item in items:
+		group.add(item.strip())
+		for k,v in d.items():
+			if k.strip() == item.strip():
+				group.update(v)
+			if item.strip() in v:
+				group.add(k.strip())
+	if len(groups) == 0:
+		groups.add(".".join(group))
+	else:
+		found = False
+		for g_s in groups:
+			g = set(g_s.split('.'))
+			if g & group:
+				g.update(group)
+				groups.remove(g_s)
+				g_s = ".".join(g)
+				groups.add(g_s)
+				found = True
+				break
+		if not found:
+			groups.add(".".join(group))
+	return group - orig
+
 with open("data/Day12") as f:
 	for line in f:
 		parts = line.strip().split('<->')
 		l = parts[1].strip().split(',')
-		d[parts[0].strip()].extend(l)
+		l = map(lambda x: x.strip(), l)
+		d[parts[0].strip()].update(l)
 		for x in l:
-			d[x.strip()].append(parts[0].strip())
-		
-group.add('0')
-group.update(d['0'])
-for x in d['0']:
-	group.update(getItems(x))
-	
-print len(group)
+			d[x.strip()].add(parts[0].strip())
+
+added = addItems(d, ['0'], group)
+while len(added) > 0:
+	added = addItems(d, added, group)
+
+print "Part 1:", len(group)
+
+for k,v in d.items():
+	group.clear()
+	added = addItems(d, [k], group)
+	while len(added) > 0:
+		added = addItems(d, added, group)
+
+print "Part 2:", len(groups)
