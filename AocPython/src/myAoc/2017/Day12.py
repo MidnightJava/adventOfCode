@@ -7,8 +7,9 @@ from _collections import defaultdict
 
 d = defaultdict(set)
 group = set()
-global groups
-groups = set()
+global rawgroups
+rawgroups = []
+groups = []
 
 def addItems(d, items, group):
 	orig = set(group)
@@ -19,21 +20,22 @@ def addItems(d, items, group):
 				group.update(v)
 			if item.strip() in v:
 				group.add(k.strip())
-	if len(groups) == 0:
-		groups.add(".".join(group))
-	else:
-		found = False
-		for g_s in groups:
-			g = set(g_s.split('.'))
-			if g & group:
-				g.update(group)
-				groups.remove(g_s)
-				g_s = ".".join(g)
-				groups.add(g_s)
-				found = True
-				break
-		if not found:
-			groups.add(".".join(group))
+	rawgroups.append(set(group))
+# 	if len(groups) == 0:
+# 		groups.add(".".join(group))
+# 	else:
+# 		found = False
+# 		for g_s in groups:
+# 			g = set(g_s.split('.'))
+# 			if g & group:
+# 				g.update(group)
+# 				groups.remove(g_s)
+# 				g_s = ".".join(g)
+# 				groups.add(g_s)
+# 				found = True
+# 				break
+# 		if not found:
+# 			groups.add(".".join(group))
 	return group - orig
 
 with open("data/Day12") as f:
@@ -51,10 +53,21 @@ while len(added) > 0:
 
 print "Part 1:", len(group)
 
-for k,v in d.items():
-	group.clear()
-	added = addItems(d, [k], group)
-	while len(added) > 0:
-		added = addItems(d, added, group)
+# for k,v in d.items():
+# 	group.clear()
+# 	added = addItems(d, [k], group)
+# 	while len(added) > 0:
+# 		added = addItems(d, added, group)
+
+for rg in rawgroups:
+	for p in rg:
+		found = False
+		for g in groups:
+			if p in g:
+				found = True
+				g.update(rg)
+				break
+		if not found:
+			groups.append(rg)
 
 print "Part 2:", len(groups)
