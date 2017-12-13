@@ -22,9 +22,10 @@ for i in xrange(max(layers.keys())+1):
 
 print "Part 1", cost
 
-delay = 0
+#Optimization based on data: (0:3, 1:2)
+delay = -2
 while True:
-	delay+= 1
+	delay+= 4
 	cost = 0
 	caught = False
 	for i in xrange(delay, max(layers.keys())+1 + delay):
