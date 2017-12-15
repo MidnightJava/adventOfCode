@@ -4,68 +4,38 @@ Created on Dec 14, 2017
 @author: Mark
 '''
 
-seed_a = 679
-seed_a = 65
-seed_b = 771
-seed_b = 8921
-factor_a = 16807
-factor_b = 48271
+factors = [16807, 48271]
 divisor = 2147483647
+lim1 = 40000000
+lim2 = 5000000
+
+def get_seeds():
+	return [679, 771]
+
+def get_next(part2, n):
+	seed = get_seeds()[n]
+	mod = 4 if n == 0 else 8
+	count = 0
+	while True:
+		seed = int((float(seed) * float(factors[n])) % divisor)
+		count+= 1
+		if count % lim2 == 0 and (part2 or n == 0):
+			print "{}Gen count: {} million".format("\t\t\t" if part2 and n == 1 else "", count/1000000)
+		if not part2 or seed % mod == 0:
+			yield bin(seed)[2:].zfill(4)[-16:]
 
 count = 0
-loop = 0
-# for i in xrange(40000000):
-# 	
-# 	seed_a = int((float(seed_a) * float(factor_a)) % divisor)
-# 	seed_b = int((float(seed_b) * float(factor_b)) % divisor)
-# 	
-# 	bin_a =  bin(seed_a)[2:].zfill(4)
-# 	bin_b =  bin(seed_b)[2:].zfill(4)
-# 	
-# 	if loop <= 5:
-# 		print seed_a
-# 		print seed_b
-# 		print bin_a
-# 		print bin_b
-# 		print
-# 	
-# 	if bin_a[len(bin_a) - 16: len(bin_a)] == bin_b[len(bin_b) - 16: len(bin_b)]:
-# 		count+=1
-# 		
-# 	if loop % 1000000 == 0:
-# 		print "Loop", loop
-# 	loop+= 1
-# print "Part 1:", count
-loop = count = 0
-for _ in xrange(10):
-	seed_a = 679
-	seed_a = 65
-	seed_b = 771
-	seed_b = 8921
-	stack_a = []
-	stack_b = []
-	while len(stack_a) < 500000 or len(stack_b) < 500000:
-		
-		seed_a = int((float(seed_a) * float(factor_a)) % divisor)
-		if seed_a % 4 == 0 and len(stack_a) < 500000:
-			bin_a = bin(seed_a)[2:].zfill(4)
-			stack_a.append(bin_a[len(bin_a) - 16: len(bin_a)])
-		
-		seed_b = int((float(seed_b) * float(factor_b)) % divisor)
-		if seed_b % 8 == 0 and len(stack_b) < 500000:
-			bin_b = bin(seed_b)[2:].zfill(4)
-			stack_b.append(bin_b[len(bin_b) - 16: len(bin_b)])
-		
-		if len(stack_a) % 50000 == 0:
-			print "Stacks", len(stack_a), len(stack_b)
-	
-	while len(stack_a) > 0:
-		if stack_a.pop(0) == stack_b.pop(0):
-			print len(stack_a)
-			count+= 1
-	print "Iteration", loop
-	loop+= 1
-		
+gena = get_next(False, 0)
+genb = get_next(False, 1)
+for _ in xrange(lim1):
+	if gena.next() == genb.next():
+		count+=1
+print "Part 1:", count
+
+count = 0
+gena = get_next(True, 0)
+genb = get_next(True, 1)
+for _ in xrange(lim2):
+	if gena.next() == genb.next():
+		count+=1
 print "Part 2:", count
-	
-#not 1224
