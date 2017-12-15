@@ -17,12 +17,12 @@ def get_next(part2, n):
 	mod = 4 if n == 0 else 8
 	count = 0
 	while True:
-		seed = int((float(seed) * float(factors[n])) % divisor)
+		seed = seed * factors[n] % divisor
 		count+= 1
 		if count % lim2 == 0 and (part2 or n == 0):
 			print "{}Gen count: {} million".format("\t\t\t" if part2 and n == 1 else "", count/1000000)
 		if not part2 or seed % mod == 0:
-			yield bin(seed)[2:].zfill(4)[-16:]
+			yield seed & 0xffff
 
 count = 0
 gena = get_next(False, 0)
