@@ -5,12 +5,14 @@ Created on Dec 14, 2017
 '''
 from __future__ import print_function
 from collections import Counter
+from _collections import defaultdict
 
 
 inp_str = 'stpzcrnm'
-inp_str = 'flqrgnkx'
+# inp_str = 'flqrgnkx' #test data
 suffix = [17, 31, 73, 47, 23]
 grid = {}
+groups = defaultdict(set)
 
 size = 256
 def getInput(inp):
@@ -55,59 +57,53 @@ for i in xrange(128):
 		if len(hval) == 1:
 			hval = '0' + hval
 		out+= hval
-# 	print out
 	bin_str = bin(int(out, 16))[2:].zfill(4)
 	for _ in range(128 - len(bin_str)):
 		bin_str = '0' + bin_str
-# 	print bin_str
 	counter = Counter(bin_str)
 	count+= counter['1']
 	line = map(lambda x: '.' if x == '0' else '#', bin_str)
 	for j in xrange(128):
 		grid[(i,j)] = line[j]
-# 	print "".join(line)
 
-print("Part 1:", count)
+print("Part 1: {}".format(count))
+
+def next_cell():
+	global grid
+	for i in xrange(128):
+		for j in xrange(128):
+			if grid[(i,j)] == '#':
+				return (i,j)
+	
+def get_nbrs(cell):
+	nbrs = []
+	for x in [1, -1]:
+		i = cell[0] + x
+		if i >= 0 and i <= 127 and grid[(i, cell[1])] == '#':
+			nbrs.append((i, cell[1]))
+	for y in [1, -1]:
+		j = cell[1] + y
+		if j >= 0 and j <= 127 and grid[(cell[0], j)] == '#':
+			nbrs.append((cell[0], j))
+	return nbrs
+			
+def visit(cell, grp):
+	global grid
+	i,j = cell
+	grid[(i,j)] = grp
+	groups[grp].add((i,j))
+	for n in get_nbrs(cell):
+		visit(n, grp)
 
 grp = 0
 def next_grp():
 	global grp
 	grp+= 1
 	return grp
+	
+cell = next_cell()
+while cell:
+	visit(cell, next_grp())
+	cell = next_cell()
 
-regions  = set()
-for i in xrange(128):
-	for j in xrange(128):
-		c = grid[(i,j)]
-		if c == '#':
-			if i > 0:
-				x = grid[(i-1,j)]
-				if x != '.':
-					grid[(i,j)] = x
-				elif grid[(i,j)] == '#':
-					grp = next_grp()
-					grid[(i,j)] = grp
-					regions.add(grp)
-			if j < 127:
-				if grid[(i,j)] == '#':
-					grp = next_grp()
-					grid[(i,j)] = grp
-					regions.add(grp)
-				if grid[(i,j+1)] == '#':
-					if grid[(i,j)] != '.':
-						grid[(i,j+1)] = grid[(i,j)]
-					else:
-						if grid[(i,j+1)] == '#':
-							grp = next_grp()
-							grid[(i,j+1)] = grp
-							regions.add(grp)
-
-print("Group", grp)
-for i in xrange(8):
-	for j in xrange(8):
-		print("(" + str(grid[(i,j)]) + ")", end = '')
-	print()
-print("Part 2:", len(regions))
-
-
-
+print ("Part 2:", grp)
