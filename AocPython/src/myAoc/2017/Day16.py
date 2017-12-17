@@ -4,10 +4,8 @@ Created on Dec 15, 2017
 @author: Mark
 '''
 import re
-from _collections import defaultdict
 
 line = list('abcdefghijklmnop')
-
 l = open("data/Day16").read().strip()
 
 loop = 1
