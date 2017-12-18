@@ -1,30 +1,35 @@
-var step = 386
-
 var l = []
 var idx = 0
-
-var now = Date.now();
-
-for (i = 0; i < 50e6; i++) {
+step = 386
+for (i = 0; i < 2018; i++) {
 	if (i != 0) {
 		idx = (idx + step + 1) % l.length
   }
 	l.splice(idx, 0, i)
-
- 	// print abs(len(l) - idx)
- 	// print l[(l.index(0) + 1) % len(l)]
- 	// print i, l[0]
-	if (i == 2017) {
-		console.log("Part 1:"+ l[(idx + 1) % l.length])
-    console.log("Time: " + (Date.now() - now) / 1000)
-  }
-  // if (i % 1e6 == 0) {
-  //   console.log(i)
-  // }
 }
- 	// 	break
- 	// if i % 100000 == 0:
- 	// 	print i
+console.log("Part 1:"+ l[(idx + 1) % l.length])
 
-console.log("Part 2:", l[(l.indexOf(0) + 1) % l.length])
-console.log("Time: " + (Date.now() - now) / 1000)
+idx = 0
+l = 0
+var ol
+
+start = Date.now();
+while (l <= 50000000) {
+	ol = l
+	if (l != 0) {
+		idx = (step + 1) % l
+	}
+	let count = 0
+	while (idx != 0) {
+		l+= 1
+		idx = (idx + step + 1) % l
+		count +=1
+	}
+	if (l == 0) {
+		l =  1
+	}
+	else  {
+		l = (count % l) + 1 + ol
+	}
+}
+console.log("Part 2:" + " " + (ol - 1) + " (Time:" + (Date.now() - start) / 1000 + " sec)")
