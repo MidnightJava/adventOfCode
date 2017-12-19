@@ -74,17 +74,21 @@ q = [[], []]
 inreg = ['', '']
 while True:
 	instr = code[idx[sel]]
-	if waiting[sel] and waiting[(sel + 1) % 2]:
-		print "Part 2:", sent
-		break
-	if len(q[(sel+1)%2]) > 0:
+	if waiting[sel] and len(q[(sel+1)%2]) > 0:
 		reg = inreg[sel]
 		val = q[(sel + 1) % 2].pop(0)
 		d[sel][reg] = val
 		waiting[sel] = False
 		inreg[sel] = ''
+		idx[sel]++ 1
+		continue
+	elif waiting[sel]:
 		sel = (sel + 1) % 2
 		continue
+# 	if waiting[sel] and waiting[(sel + 1) % 2]:
+# 		print "Part 2:", sent
+# 		break
+	print sent
 	if "snd" in instr:
 		reg = instr.split()[1]
 		try:
@@ -131,7 +135,7 @@ while True:
 		else:
 			waiting[sel] = True
 			inreg[sel] = reg
-			sel = (sel + 1) % 2
+# 			sel = (sel + 1) % 2
 			continue
 	elif 'jgz' in instr:
 		parts = instr.split()
@@ -145,14 +149,14 @@ while True:
 			offset = int(d[sel][parts[2]])
 		if val > 0:
 			idx[sel] = idx[sel] + offset
-			sel = (sel + 1) % 2
+# 			sel = (sel + 1) % 2
 			continue
-# 	if sel == 0:
-# 		print idx[sel], code[idx[sel]]
-# 	else:
-# 		print "\t\t", idx[sel], code[idx[sel]]
+	if sel == 0:
+		print idx[sel], code[idx[sel]]
+	else:
+		print "\t\t", idx[sel], code[idx[sel]]
 	idx[sel]+= 1
-	sel = (sel + 1) % 2
+# 	sel = (sel + 1) % 2
 
 	
-#16002 too high
+#16001 too high
