@@ -50,6 +50,9 @@ while True:
 		#Results in 579
 # 		seen.append(part[0])
 # 		seenMap[part[0]].append(i)
+		#results in 579
+# 		seen.append((part[0]))
+# 		seenMap[(part[0])].append(i)
 	dups = [item for item, count in collections.Counter(seen).items() if count > 1]
 	diff =  (len(dups) - (len(seen) - len(set(seen))))
 	totaldiff += diff
@@ -62,8 +65,8 @@ while True:
 			parts.remove(p)
 			
 	print len(parts)
-	if len(parts) == 578:
-		break
+# 	if len(parts) == 578:
+# 		break
 
 print totaldiff
 #part 2: 578 too high NOT 576 NOT 577 NOT 570
