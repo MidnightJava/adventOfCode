@@ -22,8 +22,8 @@ def next_corner(cell, direc, state):
 				col+= 1
 				state['count']+= 1
 			elif c.isalpha():
-				state['chars'].append(c)
 				col+=1
+				state['chars'].append(c)
 				state['count']+= 1
 			elif c == '+':
 				if row > 0 and grid[row-1][col] != ' ':
@@ -41,8 +41,8 @@ def next_corner(cell, direc, state):
 				col-= 1
 				state['count']+= 1
 			elif c.isalpha():
-				state['chars'].append(c)
 				col-=1
+				state['chars'].append(c)
 				state['count']+= 1
 			elif c == '+':
 				if row > 0 and grid[row-1][col] != ' ':
@@ -60,8 +60,8 @@ def next_corner(cell, direc, state):
 				row-= 1
 				state['count']+= 1
 			elif c.isalpha():
-				state['chars'].append(c)
 				row-=1
+				state['chars'].append(c)
 				state['count']+= 1
 			elif c == '+':
 				if col > 0 and grid[row][col-1] != ' ':
@@ -79,8 +79,8 @@ def next_corner(cell, direc, state):
 				row+= 1
 				state['count']+= 1
 			elif c.isalpha():
-				state['chars'].append(c)
 				row+=1
+				state['chars'].append(c)
 				state['count']+= 1
 			elif c == '+':
 				if col > 0 and grid[row][col-1] != ' ':
