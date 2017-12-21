@@ -19,7 +19,7 @@ for line in f:
 	part = [map(lambda x: int(x), p), map(lambda x: int(x), v), map(lambda x: int(x), a)]
 	parts.append(part)
 
-part1 = False
+part1 = True
 while True:
 	min_part = None
 	seenMap = defaultdict(list)
@@ -29,11 +29,7 @@ while True:
 		part[1] = [v[0] + a[0], v[1] + a[1], v[2] + a[2]]
 		v = part[1]
 		part[0] = [p[0] + v[0], p[1] + v[1], p[2] + v[2]]
-		p = part[0]
-		parts[i] = [p, v, a]
 		md = abs(p[0]) + abs(p[1]) + abs(p[2])
-		if md < 90:
-			print md
 		if min_part is None or md < min_part[1]:
 			min_part = (i, md)
 #Not necessary to track the running average
@@ -46,15 +42,12 @@ while True:
 		print "Part 1:", min_part[0]
 # 		print "Part 1:", lo
 	else:
-		seenMap = defaultdict(list)
-		for j in xrange(len(parts)):
-			k = tuple(parts[j][0])
-			seenMap[k].append(j)
-		toRemove = []
-		for k,v in seenMap.iteritems():
+		seen = defaultdict(list)
+		for part in parts:
+			k = tuple(part[0])
+			seen[k].append(part)
+		for k,v in seen.iteritems():
 			if len(v) > 1:
-				for i in v:
-					toRemove.append(parts[i])
-		for p in toRemove:
-			parts.remove(p)
+				for p in v:
+					parts.remove(p)
 		print "Part 2:", len(parts)
