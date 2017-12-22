@@ -36,7 +36,7 @@ class Rule(object):
 		#And here we prove the methods never get called
 		print "***************************************************************************************"
 		return self.inp.strip() == other.inp.strip() and self.outp.strip() == other.outp.strip()
-	
+
 	def __eq__(self, other):
 		print "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 		return self.inp.strip() == other.inp.strip() and self.outp.strip() == other.outp.strip()
@@ -163,7 +163,7 @@ for _ in xrange(5):
 		for i in xrange(0, new_size, 4):
 			for j in xrange(0, new_size, 4):
 				set_submatrix(new_art, submatrices.pop(0), i, j, 4)
-				
+		#thrashing attempt, transpose the matrix. Doesn't help"
 		for row in new_art :
 			new_art = [[new_art[j][i] for j in range(len(new_art))] for i in range(len(new_art[0]))]
 		art = new_art[::]
@@ -183,6 +183,7 @@ for _ in xrange(5):
 				set_submatrix(new_art, submatrices.pop(0), i, j, 3)
 # 		print "Matrix"
 # 		print_mtx(new_art)
+		#thrashing attempt, transpose the matrix. Doesn't help"
 		for row in new_art :
 			new_art = [[new_art[j][i] for j in range(len(new_art))] for i in range(len(new_art[0]))]
 		art = new_art[::]
