@@ -5,6 +5,7 @@ Created on Dec 21, 2017
 '''
 from _collections import defaultdict
 from collections import Counter
+import time
 
 
 rules = []
@@ -108,17 +109,17 @@ def transform(mtx):
 # 			return create_mtx(rule.outp)
 #Matching rules have identical inp and outp values, but for some reason python still sees them as dups
 			matches.add(rule)
-	if len(matches) > 1:
-		print len(matches), "rules match"
-		print "MATCHES"
-		for r in matches:
-			print_rule(r, True)
-		print "MATCHES"
+# 	if len(matches) > 1:
+# 		print len(matches), "rules match"
+# 		print "MATCHES"
+# 		for r in matches:
+# 			print_rule(r, True)
+# 		print "MATCHES"
 	return create_mtx(matches.pop().outp)
 
 	print "No rule for", p
 
-def set_submatrix(mtx, submtx, y, x, size):
+def set_submatrix(mtx, submtx, x, y, size):
 	a = 0
 	for x in xrange(x, x+size):
 		l = list(mtx[x])
@@ -128,9 +129,9 @@ def set_submatrix(mtx, submtx, y, x, size):
 			b+= 1
 		mtx[x] = "".join(l)
 		a+= 1
-def print_mtx(mtx):
-	for line in mtx:
-		print line
+# def print_mtx(mtx):
+# 	for line in mtx:
+# 		print line
 
 with open("data/Day21") as f:
 	for line in f:
@@ -150,24 +151,14 @@ with open("data/Day21") as f:
 	for rule in rules:
 		print rule.inp, " => ", rule.outp
 
-for _ in xrange(5):
-	if len(art) % 3 == 0:
-		new_size = len(art) + len(art) / 3
-		new_art = ["*" * new_size for _ in xrange(new_size)]
-		submatrices = []
-		for i in xrange(0, len(art), 3):
-			for j in xrange(0, len(art), 3):
-				mtx = slice_matrix(art, i, j, 3)
-				mtx = transform(mtx)
-				submatrices.append(mtx[::])
-		for i in xrange(0, new_size, 4):
-			for j in xrange(0, new_size, 4):
-				set_submatrix(new_art, submatrices.pop(0), i, j, 4)
-		#thrashing attempt, transpose the matrix. Doesn't help"
-		for row in new_art :
-			new_art = [[new_art[j][i] for j in range(len(new_art))] for i in range(len(new_art[0]))]
-		art = new_art[::]
-	elif len(art) % 2 == 0:
+iter_cnt = 0
+start = time.time()
+reps = 5 # part 1
+reps = 18 #part 2
+for _ in xrange(reps):
+	iter_cnt+= 1
+	print "Iteration", iter_cnt
+	if len(art) % 2 == 0:
 		new_size = len(art) + len(art) / 2
 		new_art = ["*" * new_size for _ in xrange(new_size)]
 		submatrices = []
@@ -175,26 +166,29 @@ for _ in xrange(5):
 			for j in xrange(0, len(art), 2):
 				mtx = slice_matrix(art, i, j, 2)
 				mtx = transform(mtx)
-# 				print "Sub Matrix"
-# 				print_mtx(mtx)
-				submatrices.append(mtx[::])
+				submatrices.append(mtx)
 		for i in xrange(0, new_size, 3):
 			for j in xrange(0, new_size, 3):
 				set_submatrix(new_art, submatrices.pop(0), i, j, 3)
-# 		print "Matrix"
-# 		print_mtx(new_art)
-		#thrashing attempt, transpose the matrix. Doesn't help"
-		for row in new_art :
-			new_art = [[new_art[j][i] for j in range(len(new_art))] for i in range(len(new_art[0]))]
-		art = new_art[::]
-
+		art = new_art
+	elif len(art) % 3 == 0:
+		new_size = len(art) + len(art) / 3
+		new_art = ["*" * new_size for _ in xrange(new_size)]
+		submatrices = []
+		for i in xrange(0, len(art), 3):
+			for j in xrange(0, len(art), 3):
+				mtx = slice_matrix(art, i, j, 3)
+				mtx = transform(mtx)
+				submatrices.append(mtx)
+		for i in xrange(0, new_size, 4):
+			for j in xrange(0, new_size, 4):
+				set_submatrix(new_art, submatrices.pop(0), i, j, 4)
+		art = new_art
+print "Time", (time.time() - start)
 count = 0
 for line in art:
-	print line
+# 	print line
 	counter = Counter(line)
 	count+= counter['#']
 
-print "Part1:", count
-
-#135 too low
-#363 too high
+print "Part1:" if reps == 5 else "Part2:", count
