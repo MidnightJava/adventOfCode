@@ -26,11 +26,19 @@ def print_rule(rule, outp=False):
 class Rule(object):
 
 	def __init__(self, inp, outp):
-		self.inp = inp
-		self.outp = outp
+		self.inp = str(inp)
+		self.outp = str(outp)
 		self.size = len(inp)
-		
+
+	#These functions are apparently meaningless to the interpreter. Even if we return true,
+	#there are multiple duplicates in rules
 	def __cmp__(self, other):
+		#And here we prove the methods never get called
+		print "***************************************************************************************"
+		return self.inp.strip() == other.inp.strip() and self.outp.strip() == other.outp.strip()
+	
+	def __eq__(self, other):
+		print "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 		return self.inp.strip() == other.inp.strip() and self.outp.strip() == other.outp.strip()
 
 def create_mtx(rule_part):
@@ -84,10 +92,6 @@ def get_trans_rules(rule):
 		_rules.add(flip)
 		rule = rotate_rule(rule)
 		flip = rotate_rule(flip)
-# 	_rules.append(flip_rule('h', rule))
-# 	v_flip_rule = flip_rule('v', rule)
-# 	_rules.append(v_flip_rule)
-# 	_rules.append(flip_rule('h', v_flip_rule))
 	return list(set(_rules))
 
 def slice_matrix(mtx, y, x, size):
@@ -111,19 +115,22 @@ def transform(mtx):
 			print_rule(r, True)
 		print "MATCHES"
 	return create_mtx(matches.pop().outp)
-		
+
 	print "No rule for", p
 
 def set_submatrix(mtx, submtx, y, x, size):
 	a = 0
-	for y in xrange(y, y+size):
-		l = list(mtx[y])
+	for x in xrange(x, x+size):
+		l = list(mtx[x])
 		b = 0
-		for i in xrange(x, x + size):
+		for i in xrange(y, y + size):
 			l[i] = submtx[a][b]
 			b+= 1
-		mtx[y] = "".join(l)
+		mtx[x] = "".join(l)
 		a+= 1
+def print_mtx(mtx):
+	for line in mtx:
+		print line
 
 with open("data/Day21") as f:
 	for line in f:
@@ -139,6 +146,7 @@ with open("data/Day21") as f:
 	for k,v in rulesdict.iteritems():
 		if v == 1:
 			rules.add(k)
+	#And here we see dups. For some reason, the Rule class is not subject to equality comparison
 	for rule in rules:
 		print rule.inp, " => ", rule.outp
 
@@ -151,11 +159,14 @@ for _ in xrange(5):
 			for j in xrange(0, len(art), 3):
 				mtx = slice_matrix(art, i, j, 3)
 				mtx = transform(mtx)
-				submatrices.append(mtx)
+				submatrices.append(mtx[::])
 		for i in xrange(0, new_size, 4):
 			for j in xrange(0, new_size, 4):
 				set_submatrix(new_art, submatrices.pop(0), i, j, 4)
-		art = new_art
+				
+		for row in new_art :
+			new_art = [[new_art[j][i] for j in range(len(new_art))] for i in range(len(new_art[0]))]
+		art = new_art[::]
 	elif len(art) % 2 == 0:
 		new_size = len(art) + len(art) / 2
 		new_art = ["*" * new_size for _ in xrange(new_size)]
@@ -164,18 +175,24 @@ for _ in xrange(5):
 			for j in xrange(0, len(art), 2):
 				mtx = slice_matrix(art, i, j, 2)
 				mtx = transform(mtx)
-				submatrices.append(mtx)
+# 				print "Sub Matrix"
+# 				print_mtx(mtx)
+				submatrices.append(mtx[::])
 		for i in xrange(0, new_size, 3):
 			for j in xrange(0, new_size, 3):
 				set_submatrix(new_art, submatrices.pop(0), i, j, 3)
-		art = new_art
-	
+# 		print "Matrix"
+# 		print_mtx(new_art)
+		for row in new_art :
+			new_art = [[new_art[j][i] for j in range(len(new_art))] for i in range(len(new_art[0]))]
+		art = new_art[::]
+
 count = 0
 for line in art:
 	print line
 	counter = Counter(line)
 	count+= counter['#']
-	
+
 print "Part1:", count
 
 #135 too low
