@@ -3,7 +3,6 @@ Created on Dec 2, 2017
 
 @author: Mark
 '''
-import math
 
 with open("data/Day02") as f:
     diffs = []

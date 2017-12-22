@@ -3,18 +3,12 @@ Created on Dec 21, 2017
 
 @author: maleone
 '''
+from _collections import defaultdict
+from collections import Counter
+
 
 rules = []
 art = ['.#.', '..#', '###']
-# art = []
-# art.append('12345678')
-# art.append('abcdefgh')
-# art.append('ijklmnop')
-# art.append('qrstuvwx')
-# art.append('yz!@#$%^')
-# art.append('&*()_+=]')
-# art.append('];,."`-{')
-# art.append('}\|<>/,.')
 
 def print_rule(rule, outp=False):
 	print "********* FROM ********"
@@ -35,6 +29,9 @@ class Rule(object):
 		self.inp = inp
 		self.outp = outp
 		self.size = len(inp)
+		
+	def __cmp__(self, other):
+		return self.inp.strip() == other.inp.strip() and self.outp.strip() == other.outp.strip()
 
 def create_mtx(rule_part):
 	lines = rule_part.split('/')
@@ -59,15 +56,9 @@ def rotate_mtx(mtx):
 	return new_mtx
 
 def rotate_rule(rule):
-	rules = set()
 	mtx = create_mtx(rule.inp)
-	for _ in xrange(4):
-		mtx = rotate_mtx(mtx)
-		rules.add(Rule(create_rule_part(mtx), rule.outp))
-		rules.add(Rule(create_rule_part(flip_mtx('h', mtx)), rule.outp))
-		rules.add(Rule(create_rule_part(flip_mtx('v', mtx)), rule.outp))
-	return list(rules)
-
+	mtx = rotate_mtx(mtx)
+	return Rule(create_rule_part(mtx), rule.outp)
 
 def flip_mtx(direc, mtx):
 	new_mtx = []
@@ -86,22 +77,18 @@ def flip_rule(axis, rule):
 
 
 def get_trans_rules(rule):
-	rules = []
-# 	print "RULE"
-# 	print_rule(rule)
-# 		print "ROTATE " , i
-# 		new_rule = rotate_rule(i, rule)
-# 		print_rule(new_rule)
-	rules.extend(rotate_rule(rule))
-# 	print "FLIP HORIZONTAL"
-	new_rule = flip_rule('h', rule)
-# 	print_rule(new_rule)
-	rules.append(flip_rule('h', rule))
-# 	print "FLIP VERTICAL"
-	new_rule = flip_rule('v', rule)
-# 	print_rule(new_rule)
-	rules.append(flip_rule('v', rule))
-	return rules
+	_rules = set()
+	flip = flip_rule('v', rule)
+	for _ in xrange(4):
+		_rules.add(rule)
+		_rules.add(flip)
+		rule = rotate_rule(rule)
+		flip = rotate_rule(flip)
+# 	_rules.append(flip_rule('h', rule))
+# 	v_flip_rule = flip_rule('v', rule)
+# 	_rules.append(v_flip_rule)
+# 	_rules.append(flip_rule('h', v_flip_rule))
+	return list(set(_rules))
 
 def slice_matrix(mtx, y, x, size):
 	mtx = mtx[y:y+size][::]
@@ -111,70 +98,85 @@ def slice_matrix(mtx, y, x, size):
 
 def transform(mtx):
 	p = create_rule_part(mtx)
+	matches = set()
 	for rule in rules:
 		if p == rule.inp:
-			return create_mtx(rule.outp)
+# 			return create_mtx(rule.outp)
+#Matching rules have identical inp and outp values, but for some reason python still sees them as dups
+			matches.add(rule)
+	if len(matches) > 1:
+		print len(matches), "rules match"
+		print "MATCHES"
+		for r in matches:
+			print_rule(r, True)
+		print "MATCHES"
+	return create_mtx(matches.pop().outp)
+		
 	print "No rule for", p
 
 def set_submatrix(mtx, submtx, y, x, size):
+	a = 0
 	for y in xrange(y, y+size):
 		l = list(mtx[y])
+		b = 0
 		for i in xrange(x, x + size):
-			l[i] = submtx[y][i]
+			l[i] = submtx[a][b]
+			b+= 1
 		mtx[y] = "".join(l)
+		a+= 1
 
 with open("data/Day21") as f:
 	for line in f:
 		inp, outp = line.strip().split(' => ')
 		rule = Rule(inp, outp)
-		rules.append(rule)
 		rules.extend(get_trans_rules(rule))
+	#Fruitless attempts to have no dups in my rules set
 	rules = list(set(rules))
-
-# for rule in rules:
-# 	print rule.inp
-
-
-# print "rule"
-# rule = rules[0]
-# print_rule(rule)
-# print
-# print "rotate 1"
-# print_rule(rotate_rule(1, rule))
-# print
-# print "rotate 2"
-# print_rule(rotate_rule(2, rule))
-# print
-# print "rotate 3"
-# print_rule(rotate_rule(3, rule))
-# print
-# print "flip horizontal"
-# print_rule(flip_rule('h', rule))
-# print
-# print "flip vertical"
-# print_rule(flip_rule('v', rule))
-# print
+	rulesdict = defaultdict(int)
+	for rule in rules:
+		rulesdict[rule]+= 1
+	rules = set()
+	for k,v in rulesdict.iteritems():
+		if v == 1:
+			rules.add(k)
+	for rule in rules:
+		print rule.inp, " => ", rule.outp
 
 for _ in xrange(5):
-	if len(art) % 2 == 0:
-		new_size = len(art) + len(art) / 2
-		new_art = ["*" * new_size for _ in xrange(new_size)]
-
-		for i in xrange(0, new_size, 3):
-			for j in xrange(0, new_size, 3):
-				mtx = slice_matrix(art, i, j, 2)
-				mtx = transform(mtx)
-				set_submatrix(new_art, mtx, i+1, j+1, 3)
-		art = new_art
-	elif len(art) % 3 == 0:
+	if len(art) % 3 == 0:
 		new_size = len(art) + len(art) / 3
 		new_art = ["*" * new_size for _ in xrange(new_size)]
-		for i in xrange(0, new_size, 2):
-			for j in xrange(0, new_size, 2):
+		submatrices = []
+		for i in xrange(0, len(art), 3):
+			for j in xrange(0, len(art), 3):
 				mtx = slice_matrix(art, i, j, 3)
 				mtx = transform(mtx)
-				set_submatrix(new_art, mtx, i, j, 4)
+				submatrices.append(mtx)
+		for i in xrange(0, new_size, 4):
+			for j in xrange(0, new_size, 4):
+				set_submatrix(new_art, submatrices.pop(0), i, j, 4)
 		art = new_art
-
+	elif len(art) % 2 == 0:
+		new_size = len(art) + len(art) / 2
+		new_art = ["*" * new_size for _ in xrange(new_size)]
+		submatrices = []
+		for i in xrange(0, len(art), 2):
+			for j in xrange(0, len(art), 2):
+				mtx = slice_matrix(art, i, j, 2)
+				mtx = transform(mtx)
+				submatrices.append(mtx)
+		for i in xrange(0, new_size, 3):
+			for j in xrange(0, new_size, 3):
+				set_submatrix(new_art, submatrices.pop(0), i, j, 3)
+		art = new_art
+	
+count = 0
 for line in art:
 	print line
+	counter = Counter(line)
+	count+= counter['#']
+	
+print "Part1:", count
+
+#135 too low
+#363 too high
