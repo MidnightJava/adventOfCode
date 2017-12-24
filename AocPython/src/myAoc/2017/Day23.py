@@ -7,6 +7,7 @@ code = []
 d = {k:0 for k in 'abcdefgh'}
 part2 = True
 p2 = 'opt' if part2 else ''
+# p2 = ''
 with open("data/Day23"+ p2) as f:
 	for line in f:
 		if '#' not in line:
@@ -17,13 +18,21 @@ if part2:
 
 idx = 0
 count = 0
+fcount  =0
 while idx < len(code):
 	instr = code[idx]
 	if 'set' in instr:
 		parts = instr.split()
 		reg, val = parts[1], parts[2]
 		try:
-			d[reg] = int(val)
+			if part2 and reg == 'f':
+				if fcount % 11 == 0:
+					d[reg] = 1
+				else:
+					d[reg] = 0
+				fcount += 1
+			else:
+				d[reg] = int(val)
 		except ValueError:
 			d[reg] = d[val]
 	elif 'sub' in instr:
@@ -59,7 +68,7 @@ while idx < len(code):
 	idx+= 1
 
 if part2:
-	print "Part 2:", d['h']
+	print "Part 2:", d['h'] - 1
 else:
 	print "Part 1:", count
 #Part 2: 1000 too high

@@ -1,5 +1,4 @@
 set b 81
-set h -92
 set c b
 jnz a 2
 jnz 1 5
