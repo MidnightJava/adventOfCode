@@ -4,14 +4,12 @@ Created on Dec 5, 2018
 @author: maleone
 '''
 import re
-
-def boom(a, b):
-	return a != b and a.upper() == b.upper()
+import time
 
 def solve(s):
 	i = 0
 	while (i < len(s) - 1):
-		if boom(s[i], s[i+1]):
+		if s[i] == s[i+1].swapcase():
 			s = s[:i] + s[i+2:]
 			i-=1
 		else:
@@ -20,6 +18,7 @@ def solve(s):
 
 
 with open('./data/Day05') as f:
+	start_time = time.time()
 	s = f.read()
 	print "Part 1:", len(solve(s))
 	li = []
@@ -27,6 +26,7 @@ with open('./data/Day05') as f:
 		length = len(solve(re.sub(r"["+ c + c.upper() + ']', '', s)))
 		li.append(length)
 	print "Part 2:", min(li)
+	print("--- %s seconds ---" % (time.time() - start_time))
 
 # Part 1: 10584
 # Part 2: 6968
