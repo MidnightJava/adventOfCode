@@ -9,7 +9,7 @@ import re
 def print_grid():
 	for y in xrange(top, bottom +1):
 		for x in xrange(left, right +1):
-			print(' # ' if is_point_at((x,y)) else '   ', end='')
+			print(' * ' if is_point_at((x,y)) else '   ', end='')
 		print('\n')
 	print('\n')
 	print('\n')
