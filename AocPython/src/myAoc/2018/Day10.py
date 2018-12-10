@@ -9,10 +9,8 @@ import re
 def print_grid():
 	for y in xrange(top, bottom +1):
 		for x in xrange(left, right +1):
-			print(' * ' if is_point_at((x,y)) else '   ', end='')
-		print('\n')
-	print('\n')
-	print('\n')
+			print('*' if is_point_at((x,y)) else ' ', end='')
+		print('')
 
 def is_point_at(loc):
 	global points
@@ -62,11 +60,13 @@ with open('./data/Day10') as f:
 	while not done:
 		x_range = right - left
 		y_range = bottom - top
+		prev_points = points
 		move()
-		if x_range < 100 or y_range < 100:
-			print('After %d moves' % i)
+		if right - left > x_range or bottom - top > y_range:
+			points = prev_points
+			print('After %d moves' % (i-1))
 			print_grid()
-			if raw_input('q to quit:') == 'q': done = True
+			done = True
 		i+= 1
 
 
