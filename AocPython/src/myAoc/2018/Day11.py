@@ -34,7 +34,7 @@ def solve(n):
 	winner = None
 	for k,v in scores.iteritems():
 		if v > max_score:
-			max_score = v 
+			max_score = v
 			winner = k
 	return winner, max_score
 
@@ -44,13 +44,17 @@ print "Part 1:", solve(3)
 
 max_score = 0
 winner = None
+no_incr_count = 0
 for n in xrange(1, 50):
-	print "size", n
+	if no_incr_count == 3:
+		break
+	print "trying size", n
 	w, sc = solve(n)
 	if sc > max_score:
+		no_incr_count = 0
 		max_score = sc
 		winner = w
-		print "\tscore", sc, "winner", w
-		
+	else:
+		no_incr_count+= 1
+
 print "Part 2:", winner
-	
