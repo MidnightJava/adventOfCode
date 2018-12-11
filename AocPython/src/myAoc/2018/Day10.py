@@ -21,10 +21,7 @@ def is_point_at(loc):
 
 def move():
 	global left, right, top, bottom, points
-	left = 100000
-	right = -100000
-	top = 100000
-	bottom = -100000
+	left, right, top, bottom = 100000, -100000, 100000, -100000
 	newPoints = []
 	for (p,v) in points:
 		np = (p[0] + v[0], p[1] + v[1])
@@ -39,10 +36,7 @@ with open('./data/Day10') as f:
 	pattern = 'position\=\<([-+]?\d+)\,([-+]?\d+)\>velocity\=\<([-+]?\d+)\,([-+]?\d+)\>'
 	global points
 	points = []
-	left = 100000
-	right = -100000
-	top = 100000
-	bottom = -100000
+	left, right, top, bottom = 100000, -100000, 100000, -100000
 	for l in f:
 		m = re.search(pattern, l.strip().replace(' ', ''))
 		if m:
@@ -53,7 +47,6 @@ with open('./data/Day10') as f:
 			if p[0] < left: left = p[0]
 			if p[1] > bottom: bottom = p[1]
 			if p[1] < top: top = p[1]
-
 
 	done = False
 	i = 1
@@ -68,8 +61,6 @@ with open('./data/Day10') as f:
 			print_grid()
 			done = True
 		i+= 1
-
-
 
 #Part 1: LRCXFXRP
 #Part 2: 10630
