@@ -4,6 +4,8 @@ Created on Dec 10, 2018
 @author: Mark
 '''
 
+import time
+
 serial_no = 2187
 
 grid = {}
@@ -22,13 +24,15 @@ def make_grid():
 			grid[(x,y)] = get_pwr(x, y)
 
 def solve(n):
+	global scores
 	for y in xrange(1, 301-n):
 		for x in xrange(1, 301-n):
 			pwr = 0
-			for y2 in xrange(n):
-				for x2 in xrange(n):
-					pwr+= grid[(x+x2, y+y2)]
-			scores[(x,y), n] = pwr
+			if not ((x,y), n) in scores:
+				for y2 in xrange(n):
+					for x2 in xrange(n):
+						pwr+= grid[(x+x2, y+y2)]
+				scores[((x,y), n)] = pwr
 
 	max_score = 0
 	winner = None
@@ -40,6 +44,7 @@ def solve(n):
 
 make_grid()
 
+start_time = time.time()
 print "Part 1:", solve(3)
 
 max_score = 0
@@ -58,3 +63,4 @@ for n in xrange(1, 50):
 		no_incr_count+= 1
 
 print "Part 2:", winner
+print "time:", time.time() - start_time
