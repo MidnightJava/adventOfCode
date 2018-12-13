@@ -8,56 +8,29 @@ from __future__ import print_function
 rules = {}
 
 def transform(inp):
-	pad = 0
 	res = ''
 	i = 0
-	first = inp.index('#')
 	last = inp.rindex('#')
-	while i <= last +1:
-		if i == 0:
-			p = '..' + inp[i:i+3]
-		elif i == 1:
-			p = '.' + inp[i-1:i+3]
-		elif i == len(inp) - 2:
-			p = inp[i-2:] + '.'
-		elif i == len(inp) - 1:
-			p = inp[i-2:] + '..'
-		elif i == last:
+	while i <= last + 1:
+		if i == last or i == last + 1:
 			p = inp[i-2:i+1] + '..'
-		elif i == last + 1:
-			p = inp[i-3:i] + '.'
 		else:
 			p = inp[i-2:i+3]
-		if p in rules:
-			if rules[p].strip() == '#' and i <= first:
-				pad+= 1
-			res+= rules[p].strip()
-		else:
-			res+= '.'
+		res+= rules[p] if p in rules else '.'
 		i+= 1
-	return res
+	return res + '.'
 
 with open('./data/Day12') as f:
 	for l in f:
-		r = l.split(' => ')
-		rules[r[0].strip()] = r[1].strip()
+		r = l.strip().split(' => ')
+		rules[r[0]] = r[1]
 
-# 	for r, res in rules.iteritems():
-# 		print(r, res)
-
-state = ('.'*40) + "#..#####.#.#.##....####..##.#.#.##.##.#####..####.#.##.....#..#.#.#...###..#..###.##.#..##.#.#.....#" + ('.'*40)
-# state = ('.'*40) + '#..#.#..##......###...###' + ('.' * 40)
+pad = 40
+state = '.' * pad + "#..#####.#.#.##....####..##.#.#.##.##.#####..####.#.##.....#..#.#.#...###..#..###.##.#..##.#.#.....#" + '.' * pad
 for i in xrange(20):
-	print(i, state)
 	state = transform(state)
 
-off = 40
-tot = 0
-i = 0
-for c in state:
-	if c == '#':
-		tot+= (i - off)
-	i+= 1
-print('Part 1:', state, tot)
+print('Part 1:', sum([i - pad for i in xrange(len(state)) if state[i] == '#']))
 
-# 2,6,9,12,16,19# Part 1: 106 too low 1467 too high not 1411
+# Part 1: 1447
+# Part 2: 480 + 50e9*2100/100 = 1050000000480
