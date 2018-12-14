@@ -15,18 +15,21 @@ def setGrid(x, y, c):
 
 class Cell:
 	def __init__(self, c, loc):
-		global turns
 		global cars
 		if c in ['<','>','^','v']:
 			self.car = c
 			self.track = None
-			self.id = loc
-			turns[self.id] = 0
+			self.turn = 0
 			cars+= 1
 		else:
 			self.car = None
 			self.track = c
 		self.loc = loc
+		self.turn_loookup = [
+			{'<': 'v', 'v': '>', '>': '^','^': '<'}, # left
+			{'<': '<', '>': '>', '^': '^', 'v': 'v'}, # straight
+			{'<': '^', 'v': '<', '>': 'v', '^': '>'} # right
+		]
 
 	def move(self, moved):
 		global cars
@@ -59,10 +62,9 @@ class Cell:
 				cars-= 2
 				if cars == 1:
 					return False
-
-
-		nextCell.placeCar(self.car, self.id)
-		self.car = None
+		if self.car:		
+			nextCell.placeCar(self.car, self.turn)
+			self.car = None
 		moved.add(newLoc)
 		return True
 
@@ -75,76 +77,37 @@ class Cell:
 		else:
 			print("Invalid car %s while getting track" % self.car)
 
-	def makeTurn(self, _id):
-		global turns
-		turn = turns[_id]
-		if turn == 0: #left
-			if self.car == '<':
-				self.car = 'v'
-			elif self.car == 'v':
-				self.car = '>'
-			elif self.car == '>':
-				self.car = '^'
-			elif self.car == '^':
-				self.car = '<'
-		elif turn == 1: #straight
-			pass
-		elif turn == 2: # right
-			if self.car == '<':
-				self.car = '^'
-			elif self.car == 'v':
-				self.car = '<'
-			elif self.car == '>':
-				self.car = 'v'
-			elif self.car == '^':
-				self.car = '>'
-		else:
-			print('invalid turn %d' % turn)
+	def makeTurn(self):
+		self.car = self.turn_loookup[self.turn][self.car]
+		self.turn = (self.turn + 1) % 3
 
-		turns[_id] = (turn + 1) % 3
-
-# 		return new_loc
-
-
-	def placeCar(self, car, id):
-		self.id = id
+	def placeCar(self, car, turn):
+		self.turn = turn
 		if self.track == '|' or self.track == '-':
 			self.car = car
 		elif self.track == '+':
 			self.car = car
-			self.makeTurn(id)
+			self.makeTurn()
 		elif self.track == '\\':
-			if car == '^':
-				self.car = '<'
-			elif car == 'v':
-				self.car = '>'
-			elif car == '<':
-				self.car = '^'
-			elif car == '>':
-				self.car = 'v'
-			else:
-				print('unexpected car value %s for curve %s' % (self.car, self.track))
+			if car == '^': self.car = '<'
+			elif car == 'v': self.car = '>'
+			elif car == '<': self.car = '^'
+			elif car == '>': self.car = 'v'
+			else: print('unexpected car value %s for curve %s' % (self.car, self.track))
 		elif self.track == '/':
-			if car == '^':
-				self.car = '>'
-			elif car == 'v':
-				self.car = '<'
-			elif car == '<':
-				self.car = 'v'
-			elif car == '>':
-				self.car = '^'
-			else:
-				print('unexpected car value %s for curve %s' % (self.car, self.track))
+			if car == '^': self.car = '>'
+			elif car == 'v': self.car = '<'
+			elif car == '<': self.car = 'v'
+			elif car == '>': self.car = '^'
+			else: print('unexpected car value %s for curve %s' % (self.car, self.track))
 		else:
 			print('unhandled track in placeCar. Track: %s  car: %s' % (self.track, car))
 # 		print('placed car %s at %s' % (self.car, self.loc))
 
 with open('./data/Day13') as f:
 	global _grid
-	global turns
 	global cars
 	cars = 0
-	turns = {}
 	_grid = []
 	y = 0
 	for line in f:
@@ -162,15 +125,13 @@ def findLastCar():
 				return x.loc
 
 def tick():
-	global turn
 	moved = set()
 	lastCar = False
 	for y in _grid:
 		for x in y:
 			if x.car is not None:
 				if not (x.loc) in moved:
-					res = x.move(moved)
-					if not res:
+					if not x.move(moved):
 						if part1:
 							return False
 						else:
