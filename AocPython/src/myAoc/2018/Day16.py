@@ -8,85 +8,69 @@ from collections import defaultdict
 
 class Ops:
 	
-	def addr(self, before, after, a, b, c):
-		res = list(before)
-		res[c] = before[a] + before[b]
-		return res
+	def addr(self, before, a, b, c):
+		before[c] = before[a] + before[b]
+		return before
 		
-	def addi(self, before, after, a, b, c):
-		res = list(before)
-		res[c] = before[a] + b
-		return res
+	def addi(self, before, a, b, c):
+		before[c] = before[a] + b
+		return before
 	
-	def mulr(self, before, after, a, b, c):
-		res = list(before)
-		res[c] = before[a] * before[b]
-		return res
+	def mulr(self, before, a, b, c):
+		before[c] = before[a] * before[b]
+		return before
 		
-	def muli(self, before, after, a, b, c):
-		res = list(before)
-		res[c] = before[a] * b
-		return res
+	def muli(self, before, a, b, c):
+		before[c] = before[a] * b
+		return before
 	
-	def banr(self, before, after, a, b, c):
-		res = list(before)
-		res[c] = before[a] & before[b]
-		return res
+	def banr(self, before, a, b, c):
+		before[c] = before[a] & before[b]
+		return before
 		
-	def bani(self, before, after, a, b, c):
-		res = list(before)
-		res[c] = before[a] & b
-		return res
+	def bani(self, before, a, b, c):
+		before[c] = before[a] & b
+		return before
 		
-	def borr(self, before, after, a, b, c):
-		res = list(before)
-		res[c] = before[a] | before[b]
-		return res
+	def borr(self, before, a, b, c):
+		before[c] = before[a] | before[b]
+		return before
 		
-	def bori(self, before, after, a, b, c):
-		res = list(before)
-		res[c] = before[a] | b
-		return res
+	def bori(self, before, a, b, c):
+		before[c] = before[a] | b
+		return before
 		
-	def setr(self, before, after, a, b, c):
-		res = list(before)
-		res[c] = before[a]
-		return res
+	def setr(self, before, a, b, c):
+		before[c] = before[a]
+		return before
 		
-	def seti(self, before, after, a, b, c):
-		res = list(before)
-		res[c] = a
-		return res
+	def seti(self, before, a, b, c):
+		before[c] = a
+		return before
 		
-	def gtir(self, before, after, a, b, c):
-		res = list(before)
-		res[c] = 1 if a > before[b] else 0
-		return res
+	def gtir(self, before, a, b, c):
+		before[c] = 1 if a > before[b] else 0
+		return before
 		
-	def gtri(self, before, after, a, b, c):
-		res = list(before)
-		res[c] = 1 if before[a] > b else 0
-		return res
+	def gtri(self, before, a, b, c):
+		before[c] = 1 if before[a] > b else 0
+		return before
 		
-	def gtrr(self, before, after, a, b, c):
-		res = list(before)
-		res[c] = 1 if before[a] > before[b] else 0
-		return res
+	def gtrr(self, before, a, b, c):
+		before[c] = 1 if before[a] > before[b] else 0
+		return before
 		
-	def eqir(self, before, after, a, b, c):
-		res = list(before)
-		res[c] = 1 if a == before[b] else 0
-		return res
+	def eqir(self, before, a, b, c):
+		before[c] = 1 if a == before[b] else 0
+		return before
 		
-	def eqri(self, before, after, a, b, c):
-		res = list(before)
-		res[c] = 1 if before[a] == b else 0
-		return res
+	def eqri(self, before, a, b, c):
+		before[c] = 1 if before[a] == b else 0
+		return before
 		
-	def eqrr(self, before, after, a, b, c):
-		res = list(before)
-		res[c] = 1 if before[a] == before[b] else 0
-		return res
+	def eqrr(self, before, a, b, c):
+		before[c] = 1 if before[a] == before[b] else 0
+		return before
 		
 with open('./data/Day16') as f:
 	lines = []
@@ -111,7 +95,7 @@ with open('./data/Day16') as f:
 	
 	total = 0
 	ops = Ops()
-	results = defaultdict(set)
+	all_matches = defaultdict(set)
 	for s in samples:
 		count = 0
 		op = s[0]
@@ -120,25 +104,29 @@ with open('./data/Day16') as f:
 		methods = set()
 		for name, method in Ops.__dict__.iteritems():
 			if callable(method):
-				if method(ops, before, after, op[1], op[2], op[3]) == after:
+				if method(ops, list(before), op[1], op[2], op[3]) == after:
 					count+= 1
 					methods.add(name)
 		if count >= 3: total+= 1
 		for method in methods:
-			results[op[0]].add(method)
+			all_matches[op[0]].add(method)
 
 	print "Part 1:", total
 	
 	done = False
 	op_map = {}
+	# Iteratively find op codes that have only one match to a method.
+	# Assign that method to the op code, remove instances of that
+	# method in all other op code matches, and remove it from the all_matches
+	# map. Iterate until no more single matches are found
 	while not done:
 		found = False
-		for k,v in results.items():
+		for k,v in all_matches.items():
 			if len(v) == 1:
 				found = True
 				m = op_map[k] = v.pop()
-				del results[k]
-				for k2, v2 in results.items():
+				del all_matches[k]
+				for k2, v2 in all_matches.items():
 					if m in v2:
 						v2.remove(m)
 		if not found: done = True
@@ -146,7 +134,7 @@ with open('./data/Day16') as f:
 	inp = [0,0,0,0]
 	for c in code:
 		m = op_map[c[0]]
-		inp = Ops.__dict__[m](ops, inp, inp, c[1], c[2], c[3])
+		inp = Ops.__dict__[m](ops, inp, c[1], c[2], c[3])
 		
 		
 	print "Part 2:", inp[0]
