@@ -8,7 +8,7 @@ from collections import defaultdict
 
 freq = 0
 with open('./data/Day01') as f:
-	freq = reduce(lambda a,b: a + int(b), [x for x in f], 0)
+	freq = sum([int(x) for x in f])
 	print "Part 1:", freq
 	
 	
