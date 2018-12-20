@@ -46,7 +46,7 @@ def flow(x, y):
 	floor = get_next_floor(x, y)
 	if floor is not None:
 		level = floor[0]
-		print "floor %d" % level
+		print "floor %d  x: %d" % (level, x)
 		left = floor[1]
 		right = floor[2]
 		tl = get_wall_top(left, level)
@@ -69,17 +69,17 @@ def flow(x, y):
 				count+= incr
 		if tl < tr:
 			count+= (level - tr + 2)
-			if level < max_y:
+			if level+1 < max_y:
 				flow(right+1, level+1)
 		elif tl > tr:
 			count+= (level - tl + 2)
-			if level < max_y:
+			if level+1 < max_y:
 				flow(left-1, level+1)
 		else:
 			if tr: count+= (level - tr + 2)
 			if tl: count+= (level - tl + 2)
 			count+= (right - left)
-			if level < max_y:
+			if level+1 < max_y:
 				flow(right+1, level+1)
 				flow(left-1, level+1)
 	
@@ -104,7 +104,7 @@ with open('./data/Day17') as f:
 				if int(m.group(4)) < min_x: min_x = int(m.group(4))
 			elif m.group(1) == 'x':
 				walls[int(m.group(2))].append( (int(m.group(4)), int(m.group(5))) )
-				if int(m.group(5)) > max_y: max_y = int(m.group(5))
+# 				if int(m.group(5)) > max_y: max_y = int(m.group(5))
 				if int(m.group(2)) > max_x: max_x = int(m.group(2))
 				if int(m.group(2)) < min_x: min_x = int(m.group(2))
 
