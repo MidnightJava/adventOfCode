@@ -41,16 +41,17 @@ def get_wall_top(x,y):
 	return None
 
 def flow(x, y):
-	print "flow"
 	global count
+	if y >= max_y: return
 	floor = get_next_floor(x, y)
-	if floor:
+	if floor is not None:
 		level = floor[0]
+		print "floor %d" % level
 		left = floor[1]
 		right = floor[2]
 		tl = get_wall_top(left, level)
 		tr = get_wall_top(right, level)
-		for i in xrange(y, level):
+		for i in xrange(y+1, level):
 			r = get_next_wall_right(x, i, right)
 			if r: r = r[0]
 			l = get_next_wall_left(x, i, left)
@@ -58,19 +59,29 @@ def flow(x, y):
 			if not r and not l:
 				count+= 1
 			elif r and not l:
-				count+= (x - left + 3)
+				incr = (r - left + 1)
+				count+= incr
 			elif l and not r:
-				count+= (right - x + 3)
+				incr = (right - l + 1)
+				count+= incr
 			elif l and r:
-				count+= (r - x + 1)
-				count+= (x-1 - l + 1)
+				incr = (r - l - 1)
+				count+= incr
 		if tl < tr:
-			flow(r+1, i)
+			count+= (level - tr + 2)
+			if level < max_y:
+				flow(right+1, level+1)
 		elif tl > tr:
-			flow(l-1, i)
+			count+= (level - tl + 2)
+			if level < max_y:
+				flow(left-1, level+1)
 		else:
-			flow(r+1, i)
-			flow(l-1, i)
+			if tr: count+= (level - tr + 2)
+			if tl: count+= (level - tl + 2)
+			count+= (right - left)
+			if level < max_y:
+				flow(right+1, level+1)
+				flow(left-1, level+1)
 	
 				
 
@@ -82,7 +93,7 @@ max_y = 0
 min_x = 1000000
 max_x = 0
 count = 0
-with open('./data/Day17a') as f:
+with open('./data/Day17') as f:
 	for scan in f:
 		m = re.search(p, scan.strip())
 		if m:
@@ -109,11 +120,12 @@ with open('./data/Day17a') as f:
 # print get_wall_top(504, 13)
 flow(500, 0)
 print "Part 1:", count
+# print get_next_floor(500, 1800)
 #
 # 	for k,v in walls.iteritems():
 # 		print 'at x %d: %s' % (k, v)
 
-# print "max y: %d\tmin x: %d\tmax x: %d" % (max_y, min_x, max_x)
+print "max y: %d\tmin x: %d\tmax x: %d" % (max_y, min_x, max_x)
 # 
 # for x,y in [(494,1), (495,1), (498,1), (505, 1), (506,0), (495, 11), (499,9)]:
 # 	print 'floor at %d,%d: %s' % (x,y ,get_next_floor(x, y))
