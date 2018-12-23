@@ -147,7 +147,7 @@ def flow(x, y):
 		return
 	elif bas == 0:
 		# We did not find a basin below us, so we just flow to the end of the grid
-		while y < max_y:
+		while y <= max_y:
 			grid[(x,y)] = '|'
 			flowing.add((x, y))
 			y+= 1
