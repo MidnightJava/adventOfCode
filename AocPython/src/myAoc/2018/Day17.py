@@ -7,7 +7,6 @@ from __future__ import print_function
 import re
 import sys
 from _collections import defaultdict
-from threading import Thread
 
 sys.setrecursionlimit(20000)
 
@@ -74,8 +73,9 @@ def get_next_basin(x, y):
 	rect = Rect()
 	while (x,y) not in clay:
 		y+= 1
-		if y > max_y: return 0
-	if (x-1,y) not in clay and (x+1,y) not in clay:
+		if y > max_y:
+			return 0
+	if (x-1,y) not in clay:
 		#We hit the vertical side of a basin
 		return None
 	# We reached the bottom of a basin or the top of a closed box
@@ -111,9 +111,11 @@ def get_next_basin(x, y):
 
 max_y = 0
 min_x = 1000000
+min_y = 1000000
 max_x = 0
 
-def flow(x, y):
+def flow(x, y, rnum):
+	if rnum >= 64: return
 	global count
 	global total
 	
@@ -123,7 +125,7 @@ def flow(x, y):
 		print_grid()
 		for i in xrange(5): print()
 		delta = len(flowing) + len(rest) - total
-		print('Part1: flowing: %d,  rest: %d,   Total: %d,    delta: %d' % (len(flowing), len(rest), len(flowing) + len(rest), delta))
+		print('Interim result: flowing: %d,  rest: %d,   Total: %d,    delta: %d' % (len(flowing), len(rest), len(flowing) + len(rest), delta))
 		total = len(flowing) + len(rest)
 		for i in xrange(5): print()
 	count+= 1
@@ -137,25 +139,28 @@ def flow(x, y):
 #		So we move down to it and then flow down on either side of it
 		while (x,y) not in clay:
 			grid[(x,y)] = '|'
-			flowing.add((x, y))
+			if y >= min_y:
+				flowing.add((x, y))
 			y+= 1
 			if y >= max_y: return
 		y-= 1
 		if y < max_y:
-			flow(x+1, y)
-			flow(x-1, y)
+			flow(x+1, y, rnum+1)
+			flow(x-1, y, rnum+1)
 		return
 	elif bas == 0:
 		# We did not find a basin below us, so we just flow to the end of the grid
 		while y <= max_y:
 			grid[(x,y)] = '|'
-			flowing.add((x, y))
+			if y >= min_y:
+				flowing.add((x, y))
 			y+= 1
 		return
 	floor = bas.bl[1]
 
 	while (x, y+1) not in clay:
-		flowing.add((x, y))
+		if y >= min_y:
+			flowing.add((x, y))
 		grid[(x,y)] = '|'
 		y+= 1
 		if y == max_y: return
@@ -182,16 +187,25 @@ def flow(x, y):
 					if innerBox and innerBox.box:
 						if not in_box(innerBox, x, y):
 							rest.add((x, y))
-							if (x,y) in flowing: flowing.remove((x,y))
+							try:
+								if (x,y) in flowing: flowing.remove((x,y))
+							except:
+								pass
 							grid[(x,y)] = '~'
 					elif innerBox:
 						if not in_box_border(innerBox, x, y):
 							rest.add((x, y))
-							if (x,y) in flowing: flowing.remove((x,y))
+							try:
+								if (x,y) in flowing: flowing.remove((x,y))
+							except:
+								pass
 							grid[(x,y)] = '~'
 					else:
 						rest.add((x, y))
-						if (x,y) in flowing: flowing.remove((x,y))
+						try:
+							if (x,y) in flowing: flowing.remove((x,y))
+						except:
+							pass
 						grid[(x,y)] = '~'
 				y-= 1
 			if sym:
@@ -213,8 +227,8 @@ def flow(x, y):
 # 				t1.start()
 # 				t2 = Thread(target=flow, args=(bas.br[0]+1, y))
 # 				t2.start()
-				flow(bas.bl[0]-1,y)
-				flow(bas.br[0]+1,y)
+				flow(bas.bl[0]-1,y, rnum+1)
+				flow(bas.br[0]+1,y, rnum+1)
 			else:
 				if bas.tl[1] < bas.tr[1]:
 					#flows to right
@@ -227,7 +241,7 @@ def flow(x, y):
 							grid[(bas.tr[0]+1,y)] = '|'
 							y+= 1
 					if y < max_y:
-						flow(bas.br[0]+1,y)
+						flow(bas.br[0]+1,y, rnum+1)
 				else:
 					#flows to left
 					for x in xrange(bas.tl[0]-1, bas.tr[0]):
@@ -239,7 +253,7 @@ def flow(x, y):
 							grid[(bas.bl[0]-1, y)] = '|'
 							y+= 1
 					if y < max_y:
-						flow(bas.bl[0]-1,y)
+						flow(bas.bl[0]-1,y, rnum+1)
 		#has inner box that protrudes above basin
 		else:
 			if innerBox.tr[1] < min(bas.tr[1], bas.tl[1]):
@@ -265,7 +279,7 @@ def flow(x, y):
 							grid[(bas.tr[0]+1,y)] = '|'
 							y+= 1
 					if y < max_y:
-						flow(bas.br[0]+1,y)
+						flow(bas.br[0]+1,y, rnum+1)
 				elif x < innerBox.bl[0]:
 					#flows to left
 					depth = bas.bl[1] - bas.tl[1]
@@ -288,10 +302,10 @@ def flow(x, y):
 							grid[(bas.tl[0]-1,y)] = '|'
 							y+= 1
 					if y < max_y:
-						flow(bas.bl[0]-1,y)
+						flow(bas.bl[0]-1,y, rnum+1)
 	else:
 		#Just skip over the box and find the next floor below it
-		flow(x, y+(bas.tl[1] - bas.bl[1]) + 2)
+		flow(x, y+(bas.tl[1] - bas.bl[1]) + 2, rnum+1)
 
 p = r'(\w)=(\d+), (\w)=(\d+)\.\.(\d+)'
 with open('./data/Day17') as f:
@@ -311,6 +325,7 @@ with open('./data/Day17') as f:
 					grid[(i, int(m.group(2)))] = '#'
 					clay.add((i, int(m.group(2))))
 				if int(m.group(2)) > max_y: max_y = int(m.group(2))
+				if int(m.group(2)) < min_y: min_y = int(m.group(2))
 				if int(m.group(5)) > max_x: max_x = int(m.group(5))
 				if int(m.group(4)) < min_x: min_x = int(m.group(4))
 			elif m.group(1) == 'x':
@@ -320,11 +335,31 @@ with open('./data/Day17') as f:
 				if int(m.group(2)) < min_x: min_x = int(m.group(2))
 				if int(m.group(2)) > max_x: max_x = int(m.group(2))
 				if int(m.group(5)) > max_y: max_y = int(m.group(5))
+				if int(m.group(4)) < min_y: min_y = int(m.group(4))
 global count
 count = 0
 total = 0
-flow(500, 1)
+# bas = get_next_basin(525, 63)
+# print_basin(bas)
+flow(500, 1, 1)
 print_grid()
+print('Part1:', len(flowing), len(rest), len(flowing) + len(rest))
+tot = 0
+for y in xrange(min_y, max_y + 1):
+		for x in xrange(min_x-2, max_x+ 2):
+			if (x,y) in rest:
+				tot+= 1
+			elif (x,y) in grid and (grid[(x,y)] == '~' or grid[(x,y)] == '|'):
+				tot+= 1
+print("Total", tot)
+
+tot2 = 0
+for y in xrange(min_y, max_y + 1):
+		for x in xrange(min_x-2, max_x+ 2):
+			if (x,y) in grid and (grid[(x,y)] == '~' or grid[(x,y)] == '|'):
+				tot2+= 1
+print("Total2", tot2)
+
 #Some tests
 # bas = get_next_basin(502, 1518)
 # print('basin %s %s %s %s box: %s' % (bas.tl, bas.bl, bas.br, bas.tr, bas.box))
@@ -338,6 +373,7 @@ print_grid()
 # inner = get_inner_box_loc(bas)
 # print_basin(inner)
 
-# print('x from %d to %d, y from 0 to %d' % (min_x, max_x, max_y))
+# print('x from %d to %d, y from %d to %d' % (min_x, max_x, min_y, max_y))
 
-#Part 1: 29455 too low not 36730 37365 39512 39523
+#Part 1: 29455 too low not 36730 37365 39512 39523 39225 31970 38917 38938 39150 39145 39117 29507 39621 39521 39528
+# try: 39543
