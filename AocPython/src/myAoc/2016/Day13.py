@@ -32,20 +32,18 @@ grid[tx][ty] = 2
 def BFS(x, y, seen):
     queue = deque( [(x,y,0)]) 
     while len(queue)>0:  
-        node = queue.popleft() 
-        x = node[0] 
-        y = node[1] 
+        x,y,d = queue.popleft() 
         if grid[x][y] == 2: 
             print 'found at %d,%d' % (x, y)
-            return node[2]
+            return d
         if (grid[x][y] == 1): 
             continue 
         grid[x][y]=3 
         neighbors = [ n for n in [(x-1,y), (x+1,y), (x,y-1), (x,y+1)] if n[0] >= 0 and n[0] < cols and n[1] >=0 and n[1] < rows ]
-        seen[(node[0], node[1])] = node[2]
+        seen[(x,y)] = d
         for nb in neighbors:
-            if not nb in seen or seen[(nb[0], nb[1])] > node[2] :
-                queue.append((nb[0],nb[1],node[2] + 1))
+            if not nb in seen or seen[(nb[0], nb[1])] > d :
+                queue.append((nb[0],nb[1],d + 1))
     return -1
             
 
