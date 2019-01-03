@@ -14,7 +14,7 @@ def BFS(x, y, seen):
 					continue
 			if grid[(x,y)] == '.':
 				grid[(x,y)]='*'
-			neighbors = [ n for n in [(x-1,y), (x+1,y), (x,y-1), (x,y+1)] if n[0] >= minx and n[0] < maxx and n[1] >=miny and n[1] < maxy and (n[0],n[1]) in grid]
+			neighbors = [ n for n in [(x-1,y), (x+1,y), (x,y-1), (x,y+1)] if n[0] >= minx and n[0] <= maxx and n[1] >=miny and n[1] <= maxy and (n[0],n[1]) in grid]
 			seen[(x,y)] = d
 			for nb in neighbors:
 				if not nb in seen or seen[(nb[0], nb[1])] > d :
@@ -137,12 +137,12 @@ seen = {}
 BFS(0, 0, seen)
 print("Part 1", max(seen.values()))
 
-# for y in xrange(miny-1, maxy+2, 1):
-# 	for x in xrange(minx-1, maxx+2, 1):
-# 		if x == 0 and y == 0: print('X', end='')
-# 		elif (x,y) in grid: print(grid[x,y], end='')
-# 		else: print('#', end='')
-# 	print()
+for y in xrange(miny-1, maxy+2, 1):
+	for x in xrange(minx-1, maxx+2, 1):
+		if x == 0 and y == 0: print('X', end='')
+		elif (x,y) in grid: print(grid[x,y], end='')
+		else: print('#', end='')
+	print()
 
-# Part 1: Not 1963, 2020
-# Try 1991, 1992
+# Part 1: Not 1963, 2020, 1991, 3579
+# Try 3524, 7048
