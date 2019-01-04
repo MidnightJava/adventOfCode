@@ -133,4 +133,4 @@ print("Part 2", len([x for x in seen.values() if x >= 1000])/2 + 1)
 # 	print()
 
 # Part 1L 3469
-# Part 2: 17555 too high 2470 too low
+# Part 2: 8780
