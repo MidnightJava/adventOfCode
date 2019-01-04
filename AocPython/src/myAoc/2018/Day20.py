@@ -14,12 +14,12 @@ def BFS(x, y, seen):
 					continue
 			if grid[(x,y)] == '.':
 				grid[(x,y)]='*'
-			neighbors = [ n for n in [(x-1,y), (x+1,y), (x,y-1), (x,y+1)] if n[0] >= minx and n[0] <= maxx and n[1] >=miny and n[1] <= maxy and (n[0],n[1]) in grid]
+			neighbors = [ n for n in [(x-1,y), (x+1,y), (x,y-1), (x,y+1)] if (n[0],n[1]) in grid]
 			seen[(x,y)] = d
 			for nb in neighbors:
-				if not nb in seen or seen[(nb[0], nb[1])] > d :
-# 					if grid[(nb[0], nb[1])] == '-' or grid[(nb[0], nb[1])] == '|':
-					d = d +1
+				if not nb in seen:
+					if grid[(nb[0], nb[1])] == '.':
+						d = d + 1
 					queue.append((nb[0],nb[1],d))
 
 def get_opts(inp):
@@ -58,9 +58,6 @@ def parse(inp, loc, tail=None):
 	x = loc[0]
 	y = loc[1]
 	sub = ''
-# A: ENNWSWW(NEWS|)SSSEEN(WNSE|)EE(SWEN|)NNN$
-# B: ^ESSWWN(E|NNENN(EESS(WNSE|)SSS|WWWSSSSE(SW|NNNE)))$
-# C: ^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$
 	while i < len(inp):
 		c = inp[i]
 		if c == '^':
@@ -72,9 +69,7 @@ def parse(inp, loc, tail=None):
 			elif c == ')':
 				if lpcount == 1:
 					for opt in get_opts(sub):
-						if len(opt) == 0:
-							parse(opt, (x,y))
-						else:
+						if len(opt) != 0:
 							parse(opt, (x,y), inp[i+1:])
 					i = len(inp)
 					continue
@@ -83,28 +78,23 @@ def parse(inp, loc, tail=None):
 			i+= 1
 		else:
 			if c == '(': lpcount+= 1
+			elif c == ')': lpcount-= 1
 			elif c == 'N':
-				y-= 1
-				grid[(x,y)] = '-'
-				y-= 1
-				grid[(x,y)] = '.'
+				grid[(x,y-1)] = '-'
+				grid[(x,y-2)] = '.'
+				y-= 2
 			elif c == 'S':
-				y+= 1
-				grid[(x,y)] = '-'
-				y+= 1
-				grid[(x,y)] = '.'
+				grid[(x,y+1)] = '-'
+				grid[(x,y+2)] = '.'
+				y+= 2
 			elif c == 'W':
-				x-= 1
-				grid[(x,y)] = '|'
-				x-= 1
-				grid[(x,y)] = '.'
+				grid[(x-1,y)] = '|'
+				grid[(x-2,y)] = '.'
+				x-= 2
 			elif c == 'E':
-				x+= 1
-				grid[(x,y)] = '|'
-				x+= 1
-				grid[(x,y)] = '.'
-			elif c == ')':
-				lpcount-= 1
+				grid[(x+1,y)] = '|'
+				grid[(x+2,y)] = '.'
+				x+= 2
 			elif c == '$':
 				break
 			else:
@@ -130,19 +120,17 @@ for loc in grid.iterkeys():
 	miny = min(miny, loc[1])
 	maxy = max(maxy, loc[1])
 
-# print(minx, maxx, miny, maxy)
-# print()
-
 seen = {}
 BFS(0, 0, seen)
 print("Part 1", max(seen.values()))
+print("Part 2", len([x for x in seen.values() if x >= 1000])/2 + 1)
 
-for y in xrange(miny-1, maxy+2, 1):
-	for x in xrange(minx-1, maxx+2, 1):
-		if x == 0 and y == 0: print('X', end='')
-		elif (x,y) in grid: print(grid[x,y], end='')
-		else: print('#', end='')
-	print()
+# for y in xrange(miny-1, maxy+2, 1):
+# 	for x in xrange(minx-1, maxx+2, 1):
+# 		if x == 0 and y == 0: print('X', end='')
+# 		elif (x,y) in grid: print(grid[x,y], end='')
+# 		else: print('#', end='')
+# 	print()
 
-# Part 1: Not 1963, 2020, 1991, 3579
-# Try 3524, 7048
+# Part 1L 3469
+# Part 2: 17555 too high 2470 too low
