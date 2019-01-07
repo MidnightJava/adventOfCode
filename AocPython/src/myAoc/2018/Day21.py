@@ -85,6 +85,7 @@ while ip < len(code):
 		p1_found = True
 		reg[1] = 5
 		if reg[4] in s:
+			# The last unique value in r4 at line 28 (before they start repeating) is the answer
 			print("Part 2", prev_r4)
 			break
 		prev_r4 = reg[4]
