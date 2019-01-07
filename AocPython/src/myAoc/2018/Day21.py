@@ -70,29 +70,27 @@ with open('./data/Day21') as f:
 			instr = map(lambda x: int(x) if x.isdigit() else x, instr)
 			code.append(instr)
 
-s = set()
+r4_vals = set()
 prev_r4 = 0
 p1_found = False
 while ip < len(code):
 	instr = code[ip]
 	reg[ipreg] = ip
-	old_ip = ip
-	old_reg = list(reg)
 	if ip == 28:
 		# Line 28 is the only one depending on reg 0. The program exits here
 		# if reg 0 == reg 4
 		if not p1_found: print("Part 1:", reg[4])
 		p1_found = True
-		reg[1] = 5
-		if reg[4] in s:
-			# The last unique value in r4 at line 28 (before they start repeating) is the answer
+		reg[1] = 5 # Don't exit, so we continue with part 2
+		if reg[4] in r4_vals:
+			# The last unique value in reg 4 at line 28 (before they start repeating) is the answer
 			print("Part 2", prev_r4)
 			break
 		prev_r4 = reg[4]
-		s.add(reg[4])
+		r4_vals.add(reg[4])
 	elif ip == 18:
-		reg[5] = reg[3] /256
-		reg[3] = reg[5]
+		# Short-circuit the line 18-25 loop
+		reg[3] = reg[5] = reg[3] /256
 		reg[ipreg] = 25
 	else:
 		Ops.__dict__[instr[0]](ops, reg, instr[1], instr[2], instr[3])
