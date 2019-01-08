@@ -27,7 +27,7 @@ def g_idx(loc):
 		return er_levels [(x-1, y)] * er_levels[(x, y-1)]
 
 def can_move(curr, nxt, tool):
-	if nxt[0] < 0 or nxt[1] < 0 or nxt[0] > (target[0] + 5) or (nxt[1] > target[1] + 5): return False
+	if nxt[0] < 0 or nxt[1] < 0 or nxt[0] > (target[0] + 7) or (nxt[1] > target[1] + 7): return False
 	x,y = curr
 	if types[(x, y)] == 0: return tool > 0
 	elif types[(x,y)] == 1: return tool < 2
@@ -127,5 +127,5 @@ BFS(0, 0, seen, tool)
 print("Part 2", min(min_vals))
 
 # Part 1: 7901
-# Part 2: 2072 too high not 1123
+# Part 2: 2072 too high not 1123, 1109
 
