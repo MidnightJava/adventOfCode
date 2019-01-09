@@ -5,14 +5,14 @@ Created on Jan 8, 2019
 '''
 
 from __future__ import print_function
-from collections import deque
 import sys
-sys.setrecursionlimit(30000)
+import time
+sys.setrecursionlimit(20000)
 
 depth = 6969
 target = (9, 796)
-depth = 510
-target = (10, 10)
+# depth = 510
+# target = (10, 10)
 er_levels = {}
 types = {}
 
@@ -27,7 +27,7 @@ def g_idx(loc):
 		return er_levels [(x-1, y)] * er_levels[(x, y-1)]
 
 def can_move(curr, nxt, tool):
-	if nxt[0] < 0 or nxt[1] < 0 or nxt[0] > (target[0] + 9) or (nxt[1] > target[1] + 9): return False
+	if nxt[0] < 0 or nxt[1] < 0 or nxt[0] > (target[0] + 25) or (nxt[1] > target[1] + 25): return False
 	x,y = curr
 	if types[(x, y)] == 0: return tool > 0
 	elif types[(x,y)] == 1: return tool < 2
@@ -52,6 +52,7 @@ def update_queue(seen, queue, x, y, d, tool):
 			found = True
 			break
 	if not found and ((x,y,tool) not in seen or d < seen[(x,y,tool)]): queue.append(tuple((x, y, d, tool)))
+	return sorted(queue, key= lambda x: x[2] + 7 * (abs(x[0] - target[0]) + abs(x[1] - target[1])))
 
 min_vals = []
 def BFS(x, y, seen, tool):
@@ -59,34 +60,25 @@ def BFS(x, y, seen, tool):
 		while len(queue)>0:
 # 			print(len(queue), len(seen))
 			x,y,d,tool = queue.pop(0)
-# 			next_locs = [n for n in [(x-1,y), (x+1,y), (x,y-1), (x,y+1)] if (n[0] > x and n[1] == y) or (n[1] > y and n[0] == x)]
-			next_locs = [n for n in [(x-1,y), (x+1,y), (x,y-1), (x,y+1)]]
-# 			next_locs = [n for n in [(x+1,y), (x,y+1)] if n[0] < target[0] and n[1] < target[1]]
+			if (x,y,tool) in seen and seen[(x,y,tool)] <= d:
+				continue
+			next_locs = [n for n in [(x,y-1), (x,y+1), (x-1,y), (x+1,y)]]
 			neighbors = [n for n in next_locs if can_move((x,y), (n[0], n[1]), tool)]
-# 			if target[0] < x:
-# 				neighbors = filter(lambda n: n[0] <= x, neighbors)
-# 			elif target[0] > x:
-# 				neighbors = filter(lambda n: n[0] >= x, neighbors)
-# 			if target[1] < y:
-# 				neighbors = filter(lambda n: n[1] <= y, neighbors)
-# 			elif target[1] > y:
-# 				neighbors = filter(lambda n: n[1] >= y, neighbors)
 			seen[(x,y,tool)] = d
-# 			print('seen: %s = %d, %d' % ((x,y), d, tool))
 			if (x,y) == target:
 				min_vals.append(d if tool == 2 else (d+7))
 				print(min(min_vals))
 			for nb in neighbors:
-# 				print('neighbor: %d, %d' % (n[0], n[1]))
 					for new_tool in valid_tools(x, y):
 						incr = 1
 						if tool != new_tool:
 							incr+= 7
-						update_queue(seen, queue, nb[0],nb[1],d+incr,new_tool)
+						queue = update_queue(seen, queue, nb[0],nb[1],d+incr,new_tool)
 
+start_time = time.time()
 tot = 0
-for y in xrange(target[1] + 10):
-	for x in xrange(target[0] + 10):
+for y in xrange(target[1] + 26):
+	for x in xrange(target[0] + 26):
 		erosion = (g_idx((x, y)) + depth) % 20183
 		er_levels[(x,y)] = erosion
 		rtype = (erosion % 3)
@@ -94,55 +86,48 @@ for y in xrange(target[1] + 10):
 		if x <= target[0] and y <= target[1]:
 			tot+= rtype
 
-for y in xrange((target[1] + 2)):
-	for x in xrange((target[0] + 2)):
-		if not (x,y) in types:
-			erosion = (g_idx((x, y)) + depth) % 20183
-			rtype = (erosion % 3)
-			types[(x,y)] = rtype
-		if (x,y) == target: print('X', end='')
-		elif types[(x,y)] == 0: print('.', end='')
-		elif types[(x,y)] == 1: print('=', end='')
-		elif types[(x,y)] == 2: print('|', end='')
-		else: print('illegal type %d' % types[(x,y)])
-	print()
-print("Part 1:", tot)
+# for y in xrange((target[1] + 2)):
+# 	for x in xrange((target[0] + 2)):
+# 		if not (x,y) in types:
+# 			erosion = (g_idx((x, y)) + depth) % 20183
+# 			rtype = (erosion % 3)
+# 			types[(x,y)] = rtype
+# 		if (x,y) == target: print('X', end='')
+# 		elif types[(x,y)] == 0: print('.', end='')
+# 		elif types[(x,y)] == 1: print('=', end='')
+# 		elif types[(x,y)] == 2: print('|', end='')
+# 		else: print('illegal type %d' % types[(x,y)])
+# 	print()
+print("Part 1: %d  time: %d sec" % (tot, (time.time() - start_time)))
+start_time = time.time()
 
-def dfs(node, visited, d):
-	x,y,tool = node
-	if node not in visited or d < visited[node]:
-		visited[node] = d
-		next_locs = [n for n in [(x-1,y), (x+1,y), (x,y-1), (x,y+1)]]
-		neighbors = [n for n in next_locs if can_move((x,y), (n[0], n[1]), tool)]
-# 		if target[0] < x:
-# 			neighbors = filter(lambda n: n[0] <= x, neighbors)
-# 		elif target[0] > x:
-# 			neighbors = filter(lambda n: n[0] >= x, neighbors)
-# 		if target[1] < y:
-# 			neighbors = filter(lambda n: n[1] <= y, neighbors)
-# 		elif target[1] > y:
-# 			neighbors = filter(lambda n: n[1] >= y, neighbors)
-		if (x,y) == target:
-				return d if tool == 2 else (d+7)
-		dvals = []
-		for n in neighbors:
-			for new_tool in valid_tools(x, y):
-				incr = 1
-				if tool != new_tool:
-					incr+= 7
-				n = (n[0], n[1], new_tool)
-				dvals.append(dfs(n, visited, d+incr))
-		if len(dvals) and min(dvals) is not None: d+= min(dvals)
-		return d
-	return d
+# def dfs(node, visited, d):
+# 	x,y,tool = node
+# 	if node not in visited or d < visited[node]:
+# 		visited[node] = d
+# 		next_locs = [n for n in [(x-1,y), (x+1,y), (x,y-1), (x,y+1)]]
+# 		neighbors = [n for n in next_locs if can_move((x,y), (n[0], n[1]), tool)]
+# 		if (x,y) == target:
+# 				min_vals.append(d if tool == 2 else (d+7))
+# 				print(min_vals)
+# 				return d if tool == 2 else (d+7)
+# 		dvals = []
+# 		for n in neighbors:
+# 			for new_tool in valid_tools(x, y):
+# 				incr = 1
+# 				if tool != new_tool:
+# 					incr+= 7
+# 				n = (n[0], n[1], new_tool)
+# 				dvals.append(dfs(n, visited, d+incr))
+# 		if len(dvals) and min(dvals) is not None: d+= min(dvals)
+# 		return d
+# 	return d
+# print("Part 2:", dfs((0,0,2), {}, 0))
 
-print("Part 2:", dfs((0,0,2), {(0,0,2): 0}, 0))
-
-# seen = {}
-# BFS(0, 0, seen, tool)
-
-# print("Part 2", min(min_vals))
+seen = {}
+BFS(0, 0, seen, tool)
+print("Part 2 % d  time: %d sec" % (min(min_vals),  (time.time() - start_time)))
 
 # Part 1: 7901
-# Part 2: 2072 too high not 1123, 1109, 1545
+# Part 2: 1087
 
