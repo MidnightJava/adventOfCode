@@ -7,12 +7,12 @@ Created on Jan 8, 2019
 from __future__ import print_function
 from collections import deque
 import sys
-sys.setrecursionlimit(18000)
+sys.setrecursionlimit(30000)
 
 depth = 6969
 target = (9, 796)
-# depth = 510
-# target = (10, 10)
+depth = 510
+target = (10, 10)
 er_levels = {}
 types = {}
 
@@ -27,7 +27,7 @@ def g_idx(loc):
 		return er_levels [(x-1, y)] * er_levels[(x, y-1)]
 
 def can_move(curr, nxt, tool):
-	if nxt[0] < 0 or nxt[1] < 0 or nxt[0] > (target[0] + 7) or (nxt[1] > target[1] + 7): return False
+	if nxt[0] < 0 or nxt[1] < 0 or nxt[0] > (target[0] + 9) or (nxt[1] > target[1] + 9): return False
 	x,y = curr
 	if types[(x, y)] == 0: return tool > 0
 	elif types[(x,y)] == 1: return tool < 2
@@ -63,6 +63,14 @@ def BFS(x, y, seen, tool):
 			next_locs = [n for n in [(x-1,y), (x+1,y), (x,y-1), (x,y+1)]]
 # 			next_locs = [n for n in [(x+1,y), (x,y+1)] if n[0] < target[0] and n[1] < target[1]]
 			neighbors = [n for n in next_locs if can_move((x,y), (n[0], n[1]), tool)]
+# 			if target[0] < x:
+# 				neighbors = filter(lambda n: n[0] <= x, neighbors)
+# 			elif target[0] > x:
+# 				neighbors = filter(lambda n: n[0] >= x, neighbors)
+# 			if target[1] < y:
+# 				neighbors = filter(lambda n: n[1] <= y, neighbors)
+# 			elif target[1] > y:
+# 				neighbors = filter(lambda n: n[1] >= y, neighbors)
 			seen[(x,y,tool)] = d
 # 			print('seen: %s = %d, %d' % ((x,y), d, tool))
 			if (x,y) == target:
@@ -106,26 +114,35 @@ def dfs(node, visited, d):
 		visited[node] = d
 		next_locs = [n for n in [(x-1,y), (x+1,y), (x,y-1), (x,y+1)]]
 		neighbors = [n for n in next_locs if can_move((x,y), (n[0], n[1]), tool)]
+# 		if target[0] < x:
+# 			neighbors = filter(lambda n: n[0] <= x, neighbors)
+# 		elif target[0] > x:
+# 			neighbors = filter(lambda n: n[0] >= x, neighbors)
+# 		if target[1] < y:
+# 			neighbors = filter(lambda n: n[1] <= y, neighbors)
+# 		elif target[1] > y:
+# 			neighbors = filter(lambda n: n[1] >= y, neighbors)
 		if (x,y) == target:
-				min_vals.append(d if tool == 2 else (d+7))
-# 				print(min(min_vals))
+				return d if tool == 2 else (d+7)
+		dvals = []
 		for n in neighbors:
 			for new_tool in valid_tools(x, y):
 				incr = 1
 				if tool != new_tool:
 					incr+= 7
 				n = (n[0], n[1], new_tool)
-				dfs(n, visited, d+incr)
-	return visited
+				dvals.append(dfs(n, visited, d+incr))
+		if len(dvals) and min(dvals) is not None: d+= min(dvals)
+		return d
+	return d
 
-# visited = dfs((0,0,2), {}, 0)
-# print("Part 2:", min(visited.values()))
+print("Part 2:", dfs((0,0,2), {(0,0,2): 0}, 0))
 
-seen = {}
-BFS(0, 0, seen, tool)
+# seen = {}
+# BFS(0, 0, seen, tool)
 
-print("Part 2", min(min_vals))
+# print("Part 2", min(min_vals))
 
 # Part 1: 7901
-# Part 2: 2072 too high not 1123, 1109
+# Part 2: 2072 too high not 1123, 1109, 1545
 
