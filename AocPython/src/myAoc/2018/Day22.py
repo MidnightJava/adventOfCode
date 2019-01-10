@@ -42,9 +42,9 @@ def valid_tools(x, y):
 
 min_vals = []
 def BFS(x, y, seen, tool):
-		queue = [(x,y,0,tool)]
+		queue = [(0,x,y,tool)]
 		while len(queue)>0:
-			x,y,d,tool = heapq.heappop(queue)
+			d,x,y,tool = heapq.heappop(queue)
 			if (x,y,tool) in seen and seen[(x,y,tool)] <= d:
 				continue
 			next_locs = [n for n in [(x-1,y), (x+1,y), (x,y-1), (x,y+1)]]
@@ -52,13 +52,13 @@ def BFS(x, y, seen, tool):
 			seen[(x,y,tool)] = d
 			if (x,y) == target:
 				min_vals.append(d if tool == 2 else (d+7))
-				print(min(min_vals))
+# 				print(min(min_vals))
 			for nb in neighbors:
 					for new_tool in valid_tools(x, y):
 						incr = 1
 						if tool != new_tool:
 							incr+= 7
-						heapq.heappush(queue, (nb[0],nb[1],d+incr,new_tool))
+						heapq.heappush(queue, (d+incr,nb[0],nb[1],new_tool))
 
 start_time = time.time()
 tot = 0
