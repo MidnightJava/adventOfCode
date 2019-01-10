@@ -7,6 +7,7 @@ Created on Jan 8, 2019
 from __future__ import print_function
 import sys
 import time
+import heapq
 sys.setrecursionlimit(20000)
 
 depth = 6969
@@ -31,39 +32,23 @@ def can_move(curr, nxt, tool):
 	x,y = curr
 	if types[(x, y)] == 0: return tool > 0
 	elif types[(x,y)] == 1: return tool < 2
-	elif types[(x,y)] == 2: return (tool == 0 or tool == 2)
-	else:
-		print("Invalid region type %d" % types[(x,y)])
+	else: return (tool == 0 or tool == 2)
 
 def valid_tools(x, y):
 	rtype = types[(x,y)];
-	if rtype == 0: tools = [1,2]
-	elif rtype == 1: tools = [0,1]
-	elif rtype == 2: tools = [0, 2]
-	else: print("Invalid region type %d" % rtype)
-	return tools
-
-def update_queue(seen, queue, x, y, d, tool):
-	found = False
-	for item in queue:
-		if item[0] == x and item[1] == y and item[3] == tool:
-			if d < item[2]:
-				queue[queue.index(item)] = tuple((x, y, d, tool))
-			found = True
-			break
-	if not found and ((x,y,tool) not in seen or d < seen[(x,y,tool)]): queue.append(tuple((x, y, d, tool)))
-	return sorted(queue, key= lambda x: x[2] + 7 * (abs(x[0] - target[0]) + abs(x[1] - target[1])))
+	if rtype == 0: return [1,2]
+	elif rtype == 1: return [0,1]
+	elif rtype == 2: return [0, 2]
 
 min_vals = []
 def BFS(x, y, seen, tool):
-		queue = [tuple((x,y,0,tool))]
+		queue = [(x,y,0,tool)]
 		while len(queue)>0:
-# 			print(len(queue), len(seen))
-			x,y,d,tool = queue.pop(0)
+			x,y,d,tool = heapq.heappop(queue)
 			if (x,y,tool) in seen and seen[(x,y,tool)] <= d:
 				continue
-			next_locs = [n for n in [(x,y-1), (x,y+1), (x-1,y), (x+1,y)]]
-			neighbors = [n for n in next_locs if can_move((x,y), (n[0], n[1]), tool)]
+			next_locs = [n for n in [(x-1,y), (x+1,y), (x,y-1), (x,y+1)]]
+			neighbors = [n for n in next_locs if can_move((x,y), n, tool)]
 			seen[(x,y,tool)] = d
 			if (x,y) == target:
 				min_vals.append(d if tool == 2 else (d+7))
@@ -73,7 +58,7 @@ def BFS(x, y, seen, tool):
 						incr = 1
 						if tool != new_tool:
 							incr+= 7
-						queue = update_queue(seen, queue, nb[0],nb[1],d+incr,new_tool)
+						heapq.heappush(queue, (nb[0],nb[1],d+incr,new_tool))
 
 start_time = time.time()
 tot = 0
@@ -100,29 +85,6 @@ for y in xrange(target[1] + 26):
 # 	print()
 print("Part 1: %d  time: %d sec" % (tot, (time.time() - start_time)))
 start_time = time.time()
-
-# def dfs(node, visited, d):
-# 	x,y,tool = node
-# 	if node not in visited or d < visited[node]:
-# 		visited[node] = d
-# 		next_locs = [n for n in [(x-1,y), (x+1,y), (x,y-1), (x,y+1)]]
-# 		neighbors = [n for n in next_locs if can_move((x,y), (n[0], n[1]), tool)]
-# 		if (x,y) == target:
-# 				min_vals.append(d if tool == 2 else (d+7))
-# 				print(min_vals)
-# 				return d if tool == 2 else (d+7)
-# 		dvals = []
-# 		for n in neighbors:
-# 			for new_tool in valid_tools(x, y):
-# 				incr = 1
-# 				if tool != new_tool:
-# 					incr+= 7
-# 				n = (n[0], n[1], new_tool)
-# 				dvals.append(dfs(n, visited, d+incr))
-# 		if len(dvals) and min(dvals) is not None: d+= min(dvals)
-# 		return d
-# 	return d
-# print("Part 2:", dfs((0,0,2), {}, 0))
 
 seen = {}
 BFS(0, 0, seen, tool)
