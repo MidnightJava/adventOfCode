@@ -91,6 +91,7 @@ def find(done, bots, xs, ys, zs, dist, ox, oy, oz, forced_count):
 								at_target.pop(best_i)
 						else:
 								# We found something, go ahead and let it bubble up
+								print((best), abs(best[0]) + abs(best[1]) + abs(best[2]))
 								return a, b
 
 		# This means all of the candidates yeild false paths, so let this one
