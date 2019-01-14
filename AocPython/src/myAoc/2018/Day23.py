@@ -7,6 +7,7 @@ from __future__ import print_function
 import re
 import sys
 import time
+from __builtin__ import False, True
 
 bots = {}
 bot_list = []
@@ -47,7 +48,7 @@ print('Part 1:', in_range)
 def best_best_coord(best_coords):
 	best = None
 	d = sys.maxint
-	for c in best_coords:
+	for c in best_coords[1]:
 		new_d = abs(c[0]) + abs(c[1]) + abs(c[2])
 		if  new_d < d:
 			d = new_d
@@ -82,19 +83,13 @@ def test_coord(loc):
 		best_coords = (hits, [(x, y, z)])
 		seen = set(new_seen)
 
-# 	if (12, 12, 12) in best_coords[1]:
-# 		print(best_coords)
-
-# 	print(len(best_coords[1]))
-	dist, coord = best_best_coord(best_coords[1])
-	if dist != prev_dist:
-		print(dist, coord, best_coords[0], len(best_coords[1]), len(seen))
-		prev_dist = dist
-		if dist == 97816347:
-			print('%d seconds' % (time.time() - start_time))
-			sys.exit()
-# 	if dist == 36:
-# 		sys.exit()
+# 	dist, coord = best_best_coord(best_coords[1])
+# 	if dist != prev_dist:
+# 		print(dist, coord, best_coords[0], len(best_coords[1]), len(seen))
+# 		prev_dist = dist
+# 		if dist == 97816347:
+# 			print('%d seconds' % (time.time() - start_time))
+# 			sys.exit()
 
 
 search_range = 100
@@ -123,7 +118,7 @@ def minDistance(n, k, point):
 	point2 = []
 
 	for i in range(k):
-		point2.append(list(p[i]))
+		point2.append(sorted(p[i]))
 		
 # 	for i in range(k):
 # 		l = point2[i]
@@ -132,25 +127,24 @@ def minDistance(n, k, point):
 # 				l[j]+= (bot_list[j] / max_sig * abs(maxcoords[i] - mincoords[i]))
 # 			else:
 # 				l[j]-= (bot_list[j] / max_sig * abs(maxcoords[i] - mincoords[i]))
-
-	for i in range(k):
-			point2[i] = sorted(point2[i])
 			
 	res = []
 	for i in range(k):
 		res.append(point2[i][((n + 1) / 2) - 1])
+		
+	return res
 	
-	test_coord(res)
-			
-	# This gets us a coordinate in range of 870 bots
-	res = []
-	point_range = [  ((n + 1) / 2) - 250, ((n + 1) / 2) + 50 ]
-	for i in xrange(point_range[0], point_range[1]):
-		for j in xrange(point_range[0], point_range[1]):
-			for k in xrange(point_range[0], point_range[1]):
-				res = (point2[0][i], point2[1][j], point2[2][k])
-				test_coord(res)
-	print(res, end=" ")
+# 	test_coord(res)
+# 			
+# 	# This gets us a coordinate in range of 870 bots
+# 	res = []
+# 	point_range = [  ((n + 1) / 2) - 250, ((n + 1) / 2) + 50 ]
+# 	for i in xrange(point_range[0], point_range[1]):
+# 		for j in xrange(point_range[0], point_range[1]):
+# 			for k in xrange(point_range[0], point_range[1]):
+# 				res = (point2[0][i], point2[1][j], point2[2][k])
+# 				test_coord(res)
+# 	print(res, end=" ")
 		
 # 	print(res, end =" ")
 
@@ -160,12 +154,53 @@ def minDistance(n, k, point):
 
 # minDistance(1000, 3, bots.keys())
 
+def weight_by_signal(i):
+	def f(x):
+		if x <= 0:
+			x+= (bot_list[i] / max_sig * abs(maxcoords[i] - mincoords[i]))
+		else:
+			x-= (bot_list[i] / max_sig * abs(maxcoords[i] - mincoords[i]))
+		return x
+	return f
+
+def add_bots(n, point):
+	p = zip(*point)
+	point2 = []
+
+	for i in range(3):
+		point2.append(list(p[i]))
+		
+# 	for i in range(3):
+# 		l = point2[i]
+# 		for j in xrange(len(l)):
+# 			if l[j] <= 0:
+# 				l[j]+= (bot_list[j] / max_sig * abs(maxcoords[i] - mincoords[i]))
+# 			else:
+# 				l[j]-= (bot_list[j] / max_sig * abs(maxcoords[i] - mincoords[i]))
+				
+	for i in range(3):
+		point2[i] = sorted(point2[i], key= weight_by_signal(i), reverse=True)
+	
+	for i in xrange(n):
+		for j in xrange(n):
+			for k in xrange(n):
+				res = (point2[0][i], point2[1][j], point2[2][k])
+				test_coord(res)
+
 def search(loc):
-	count  =0
+	global seen
+	global bots
 	test_coord(loc)
-	for bot in set(bots) - seen:
-		count+= 1
-	print(count)
+	done = False
+	while not done:
+		not_seen = set(bots) - seen
+		ns_count = len(not_seen)
+		add_bots(len(not_seen), not_seen)
+		not_seen = set(bots) - seen
+		if len(not_seen) == ns_count:
+			done = True
+			break
+	print(best_best_coord(best_coords))
 
 search((17736794, 59893573, 29250847))
 
