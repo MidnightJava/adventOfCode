@@ -3,162 +3,164 @@ Created on Jan 11, 2019
 
 @author: maleone
 '''
-
+from __future__ import print_function
 import re
-def get_bots(values):
-		r = re.compile("pos=<([0-9-]+),([0-9-]+),([0-9-]+)>, r=([0-9]+)")
-		bots = []
-		for cur in values:
-				if cur.startswith("#"):
-						print("# Note: " + cur)
-				else:
-						m = r.search(cur.strip())
-						if m is None:
-								print(cur)
-						bots.append([int(x) for x in m.groups()])
-		return bots
+import sys
+
+all_bots = {}
+max_bot = None
+max_sig = 0
+seen = set()
+
+with open('data/Day23') as f:
+	for l in f:
+		vals = []
+		for v in l.split(','):
+			vals.append(int(re.sub(r'[^\d\-]', '', v)))
+		all_bots[((vals[0], vals[1], vals[2]))] = vals[3]
 
 
-def calc(values):
-	bots = get_bots(values)
-	best_i = None
-	best_val = None
-	for i in range(len(bots)):
-		if best_i is None or bots[i][3] > best_val:
-			best_val = bots[i][3]
-			best_i = i
+		if vals[3] > max_sig:
+			max_sig = vals[3]
+			max_bot = (vals[0], vals[1], vals[2])
 
-	bx, by, bz, bdist = bots[best_i]
+in_range = 0
+for bot in all_bots.keys():
+	if abs(bot[0] - max_bot[0]) + abs(bot[1] - max_bot[1]) + abs(bot[2] - max_bot[2]) <= all_bots[max_bot]:
+		in_range += 1
 
-	ret = 0
+print('Part 1:', in_range)
 
-	for i in range(len(bots)):
-		x, y, z, _dist = bots[i]
 
-		if abs(x - bx) + abs(y - by) + abs(z - bz) <= bdist:
-			ret += 1
+def best_best_coord(best_coords):
+	best = None
+	d = sys.maxint
+	for c in best_coords:
+		new_d = abs(c[0]) + abs(c[1]) + abs(c[2])
+		if  new_d < d:
+			d = new_d
+			best = c
+	return d, best
 
+
+best_coords = (0, [])  # num in range, list of coords with that number in range
+
+prev_dist = 0
+def test_coord(loc, bots):
+	x, y, z = loc
+	global best_coords
+	global prev_dist
+	global count
+	global seen
+	hits = 0
+	new_seen = set()
+
+	for bot, d in bots.iteritems():
+		if (abs(bot[0] - x) + abs(bot[1] - y) + abs(bot[2] - z)) <= d:
+			hits += 1
+			new_seen.add(bot)
+	if hits == best_coords[0]:
+		best_coords[1].append((x, y, z))
+		seen = set(new_seen)
+	elif hits > best_coords[0]:
+		best_coords = (hits, [(x, y, z)])
+		seen = set(new_seen)
+	# Uncomment this to get the initial coordinate to pass to search
+# 	dist, coord = best_best_coord(best_coords[1])
+# 	if dist != prev_dist:
+# 		print(dist, coord, best_coords[0], len(best_coords[1]), len(seen))
+# 		prev_dist = dist
+
+
+def move_loc(loc, bot):
+	global all_bots
+	total_d = sum([abs(bot[i] - loc[i]) for i in range(3)])
+	target_d = abs(total_d) - abs(all_bots[bot])
+	dx = bot[0] - loc[0]
+	dy = bot[1] - loc[1]
+	dz = bot[2] - loc[2]
+	r = float(total_d) / float(target_d)
+	x = int(loc[0] + (dx / r) - 3)
+	y = int(loc[1] + (dy / r) - 3)
+	z = int(loc[2] + (dz / r) - 3)
+	seen_count = len(seen)
+	test_coord((x,y,z), all_bots)
+	if len(seen) >= seen_count:
+		return (x,y,z)
+	else:
+		return None
+
+min_d = sys.maxint
+def find_bots(loc):
+	global seen
+	global min_d
+	global all_bots
+	not_seen = set(all_bots.keys()) - seen
+	not_seen = sorted(not_seen, key = lambda x: all_bots[x])
+	ret = None
+	for bot in not_seen:
+		new_loc = move_loc(loc, bot)
+		if new_loc:
+			ret = new_loc
+			d = sum([abs(int(x)) for x in new_loc])
+			min_d = min(min_d, d)
+# 			print('new loc: %s  d: %d' % (new_loc, d))
+	print('%d bots in range  %d bots left' % (len(seen), len(set(all_bots.keys()) - seen)))
 	return ret
 
 
-def find(done, bots, xs, ys, zs, dist, ox, oy, oz, forced_count):
-		at_target = []
+def search(loc):
+	global seen
+	global all_bots
+	test_coord(loc, all_bots)
+	done = False
+	while not done:
+		not_seen = set(all_bots.keys()) - seen
+		ns_count = len(not_seen)
+		if loc: loc = find_bots(loc)
+		if len(not_seen) == ns_count:
+			done = True
+			break
+	dist, coord = best_best_coord(best_coords[1])
+	print(dist, coord, best_coords[0], len(best_coords[1]), len(seen))
 
-		for x in range(min(xs), max(xs)+1, dist):
-				for y in range(min(ys), max(ys)+1, dist):
-						for z in range(min(zs), max(zs)+1, dist):
+	# correct answer is min d plus one, taking min of all distances, regardless of number of bot hits
+	# Doesn't make sense, maybe a lucky guess
+	print('min distance:', min_d)
 
-								# See how many bots are possible
-								count = 0
-								for bx, by, bz, bdist in bots:
-										if dist == 1:
-												calc = abs(x - bx) + abs(y - by) + abs(z - bz)
-												if calc <= bdist:
-														count += 1
-										else:
-												calc =  abs((ox+x) - (ox+bx))
-												calc += abs((oy+y) - (oy+by))
-												calc += abs((oz+z) - (oz+bz))
-												# The minus three is to include the current box
-												# in any bots that are near it
-												if calc //dist - 3 <= (bdist) // dist:
-														count += 1
+# search((0,0,0))
+search((17736794, 59893573, 29250847))
 
-								if count >= forced_count:
-										at_target.append((x, y, z, count, abs(x) + abs(y) + abs(z)))
+def minDistance(n, k, point):
+	# Sorting points in all dimension
+	p = zip(*point)
+	point2 = []
 
-		while len(at_target) > 0:
-				best = []
-				best_i = None
+	for i in range(k):
+		point2.append(sorted(p[i]))
 
-				# Find the best candidate from the possible boxes
-				for i in range(len(at_target)):
-						if best_i is None or at_target[i][4] < best[4]:
-								best = at_target[i]
-								best_i = i
+	res = []
+	for i in range(k):
+		res.append(point2[i][((n + 1) / 2) - 1])
 
-				if dist == 1:
-						# At the end, just return the best match
-						return best[4], best[3]
-				else:
-						# Search in the sub boxes, see if we find any matches
-						xs = [best[0], best[0] + dist//2]
-						ys = [best[1], best[1] + dist//2]
-						zs = [best[2], best[2] + dist//2]
-						a, b = find(done, bots, xs, ys, zs, dist // 2, ox, oy, oz, forced_count)
-						if a is None:
-								# This is a false path, remove it from consideration and try any others
-								at_target.pop(best_i)
-						else:
-								# We found something, go ahead and let it bubble up
-								print((best), abs(best[0]) + abs(best[1]) + abs(best[2]))
-								return a, b
+# 	return res
 
-		# This means all of the candidates yeild false paths, so let this one
-		# be treated as a false path by our caller
-		return None, None
+	test_coord(res, all_bots)
 
+	# This gets us a coordinate in range of 870 bots
+	res = []
+	point_range = [  ((n + 1) / 2) - 250, ((n + 1) / 2) + 50 ]
+	for i in xrange(point_range[0], point_range[1]):
+		for j in xrange(point_range[0], point_range[1]):
+			for k in xrange(point_range[0], point_range[1]):
+				res = (point2[0][i], point2[1][j], point2[2][k])
+				test_coord(res, all_bots)
+	print(res, end=" ")
 
-def calc2(values):
-		bots = get_bots(values)
+#Use this to get initial coordinate (in range of 870 bots) to pass to search
+# minDistance(1000, 3, all_bots.keys())
 
-		# Find the range of the bots
-		xs = [x[0] for x in bots] + [0]
-		ys = [x[1] for x in bots] + [0]
-		zs = [x[2] for x in bots] + [0]
+# Part 1: 580
+# Part2 target: 97816347 (978 bots) not 106944840
 
-		# Pick a starting resolution big enough to find all of the bots
-		dist = 1
-		while dist < max(xs) - min(xs) or dist < max(ys) - min(ys) or dist < max(zs) - min(zs):
-				dist *= 2
-
-		# And some offset values so there are no strange issues wrapping around zero
-		ox = -min(xs)
-		oy = -min(ys)
-		oz = -min(zs)
-
-		# Try to find all of the bots, backing off with a binary search till
-		# we can find the most bots
-		span = 1
-		while span < len(bots):
-				span *= 2
-		forced_check = 1
-		tried = {}
-
-		best_val, best_count = None, None
-
-		while True:
-				# We might try the same value multiple times, save some time if we've seen it already
-				if forced_check not in tried:
-						tried[forced_check] = find(set(), bots, xs, ys, zs, dist, ox, oy, oz, forced_check)
-				test_val, test_count = tried[forced_check]
-
-				if test_val is None:
-						# Nothing found at this level, so go back
-						if span > 1:
-								span = span // 2
-						forced_check = max(1, forced_check - span)
-				else:
-						# We found something, so go forward
-						if best_count is None or test_count > best_count:
-								best_val, best_count = test_val, test_count
-						if span == 1:
-								# This means we went back one, and it was empty, so we're done!
-								break
-						forced_check += span
-
-		print("The max count I found was: " + str(best_count))
-		return best_val
-
-
-def run(values):
-	print("Nearest the big bot: " + str(calc(values)))
-	print("Best location value: " + str(calc2(values)))
-	
-lines = []
-with open('data/Day23') as f:
-	for l in f:
-		lines.append(l)
-
-run(lines)
 
