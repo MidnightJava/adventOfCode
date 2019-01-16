@@ -84,11 +84,17 @@ def move_loc(loc, bot):
 	y = int(loc[1] + (dy / r) - 3)
 	z = int(loc[2] + (dz / r) - 3)
 	seen_count = len(seen)
-	test_coord((x,y,z), all_bots)
+	limit = 20
+	for i in range(-limit, limit):
+		for j in range(-limit, limit):
+			for k in range(-limit, limit):
+				test_coord((x+i,y+j,z+k), all_bots)
+	dist, coord = best_best_coord(best_coords[1])
+	print(dist, coord, best_coords[0], len(best_coords[1]), len(seen))
 	if len(seen) >= seen_count:
 		return (x,y,z)
 	else:
-		return None
+		return loc
 
 min_d = sys.maxint
 def find_bots(loc):
@@ -96,7 +102,7 @@ def find_bots(loc):
 	global min_d
 	global all_bots
 	not_seen = set(all_bots.keys()) - seen
-	not_seen = sorted(not_seen, key = lambda x: all_bots[x])
+	not_seen = sorted(not_seen, key = lambda x: sum([abs(x[i] - loc[i]) for i in range(3)]))
 	ret = None
 	for bot in not_seen:
 		new_loc = move_loc(loc, bot)
