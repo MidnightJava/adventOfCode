@@ -37,16 +37,19 @@ for bot in bots.keys():
 
 print('Part 1:', in_range)
 
-def get_bounds(bots):
+def get_bounds(bots, bots_dict):
 	max_bounds = [0, 0, 0]
 	min_bounds = [sys.maxint, sys.maxint, sys.maxint]
 	for bot in bots:
-		max_bounds[0] = max(max_bounds[0], bot[0])
-		max_bounds[1] = max(max_bounds[1], bot[1])
-		max_bounds[2] = max(max_bounds[2], bot[2])
-		min_bounds[0] = min(min_bounds[0], bot[0])
-		min_bounds[1] = min(min_bounds[1], bot[1])
-		min_bounds[2] = min(min_bounds[2], bot[2])
+		try:
+			max_bounds[0] = max(max_bounds[0], bot[0] + bots_dict[bot])
+		except:
+			print("OK")
+		max_bounds[1] = max(max_bounds[1], bot[1] + bots_dict[bot])
+		max_bounds[2] = max(max_bounds[2], bot[2] + bots_dict[bot])
+		min_bounds[0] = min(min_bounds[0], bot[0] - bots_dict[bot])
+		min_bounds[1] = min(min_bounds[1], bot[1] - bots_dict[bot])
+		min_bounds[2] = min(min_bounds[2], bot[2] - bots_dict[bot])
 	return min_bounds, max_bounds
 
 
@@ -124,18 +127,19 @@ def minDistance(n, k, point):
 		point2.append(sorted(p[i]))
 	res = []
 	for i in range(k):
-		res.append(point2[i][((n + 1) / 2) - 1])
+		res.append(point2[i][(n - 1) /2])
 
 	print(res)
 	test_coord(res, bots)
 	res = []
-	point_range = [  ((n + 1) / 2) - 250, ((n + 1) / 2) + 50 ]
-	for i in xrange(point_range[0], point_range[1]):
-		for j in xrange(point_range[0], point_range[1]):
-			for k in xrange(point_range[0], point_range[1]):
-				res = (point2[0][i], point2[1][j], point2[2][k])
-				test_coord(res, bots)
-	print(res, end=" ")
+# 	point_range = [  ((n + 1) / 2) - 250, ((n + 1) / 2) + 50 ]
+# 	point_range = [  0, n ]
+# 	for i in xrange(point_range[0], point_range[1]):
+# 		for j in xrange(point_range[0], point_range[1]):
+# 			for k in xrange(point_range[0], point_range[1]):
+# 				res = (point2[0][i], point2[1][j], point2[2][k])
+# 				test_coord(res, bots)
+# 	print(res, end=" ")
 
 # This gets us a coordinate in range of 870 bots
 # minDistance(1000, 3, bots.keys())
@@ -143,49 +147,48 @@ def minDistance(n, k, point):
 def move_loc(loc, main_bounds, bounds):
 	min_m, max_m = main_bounds
 	min_b, max_b = bounds
+	x,y,z = loc
+	new_locs = []
 
-	# tets if x overlaps
+	# test if x overlaps
 	if min_b[0] >= min_m[0] and min_b[0] <= max_m[0]:
-		x = min(max_b[0], max_m[0])
+		new_x = (x + min(max_b[0], max_m[0])) / 2
+		new_locs.append((new_x, y, z))
 	elif max_b[0] >= min_m[0] and max_b[0] <= max_m[0]:
-		x = min(max_b[0], max_m[0])
-	else :
-		return None
+		new_x = (x - max(min_b[0], min_m[0])) /2
+		new_locs.append((new_x, y, z))
 
 	#test if y overlaps
 	if min_b[1] >= min_m[1] and min_b[1] <= max_m[1]:
-		y = min(max_b[1], max_m[1])
+		new_y = ( y + min(max_b[1], max_m[1])) / 2
+		new_locs.append((x, new_y, z))
 	elif max_b[1] >= min_m[1] and max_b[1] <= max_m[1]:
-		y = min(max_b[1], max_m[1])
-	else :
-		return None
+		new_y = (y - max(min_b[1], min_m[1])) / 2
+		new_locs.append((x, new_y, z))
 
 	#test if z overlaps
 	if min_b[2] >= min_m[2] and min_b[2] <= max_m[2]:
-		z = min(max_b[2], max_m[2])
-		return (x,y,z)
+		new_z = (z + min(max_b[2], max_m[2])) / 2
+		new_locs.append((x, y, new_z))
 	elif max_b[2] >= min_m[2] and max_b[2] <= max_m[2]:
-		z = min(max_b[2], max_m[2])
-		return (x,y,z)
-	else :
-		return None
+		new_z = (z - max(min_b[2], min_m[2])) /2
+		new_locs.append((x, y, new_z))
+	
+	return new_locs
 
 
 def find_bots(loc, inrange, outside):
-	x,y,z = loc
-
+	print('%d bots in range  %d bots left' % (len(inrange), len(outside)))
+	test_coord(loc, bots)
+	dist, coord = best_best_coord(best_coords[1])
+	print(dist, coord, best_coords[0], len(best_coords[1]), len(seen))
 	for bot in outside:
-		main_bounds = get_bounds(inrange)
-		bounds = get_bounds([bot])
-		new_loc = move_loc(loc, main_bounds, bounds)
-		if new_loc:
-			print('new loc', new_loc, sum([abs(x) for x in new_loc]))
-			x,y,z = new_loc
-			inrange.add(bot)
-	new_bots = {}
-	for b in inrange:
-		new_bots[b] = bots[b]
-	test_coord((x,y,z), new_bots)
+		main_bounds = get_bounds(inrange, bots)
+		bounds = get_bounds([bot], bots)
+		new_locs = move_loc(loc, main_bounds, bounds)
+		for new_loc in new_locs:
+# 			print('new loc', new_loc, sum([abs(x) for x in new_loc]))
+			find_bots(new_loc, inrange | set([bot]), outside - set([bot]))
 
 
 def search(loc):
@@ -197,15 +200,28 @@ def search(loc):
 	not_seen = set(bots.keys()) - seen
 	ns_count = len(not_seen)
 	find_bots(loc, seen, not_seen)
-	not_seen = set(bots) - seen
 # 	if len(not_seen) == ns_count:
 # 		done = True
 # 		break
 	dist, coord = best_best_coord(best_coords[1])
 	print(dist, coord, best_coords[0], len(best_coords[1]), len(seen))
 
+def search2(loc):
+	global seen
+	global bots
+	test_coord(loc, bots)
+	done = False
+	while not done:
+		not_seen = set(bots.keys()) - seen
+		ns_count = len(not_seen)
+		minDistance(len(not_seen), 3, not_seen)
+		if len(not_seen) == ns_count:
+			done = True
+			break
+	dist, coord = best_best_coord(best_coords[1])
+	print(dist, coord, best_coords[0], len(best_coords[1]), len(seen))
 
-search((17736794, 59893573, 29250847))
+search2((17736794, 59893573, 29250847))
 
 # Part 1: 580
 # Part2 target: 97816347 (978 bots)
