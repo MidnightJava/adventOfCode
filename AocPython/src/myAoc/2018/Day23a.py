@@ -6,11 +6,13 @@ Created on Jan 11, 2019
 from __future__ import print_function
 import re
 import sys
+import math
 
 all_bots = {}
 max_bot = None
 max_sig = 0
 seen = set()
+tested_locs = set()
 
 with open('data/Day23') as f:
 	for l in f:
@@ -31,6 +33,10 @@ for bot in all_bots.keys():
 
 print('Part 1:', in_range)
 
+def in_range(loc, bot):
+	d = sum([abs(bot[i] - loc[i]) for i in range(3)])
+	return d <= all_bots[bot]
+
 
 def best_best_coord(best_coords):
 	best = None
@@ -46,7 +52,9 @@ def best_best_coord(best_coords):
 best_coords = (0, [])  # num in range, list of coords with that number in range
 
 prev_dist = 0
-def test_coord(loc, bots):
+def test_coord(loc, bots, track=True):
+	global tested_locs
+	if track: tested_locs.add(loc)
 	x, y, z = loc
 	global best_coords
 	global prev_dist
@@ -71,72 +79,88 @@ def test_coord(loc, bots):
 # 		print(dist, coord, best_coords[0], len(best_coords[1]), len(seen))
 # 		prev_dist = dist
 
+def findVec(point1,point2):
+	finalVector = [0 for coOrd in point1]
+	for dimension, coOrd in enumerate(point1):
+		deltaCoOrd = point2[dimension]-coOrd
+		finalVector[dimension] = deltaCoOrd
+	return finalVector
+
 
 def move_loc(loc, bot):
 	global all_bots
 	total_d = sum([abs(bot[i] - loc[i]) for i in range(3)])
 	target_d = abs(total_d) - abs(all_bots[bot])
-	dx = bot[0] - loc[0]
-	dy = bot[1] - loc[1]
-	dz = bot[2] - loc[2]
-	r = float(total_d) / float(target_d)
-	x = int(loc[0] + (dx / r) - 3)
-	y = int(loc[1] + (dy / r) - 3)
-	z = int(loc[2] + (dz / r) - 3)
-	seen_count = len(seen)
-	l1 = 30
-	l2 = 30
-	for i in range(-l1, l2):
-		for j in range(-l1, l2):
-			for k in range(-l1, l2):
-				test_coord((x+i,y+j,z+k), all_bots)
-	dist, coord = best_best_coord(best_coords[1])
-	print(dist, coord, best_coords[0], len(best_coords[1]), len(seen))
-	if len(seen) >= seen_count:
-		return (x,y,z)
+	
+	vec = findVec(loc, bot)
+	if target_d <= 0:
+		test_coord(loc, all_bots)
+		ret = loc
 	else:
-		return loc
-
+		r = abs(float(total_d) / float(target_d))
+		for i in range(3):
+			vec[i] = loc[i] + int(math.ceil(vec[i]/r)) + (1 if vec[i] >= 0 else -1)
+		test_coord(tuple(vec), all_bots)
+		ret = tuple(vec)
+# 		for j in xrange(1, int(r), 1000):
+# 			for i in range(3):
+# 				vec[i] = loc[i] + int(math.ceil(vec[i]/j)) + (1 if vec[i] >= 0 else -1)
+# 			test_coord(tuple(vec), all_bots)
+	return ret
+		
 min_d = sys.maxint
 def find_bots(loc):
 	global seen
 	global min_d
 	global all_bots
 	not_seen = set(all_bots.keys()) - seen
-	not_seen = sorted(not_seen, key = lambda x: sum([abs(x[i] - loc[i]) for i in range(3)]))
-	ret = None
+	not_seen = sorted(not_seen, key = lambda x: sum([abs(x[i] - loc[i]) for i in range(3)]) / all_bots[x])
+# 	not_seen = sorted(not_seen, key = lambda x: all_bots[x], reverse=True)
 	for bot in not_seen:
-		new_loc = move_loc(loc, bot)
-		if new_loc:
-			ret = new_loc
-			d = sum([abs(int(x)) for x in new_loc])
-			min_d = min(min_d, d)
+		loc = move_loc(loc, bot)
+		d = sum([abs(int(x)) for x in loc])
+		min_d = min(min_d, d)
 # 			print('new loc: %s  d: %d' % (new_loc, d))
 	print('%d bots in range  %d bots left' % (len(seen), len(set(all_bots.keys()) - seen)))
-	return ret
+	return loc
 
 
 def search(loc):
 	global seen
 	global all_bots
+	global tested_locs
 	test_coord(loc, all_bots)
 	done = False
 	while not done:
 		not_seen = set(all_bots.keys()) - seen
 		ns_count = len(not_seen)
-		if loc: loc = find_bots(loc)
+		loc = find_bots(loc)
 		if len(not_seen) == ns_count:
 			done = True
 			break
 	dist, coord = best_best_coord(best_coords[1])
 	print(dist, coord, best_coords[0], len(best_coords[1]), len(seen))
+	print('Tested %d locs' % len(tested_locs))
+	not_seen = set(all_bots.keys()) - seen
+	incr = 10000
+	for bot in not_seen:
+		for loc in sorted(tested_locs, key = lambda x: sum([abs(x[i] - loc[i]) for i in range(3)])  / all_bots[bot]):
+			loc = list(loc)
+			while not in_range(tuple(loc), bot):
+				for i in range(3):
+					direc = 1 if bot[i] > loc[i] else -1
+					loc[i]+= incr*direc
+					test_coord(tuple(loc), all_bots, False)
+			dist, coord = best_best_coord(best_coords[1])
+			print(dist, coord, best_coords[0], len(best_coords[1]), len(seen))
 
 	# correct answer is min d plus one, taking min of all distances, regardless of number of bot hits
 	# Doesn't make sense, maybe a lucky guess
 	print('min distance:', min_d)
 
-# search((0,0,0))
-search((17736794, 59893573, 29250847))
+search((0,0,0))
+# search(all_bots.keys()[0])
+# search((17736794, 59893573, 29250847))
 
 def minDistance(n, k, point):
 	# Sorting points in all dimension
