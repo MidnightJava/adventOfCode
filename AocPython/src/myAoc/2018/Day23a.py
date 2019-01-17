@@ -84,7 +84,7 @@ def move_loc(loc, bot):
 	y = int(loc[1] + (dy / r) - 3)
 	z = int(loc[2] + (dz / r) - 3)
 	seen_count = len(seen)
-	l1 = 0
+	l1 = 30
 	l2 = 30
 	for i in range(-l1, l2):
 		for j in range(-l1, l2):
