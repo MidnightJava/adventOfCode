@@ -84,10 +84,11 @@ def move_loc(loc, bot):
 	y = int(loc[1] + (dy / r) - 3)
 	z = int(loc[2] + (dz / r) - 3)
 	seen_count = len(seen)
-	limit = 20
-	for i in range(-limit, limit):
-		for j in range(-limit, limit):
-			for k in range(-limit, limit):
+	l1 = 0
+	l2 = 30
+	for i in range(-l1, l2):
+		for j in range(-l1, l2):
+			for k in range(-l1, l2):
 				test_coord((x+i,y+j,z+k), all_bots)
 	dist, coord = best_best_coord(best_coords[1])
 	print(dist, coord, best_coords[0], len(best_coords[1]), len(seen))
