@@ -102,10 +102,12 @@ def move_loc(loc, bot):
 			vec[i] = loc[i] + int(math.ceil(vec[i]/r)) + (1 if vec[i] >= 0 else -1)
 		test_coord(tuple(vec), all_bots)
 		ret = tuple(vec)
-# 		for j in xrange(1, int(r), 1000):
-# 			for i in range(3):
-# 				vec[i] = loc[i] + int(math.ceil(vec[i]/j)) + (1 if vec[i] >= 0 else -1)
-# 			test_coord(tuple(vec), all_bots)
+		for j in xrange(1, int(r) + 10000, int(r//1000) + 1):
+			for i in range(3):
+				vec[i] = loc[i] + int(math.ceil(vec[i]/j)) + (1 if vec[i] >= 0 else -1)
+			test_coord(tuple(vec), all_bots)
+		dist, coord = best_best_coord(best_coords[1])
+		print(dist, coord, best_coords[0], len(best_coords[1]), len(seen))
 	return ret
 		
 min_d = sys.maxint
@@ -142,20 +144,22 @@ def search(loc):
 	print(dist, coord, best_coords[0], len(best_coords[1]), len(seen))
 	print('Tested %d locs' % len(tested_locs))
 	not_seen = set(all_bots.keys()) - seen
-	incr = 10000
-	for bot in not_seen:
-		for loc in sorted(tested_locs, key = lambda x: sum([abs(x[i] - loc[i]) for i in range(3)])  / all_bots[bot]):
-			loc = list(loc)
-			while not in_range(tuple(loc), bot):
-				for i in range(3):
-					direc = 1 if bot[i] > loc[i] else -1
-					loc[i]+= incr*direc
-					test_coord(tuple(loc), all_bots, False)
-			dist, coord = best_best_coord(best_coords[1])
-			print(dist, coord, best_coords[0], len(best_coords[1]), len(seen))
+	not_seen = sorted(not_seen, key = lambda x: sum([abs(x[i]) for i in range(3)])  - all_bots[x])
+# 	for bot in not_seen:
+# 	
+# 	
+# 	incr = 10000
+# 	for bot in not_seen:
+# 		for loc in sorted(tested_locs, key = lambda x: sum([abs(x[i] - loc[i]) for i in range(3)])  - all_bots[bot]):
+# 			loc = list(loc)
+# 			while not in_range(tuple(loc), bot):
+# 				for i in range(3):
+# 					direc = 1 if bot[i] > loc[i] else -1
+# 					loc[i]+= incr*direc
+# 					test_coord(tuple(loc), all_bots, False)
+# 			dist, coord = best_best_coord(best_coords[1])
+# 			print(dist, coord, best_coords[0], len(best_coords[1]), len(seen))
 
-	# correct answer is min d plus one, taking min of all distances, regardless of number of bot hits
-	# Doesn't make sense, maybe a lucky guess
 	print('min distance:', min_d)
 
 search((0,0,0))
