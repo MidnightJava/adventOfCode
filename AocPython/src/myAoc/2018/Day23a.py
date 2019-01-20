@@ -48,6 +48,22 @@ def best_best_coord(best_coords):
 			best = c
 	return d, best
 
+def getCentroid(points):
+	# Sorting points in all dimension
+	n = len(points)
+	k = 3
+	p = zip(*points)
+	points2 = []
+
+	for i in range(k):
+		points2.append(sorted(p[i]))
+
+	res = []
+	for i in range(k):
+		res.append(points2[i][((n + 1) / 2) - 1])
+
+	return res
+
 
 best_coords = (0, [])  # num in range, list of coords with that number in range
 
@@ -62,6 +78,7 @@ def test_coord(loc, bots, track=True):
 	global seen
 	hits = 0
 	new_seen = set()
+	seen_length = len(seen)
 
 	for bot, d in bots.iteritems():
 		if (abs(bot[0] - x) + abs(bot[1] - y) + abs(bot[2] - z)) <= d:
@@ -73,6 +90,7 @@ def test_coord(loc, bots, track=True):
 	elif hits > best_coords[0]:
 		best_coords = (hits, [(x, y, z)])
 		seen = set(new_seen)
+	return len(seen) > seen_length
 	# Uncomment this to get the initial coordinate to pass to search
 # 	dist, coord = best_best_coord(best_coords[1])
 # 	if dist != prev_dist:
@@ -145,6 +163,7 @@ def search(loc):
 	print('Tested %d locs' % len(tested_locs))
 	not_seen = set(all_bots.keys()) - seen
 	not_seen = sorted(not_seen, key = lambda x: sum([abs(x[i] - coord[i]) for i in range(3)])  - all_bots[x])
+	loc = (0,0,0)
 	incr = 1000
 	ns_count = 0
 	while not ns_count == len(not_seen):
@@ -157,14 +176,16 @@ def search(loc):
 			coord = list(coord)
 			
 # 			print('incr * 100: %d  bot strength: %d' % (incr*100, all_bots[bot]))
-			total_d = sum([abs(bot[i] - coord[i]) for i in range(3)]) + incr*10000
+			total_d = sum([abs(bot[i] - loc[i]) for i in range(3)])
+			target_d = abs(total_d) - abs(all_bots[bot])
 			
-			for j in range(1, total_d, incr):
-				vec = findVec(loc, bot)
-				r = abs(float(total_d) / float(j))
+			if target_d  <0: continue
+			vec = findVec(loc, bot)
+			for j in range(-5, 5):
+				r = abs(float(total_d) / float(target_d)) + j
 				for i in range(3):
-					vec[i] = coord[i] + int(math.ceil(vec[i]/r)) + (1 if vec[i] >= 0 else -1)
-				test_coord(tuple(vec), all_bots)
+					vec[i] = coord[i] + int(math.ceil(vec[i]) / float(r)) + (1 if vec[i] >= 0 else -1)
+				if test_coord(tuple(vec), all_bots): break
 			
 			print('BOT: %d' % bot_count)
 			print('\tlocation: (%d,%d,%d)  signal: %d' % (bot[0],bot[1],bot[2],all_bots[bot]))
@@ -173,10 +194,30 @@ def search(loc):
 		not_seen = set(all_bots.keys()) - seen
 		not_seen = sorted(not_seen, key = lambda x: sum([abs(x[i] - coord[i]) for i in range(3)])  - all_bots[x])
 
-search((0,0,0))
+# search((0,0,0))
 # search(all_bots.keys()[0])
 # search((17736794, 59893573, 29250847))
 
+closest = {}
+for bot, s in all_bots.iteritems():
+	d = sum([abs(bot[i]) for i in range(3)])
+	target_d = abs(d - s)
+	vec = list(bot)
+	if d < s:
+		for i in range(3):
+			vec[i] = -vec[i]
+	r = abs(d/target_d)
+	for j in range(3):
+		for i in range(3):
+			vec[i] = int(math.ceil(vec[i]/float(r + j)))
+		closest[target_d] = vec
+		test_coord(vec, all_bots, False)
+		dist, coord = best_best_coord(best_coords[1])
+		print(dist, coord, best_coords[0], len(best_coords[1]), len(seen))
+			
+# min_coord = closest[min(closest.keys())]
+# print('Part 2: %d' % sum([abs(min_coord[i]) for i in range(3)]))
+		
 def minDistance(n, k, point):
 	# Sorting points in all dimension
 	p = zip(*point)
