@@ -78,7 +78,7 @@ def next_loc(loc, bot):
 	global all_bots
 	total_d = sum([abs(bot[i] - loc[i]) for i in range(3)])
 	target_d = abs(total_d) - abs(all_bots[bot])
-	
+
 	vec = findVec(loc, bot)
 	if target_d <= 0:
 		test_coord(loc)
@@ -95,7 +95,7 @@ def bot_sort(loc):
 	def f(bot):
 		return sum([abs(bot[i] - loc[i]) for i in range(3)]) / all_bots[bot]
 	return f
-		
+
 def find_bots(loc):
 	global seen
 	global min_d
@@ -122,7 +122,7 @@ def search(loc):
 					for m in [-1,1]:
 						vec[0]+= (j*m); vec[1]+= (k*m); vec[2]+= (l*m)
 						test_coord(vec)
-		
+
 	dist, coord = best_best_coord()
 	print('Part 2: %d' % dist)
 	print('%d bots in range at %s' %  (len(seen), coord))
