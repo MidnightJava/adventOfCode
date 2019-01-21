@@ -33,10 +33,6 @@ for bot in all_bots.keys():
 
 print('Part 1:', in_range)
 
-def in_range(loc, bot):
-	d = sum([abs(bot[i] - loc[i]) for i in range(3)])
-	return d <= all_bots[bot]
-
 
 def best_best_coord(best_coords):
 	best = None
@@ -48,26 +44,9 @@ def best_best_coord(best_coords):
 			best = c
 	return d, best
 
-def getCentroid(points):
-	# Sorting points in all dimension
-	n = len(points)
-	k = 3
-	p = zip(*points)
-	points2 = []
-
-	for i in range(k):
-		points2.append(sorted(p[i]))
-
-	res = []
-	for i in range(k):
-		res.append(points2[i][((n + 1) / 2) - 1])
-
-	return res
-
 
 best_coords = (0, [])  # num in range, list of coords with that number in range
 
-prev_dist = 0
 def test_coord(loc, bots, track=True):
 	global tested_locs
 	if track: tested_locs.add(loc)
@@ -91,11 +70,6 @@ def test_coord(loc, bots, track=True):
 		best_coords = (hits, [(x, y, z)])
 		seen = set(new_seen)
 	return len(seen) > seen_length
-	# Uncomment this to get the initial coordinate to pass to search
-# 	dist, coord = best_best_coord(best_coords[1])
-# 	if dist != prev_dist:
-# 		print(dist, coord, best_coords[0], len(best_coords[1]), len(seen))
-# 		prev_dist = dist
 
 def findVec(point1,point2):
 	finalVector = [0 for coOrd in point1]
@@ -120,27 +94,16 @@ def move_loc(loc, bot):
 			vec[i] = loc[i] + int(math.ceil(vec[i]/r)) + (1 if vec[i] >= 0 else -1)
 		test_coord(tuple(vec), all_bots)
 		ret = tuple(vec)
-# 		for j in xrange(1, int(r) + 10000, int(r//1000) + 1):
-# 			for i in range(3):
-# 				vec[i] = loc[i] + int(math.ceil(vec[i]/j)) + (1 if vec[i] >= 0 else -1)
-# 			test_coord(tuple(vec), all_bots)
-# 		dist, coord = best_best_coord(best_coords[1])
-# 		print(dist, coord, best_coords[0], len(best_coords[1]), len(seen))
 	return ret
 		
-min_d = sys.maxint
 def find_bots(loc):
 	global seen
 	global min_d
 	global all_bots
 	not_seen = set(all_bots.keys()) - seen
 	not_seen = sorted(not_seen, key = lambda x: sum([abs(x[i] - loc[i]) for i in range(3)]) / all_bots[x])
-# 	not_seen = sorted(not_seen, key = lambda x: all_bots[x], reverse=True)
 	for bot in not_seen:
 		loc = move_loc(loc, bot)
-		d = sum([abs(int(x)) for x in loc])
-		min_d = min(min_d, d)
-# 			print('new loc: %s  d: %d' % (new_loc, d))
 	print('%d bots in range  %d bots left' % (len(seen), len(set(all_bots.keys()) - seen)))
 	return loc
 
@@ -149,6 +112,8 @@ def search(loc):
 	global seen
 	global all_bots
 	global tested_locs
+	global not_seen
+	global coord
 	test_coord(loc, all_bots)
 	done = False
 	while not done:
@@ -163,91 +128,36 @@ def search(loc):
 	print('Tested %d locs' % len(tested_locs))
 	not_seen = set(all_bots.keys()) - seen
 	not_seen = sorted(not_seen, key = lambda x: sum([abs(x[i] - coord[i]) for i in range(3)])  - all_bots[x])
-	loc = (0,0,0)
-	incr = 1000
 	ns_count = 0
-	while not ns_count == len(not_seen):
-		ns_count = len(not_seen)
-		bot_count = 0
-		for bot in not_seen:
-# 			if bot_count < 12:
-# 				bot_count+= 1
-# 				continue
-			coord = list(coord)
-			
-# 			print('incr * 100: %d  bot strength: %d' % (incr*100, all_bots[bot]))
-			total_d = sum([abs(bot[i] - loc[i]) for i in range(3)])
-			target_d = abs(total_d) - abs(all_bots[bot])
-			
-			if target_d  <0: continue
-			vec = findVec(loc, bot)
-			for j in range(-5, 5):
-				r = abs(float(total_d) / float(target_d)) + j
-				for i in range(3):
-					vec[i] = coord[i] + int(math.ceil(vec[i]) / float(r)) + (1 if vec[i] >= 0 else -1)
-				if test_coord(tuple(vec), all_bots): break
-			
-			print('BOT: %d' % bot_count)
-			print('\tlocation: (%d,%d,%d)  signal: %d' % (bot[0],bot[1],bot[2],all_bots[bot]))
-			print('\tresults', dist, coord, best_coords[0], len(best_coords[1]), len(seen))
-			bot_count+= 1
-		not_seen = set(all_bots.keys()) - seen
-		not_seen = sorted(not_seen, key = lambda x: sum([abs(x[i] - coord[i]) for i in range(3)])  - all_bots[x])
-
-# search((0,0,0))
-# search(all_bots.keys()[0])
-# search((17736794, 59893573, 29250847))
-
-closest = {}
-for bot, s in all_bots.iteritems():
-	d = sum([abs(bot[i]) for i in range(3)])
-	target_d = abs(d - s)
-	vec = list(bot)
-	if d < s:
-		for i in range(3):
-			vec[i] = -vec[i]
-	r = abs(d/target_d)
-	for j in range(3):
-		for i in range(3):
-			vec[i] = int(math.ceil(vec[i]/float(r + j)))
-		closest[target_d] = vec
-		test_coord(vec, all_bots, False)
-		dist, coord = best_best_coord(best_coords[1])
-		print(dist, coord, best_coords[0], len(best_coords[1]), len(seen))
-			
-# min_coord = closest[min(closest.keys())]
-# print('Part 2: %d' % sum([abs(min_coord[i]) for i in range(3)]))
+	ns_count = len(not_seen)
+	bot_count = 0
+	for bot in not_seen:
+		coord = list(coord)
+		total_d = sum([abs(bot[i] - coord[i]) for i in range(3)])
 		
-def minDistance(n, k, point):
-	# Sorting points in all dimension
-	p = zip(*point)
-	point2 = []
+		vec = findVec(loc, bot)
+		for i in range(3):
+			vec[i] = coord[i] + int(math.ceil(vec[i]) / float(total_d)) + (1 if vec[i] >= 0 else -1)
+		for j in range(2):
+			for k in range(2):
+				for l in range(2):
+					vec[0]-= j
+					vec[1]-= k
+					vec[2]-= l
+					test_coord(vec, all_bots, False)
+					print(sum([abs(vec[i]) for i in range(3)]))
+					if test_coord(tuple(vec), all_bots): break
+		
+# 		dist, coord = best_best_coord(best_coords[1])
+		print('BOT: %d' % bot_count)
+		print('\tresults', dist, coord, best_coords[0], len(best_coords[1]), len(seen))
+		bot_count+= 1
+	not_seen = set(all_bots.keys()) - seen
+	not_seen = sorted(not_seen, key = lambda x: sum([abs(x[i] - loc[i]) for i in range(3)]) / all_bots[x])
 
-	for i in range(k):
-		point2.append(sorted(p[i]))
-
-	res = []
-	for i in range(k):
-		res.append(point2[i][((n + 1) / 2) - 1])
-
-# 	return res
-
-	test_coord(res, all_bots)
-
-	# This gets us a coordinate in range of 870 bots
-	res = []
-	point_range = [  ((n + 1) / 2) - 250, ((n + 1) / 2) + 50 ]
-	for i in xrange(point_range[0], point_range[1]):
-		for j in xrange(point_range[0], point_range[1]):
-			for k in xrange(point_range[0], point_range[1]):
-				res = (point2[0][i], point2[1][j], point2[2][k])
-				test_coord(res, all_bots)
-	print(res, end=" ")
-
-#Use this to get initial coordinate (in range of 870 bots) to pass to search
-# minDistance(1000, 3, all_bots.keys())
+search((0,0,0))
 
 # Part 1: 580
-# Part2 target: 97816347 (978 bots) not 106944840
+# Part2: 97816347 (978 bots in range)
 
 
