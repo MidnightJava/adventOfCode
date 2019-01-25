@@ -80,19 +80,22 @@ def next_loc(loc, bot):
 	target_d = total_d - all_bots[bot] - 1
 
 	vec = findVec(loc, bot)
-	if target_d < 0:
+	if target_d < -1:
 		for i in range(3):
 			vec[i] = -vec[i]
 	
-	if target_d == 0:
+	if target_d == -1:
 		vec = list(loc)
 	else:
 		r = abs(float(target_d) / float(total_d))
 		for i in range(3):
 			vec[i] = loc[i] + int(vec[i] * r) + (1 if vec[i] >= 0 else -1)
-	
+	lseen = len(seen)
 	test_coord(vec)
-	return vec
+	if len(seen) >= lseen:
+		return vec
+	else:
+		return loc
 
 def bot_sort(loc):
 	def f(bot):
