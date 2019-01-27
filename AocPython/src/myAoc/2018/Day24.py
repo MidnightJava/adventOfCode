@@ -158,6 +158,6 @@ for g in army.values():
     tot+= g['units']
     
 print('Part 1: %d' % tot)
-#Part 1 13282 too low  target 13331
+#Part 1 13282 too low 
 
 
