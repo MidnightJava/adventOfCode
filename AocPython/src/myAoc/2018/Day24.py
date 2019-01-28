@@ -16,6 +16,9 @@ p_init = 'initiative (\d+)'
 p_imm = 'immune to ([^\;\)]+)'
 p_weak = 'weak to ([^\;\)]+)'
 
+boost = 0 # part 1
+boost = 33 # part 2 (found with binary search startign with boost == 100)
+
 with open('data/Day24')  as f:
     army = imm
     armyname = 'imm'
@@ -33,6 +36,7 @@ with open('data/Day24')  as f:
             g['hitp'] = int(re.search(p_hitp, line).group(1))
             m = re.search(p_damage, line)
             g['dmag'] = int(m.group(1)) # damage magnitude
+            if army == imm: g['dmag'] += boost
             g['dtype'] = m.group(2) # damage type
             g['init'] = int(re.search(p_init, line).group(1)) #initiative
             m = re.search(p_imm, line)
@@ -63,13 +67,13 @@ def applyDamage(atckr_id, dfndr_id):
         dfndr = _armies[dfndr_id]
         atckr = _armies[atckr_id]
         dmg = calc_damage(atckr, dfndr)
-        print('%s attacks %s with damage %d' %(atckr_id,dfndr_id, dmg))
+        # print('%s attacks %s with damage %d' %(atckr_id,dfndr_id, dmg))
         army = inf if dfndr['id'] in inf else imm
         if dmg >= dfndr['units'] * dfndr['hitp']:
-            print('\t%s kills %d units of %s' % (atckr_id, min(dfndr['units'], dmg // dfndr['hitp']), dfndr_id))
+            # print('\t%s kills %d units of %s' % (atckr_id, min(dfndr['units'], dmg // dfndr['hitp']), dfndr_id))
             del army[dfndr['id']]
         else:
-            print('\t%s kills %d units of %s' % (atckr_id, dmg // dfndr['hitp'], dfndr_id))
+            # print('\t%s kills %d units of %s' % (atckr_id, dmg // dfndr['hitp'], dfndr_id))
             dfndr['units']-= (dmg // dfndr['hitp'])
             army[dfndr['id']] = dfndr
             
@@ -95,7 +99,7 @@ def choose_target(g, targets_selected):
     damage = winners[0]
     # If more than one group with max damage, choose the one with max effective power and then with max initiative
     winners = sorted(winners[1], key=lambda x: (x['units'] * x['dmag'], x['init']), reverse=True)
-    if len(winners):
+    if winners:
         return winners[0], damage
     else:
         return None, damage
@@ -116,20 +120,16 @@ def target():
     for g in armies:
         # damage returned here only for intermediate logging
         dfndr, dmg = choose_target(g, attacks)
-        if dfndr:
+        if dfndr and dmg:
             attacks[g['id']] = dfndr['id']
-            print('%s will attack %s with %d damage' % (g['id'], dfndr['id'], dmg))
+            # print('%s will attack %s with %d damage' % (g['id'], dfndr['id'], dmg))
     return attacks
-
-fightcount = 0
 
 # FIGHT PHASE
 #
 # Do attacks in sorted order
 # @param attacks dict: {attacker_id: defender_id}
 def fight(attacks):
-    global fightcount
-    fightcount+= 1
     _armies = dict(inf, **imm)
     # Attack in decreasing order of initiative
     attk_order = sorted(attacks.keys(), key=lambda x: _armies[x]['init'], reverse=True)
@@ -139,25 +139,23 @@ def fight(attacks):
 def army_defeated():
     return not len(inf) or not len(imm)
         
-#### Solve Part 1 ####
-
-print_armies()
+# print_armies()
 done = False
 while not done:
     attacks = target()
     fight(attacks)
-#     print_armies()
     done = army_defeated()
-
-print('%d fights' % fightcount)
   
 army = imm or inf
 tot = 0
 for g in army.values():
-    print('%d units' % g['units'])
+    # print('%d units' % g['units'])
     tot+= g['units']
-    
-print('Part 1: %d' % tot)
-#Part 1 13282 too low 
 
+winnername = "Immune System" if imm else "Infection"
+print("The winner is %s" % winnername)
+    
+print('Units left: %d' % tot)
+# Part 1 13331
+# Part 2: 7476
 
