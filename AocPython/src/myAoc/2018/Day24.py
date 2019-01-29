@@ -16,37 +16,35 @@ p_init = 'initiative (\d+)'
 p_imm = 'immune to ([^\;\)]+)'
 p_weak = 'weak to ([^\;\)]+)'
 
-boost = 0 # part 1
-boost = 33 # part 2 (found with binary search startign with boost == 100)
-
-with open('data/Day24')  as f:
-    army = imm
-    armyname = 'imm'
-    _id = 0
-    for line in f:
-        if line.startswith('Immune System:'): continue
-        elif line.startswith('Infection:'):
-            army = inf
-            armyname = 'inf'
-            _id = 0
-        else:
-            _id+= 1
-            g = {}
-            g['units'] = int(re.search(p_units, line).group(1))
-            g['hitp'] = int(re.search(p_hitp, line).group(1))
-            m = re.search(p_damage, line)
-            g['dmag'] = int(m.group(1)) # damage magnitude
-            if army == imm: g['dmag'] += boost
-            g['dtype'] = m.group(2) # damage type
-            g['init'] = int(re.search(p_init, line).group(1)) #initiative
-            m = re.search(p_imm, line)
-            if m:
-                g['imm'] = map(lambda x: x.strip(), m.group(1).split(',')) #immune list
-            m = re.search(p_weak, line)
-            if m:
-                g['weak'] = map(lambda x: x.strip(), m.group(1).split(',')) #weakness list
-            g['id'] = armyname + str(_id)
-            army[g['id']] = g
+def readData(boost):
+    with open('data/Day24')  as f:
+        army = imm
+        armyname = 'imm'
+        _id = 0
+        for line in f:
+            if line.startswith('Immune System:'): continue
+            elif line.startswith('Infection:'):
+                army = inf
+                armyname = 'inf'
+                _id = 0
+            else:
+                _id+= 1
+                g = {}
+                g['units'] = int(re.search(p_units, line).group(1))
+                g['hitp'] = int(re.search(p_hitp, line).group(1))
+                m = re.search(p_damage, line)
+                g['dmag'] = int(m.group(1))# damage magnitude
+                if army == imm: g['dmag']+= boost
+                g['dtype'] = m.group(2) # damage type
+                g['init'] = int(re.search(p_init, line).group(1)) #initiative
+                m = re.search(p_imm, line)
+                if m:
+                    g['imm'] = map(lambda x: x.strip(), m.group(1).split(',')) #immune list
+                m = re.search(p_weak, line)
+                if m:
+                    g['weak'] = map(lambda x: x.strip(), m.group(1).split(',')) #weakness list
+                g['id'] = armyname + str(_id)
+                army[g['id']] = g
 
 def print_armies():
     print('Immune System')       
@@ -69,7 +67,7 @@ def applyDamage(atckr_id, dfndr_id):
         dmg = calc_damage(atckr, dfndr)
         # print('%s attacks %s with damage %d' %(atckr_id,dfndr_id, dmg))
         army = inf if dfndr['id'] in inf else imm
-        if dmg >= dfndr['units'] * dfndr['hitp']:
+        if dmg > dfndr['units'] * dfndr['hitp']:
             # print('\t%s kills %d units of %s' % (atckr_id, min(dfndr['units'], dmg // dfndr['hitp']), dfndr_id))
             del army[dfndr['id']]
         else:
@@ -135,27 +133,39 @@ def fight(attacks):
     attk_order = sorted(attacks.keys(), key=lambda x: _armies[x]['init'], reverse=True)
     for attacker in attk_order:
         applyDamage(attacker, attacks[attacker])
-        
-def army_defeated():
-    return not len(inf) or not len(imm)
-        
-# print_armies()
-done = False
-while not done:
-    attacks = target()
-    fight(attacks)
-    done = army_defeated()
-  
-army = imm or inf
-tot = 0
-for g in army.values():
-    # print('%d units' % g['units'])
-    tot+= g['units']
 
-winnername = "Immune System" if imm else "Infection"
-print("The winner is %s" % winnername)
+def bin_solve(lo, hi):
+    mid = lo + (hi - lo) / 2
+    readData(mid)
+    if hi == lo:
+        return solve()[0]
+    else:
+        iwins = solve()[1]
+        return bin_solve(lo, mid) if iwins else bin_solve(mid+1, hi)
     
-print('Units left: %d' % tot)
+def total_units(groups):
+    return sum([g['units'] for g in groups])
+
+def solve():
+    done = False
+    while not done:
+        units = total_units(inf.values() + imm.values())
+        attacks = target()
+        fight(attacks)
+        if units == total_units(inf.values() + imm.values()):
+            return 0, False #fight is a stalemate
+        done = not inf or not imm
+    
+    army = imm or inf
+    return total_units(army.values()), army == imm
+
+for part in [1,2]:
+    if part == 1:
+        readData(0)
+        print('Part 1: %s' % solve()[0])
+    else:
+        print('Part 2: %s' % bin_solve(0, 100))
+    
 # Part 1 13331
 # Part 2: 7476
 
