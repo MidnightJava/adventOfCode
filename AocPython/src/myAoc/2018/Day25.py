@@ -49,3 +49,5 @@ while modified:
 
 print('%d constellations' % len(constellations))
 print('time %d seconds' % (time.time() - start_time))
+
+# Part 1: 373
