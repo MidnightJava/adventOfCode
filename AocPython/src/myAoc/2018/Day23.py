@@ -61,10 +61,10 @@ def test_coord(loc):
 			new_seen.add(bot)
 	if hits == best_coords[0]:
 		best_coords[1].append((x, y, z))
-		seen = set(new_seen)
+		seen = new_seen
 	elif hits > best_coords[0]:
 		best_coords = (hits, [(x, y, z)])
-		seen = set(new_seen)
+		seen = new_seen
 
 def findVec(point1,point2):
 	finalVector = [0 for coOrd in point1]
@@ -73,7 +73,7 @@ def findVec(point1,point2):
 		finalVector[dimension] = deltaCoOrd
 	return finalVector
 
-
+err_margin = 2
 def next_loc(loc, bot):
 	global all_bots
 	total_d = sum([abs(bot[i] - loc[i]) for i in range(3)])
@@ -90,12 +90,15 @@ def next_loc(loc, bot):
 		r = abs(float(target_d) / float(total_d))
 		for i in range(3):
 			vec[i] = loc[i] + int(vec[i] * r) + (1 if vec[i] >= 0 else -1)
-	lseen = len(seen)
+		test_coord(vec)
+		for j in range(err_margin):
+				for k in range(err_margin):
+					for l in range(err_margin):
+						for m in [-1,1]:
+							vec[0]+= (j*m); vec[1]+= (k*m); vec[2]+= (l*m)
+							test_coord(vec)
 	test_coord(vec)
-	if len(seen) >= lseen:
-		return vec
-	else:
-		return loc
+	return vec
 
 def bot_sort(loc):
 	def f(bot):
@@ -111,30 +114,15 @@ def find_bots(loc):
 	return loc
 
 def search(loc):
-	find_bots(loc)
+	test_coord(loc)
 	done = False
 	while not done:
+		lseen = len(seen)
 		_, coord = best_best_coord()
+		loc = find_bots(coord)
 		not_seen = set(all_bots.keys()) - seen
 		not_seen = sorted(not_seen, key = bot_sort(loc))
-		lseen = len(seen)
-		for bot in not_seen:
-			d = sum([abs(bot[i] - coord[i]) for i in range(3)])
-			s = all_bots[bot]
-			target_d = d - s - 1
-			vec = findVec(coord, bot)
-			if target_d < 0:
-				for i in range(3): vec[i] = -vec[i]
-			for i in range(3):
-				vec[i] = coord[i] + int(vec[i] * abs(target_d) / float(d)) + (1 if vec[i] >= 0 else -1)
-			test_coord(vec)
-			for j in range(2):
-				for k in range(2):
-					for l in range(2):
-						for m in [-1,1]:
-							vec[0]+= (j*m); vec[1]+= (k*m); vec[2]+= (l*m)
-							test_coord(vec)
-						
+		
 		if lseen == len(seen): done = True
 
 	dist, coord = best_best_coord()
