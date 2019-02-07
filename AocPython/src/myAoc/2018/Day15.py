@@ -1,3 +1,5 @@
+from __future__ import print_function
+import sys
 
 def print_grid():
     for y in range(h):
@@ -12,6 +14,16 @@ def get_actors():
             if grid[(x,y)] == 'G' or grid[(x,y)] == 'E':
                 l.append((x,y))
     return l
+
+def get_open_locs(u):
+    locs = set()
+    for y in range(h):
+        for x in range(w):
+            if grid[(x,y)] == u:
+                for loc in [(x-1,y), (x+1,y), (x,y-1), (x,y+1)]:
+                    if loc in grid and grid[loc] == '.':
+                        locs.add(loc)
+    return locs
 
 with open('./data/Day15a') as f:
     global grid, hits
@@ -31,35 +43,35 @@ with open('./data/Day15a') as f:
 def find_shortest_path(s, d):
     a = 1
 
-def reading_order(paths):
+def best_loc(locs):
     ymin = h
     xmin = w
-    path = None
-    for p in paths:
-        if path == None or (p[1] <= ymin and p[0] < xmin):
-            xmin = p[0], ymin = p[1]
-            path = list(p)
-    return path
+    best = None
+    for loc in locs:
+        if not best or (loc[1] <= ymin and loc[0] <= xmin):
+            xmin = loc[0], ymin = loc[1]
+            best = loc
+    return best
 
 def move(loc):
-    subj = grid[loc)]
+    subj = grid[loc]
     enemy = 'G' if subj == 'E' else 'E'
-    shortest_paths = []
-    splen = None
-    for target in get_actors():
-        if grid[target] == enemy:
-            path = find_shortest_path(loc, grid[target])
-            if not shortest_paths or len(path) < splen:
-                shortest_paths = [list(path)]
-                splen = len(sp)
-            elif len(path) == splen:
-                shortest_paths.append(path)
+    paths = []
+    splen = sys.maxint
+    targets = []
+    for target in get_open_locs(enemy):
+        plen = shortest_path_len(loc, target)
+        if plen == splen:
+            targets.append(target)
+        elif plen < splen:
+            splen = plen
+            targets = [target]
+    target = best_loc(targets)
+    paths = shortest_paths(loc, target)
+    first_steps = map(lambda x: x[0], paths)
+    next_loc = best_loc(first_steps)
             
-    if len(shortest_paths) == 1:
-        next_loc = shortest_paths[0][0]
-    else:
-        next_loc = reading_order(shortest_paths)[0]
-    grid[loc)] = '.'
+    grid[loc] = '.'
     grid[next_loc] = subj
 
 print_grid()
