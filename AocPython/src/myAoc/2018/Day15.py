@@ -8,6 +8,12 @@ def print_grid():
     for y in range(h):
         for x in range(w):
             print(grid[(x,y)], end='')
+        print('  ', end='')
+        units = {}
+        for k,v in hits.iteritems():
+            if k[1] == y: units[k] = v
+        for k,v in sorted(units.items(), key=lambda unit: unit[0][0]):
+            print('%s(%d), ' % (grid[k], v), end='')
         print()
 
 def get_units():
@@ -28,7 +34,7 @@ def get_open_locs(u):
                         locs.add(loc)
     return locs
 
-with open('2018/data/Day15b') as f:
+with open('./data/Day15') as f:
     global grid, hits
     grid = {}
     hits = {}
@@ -37,7 +43,8 @@ with open('2018/data/Day15b') as f:
         x = 0
         for c in line:
             grid[(x,y)] = c
-            hits[(x,y)] = 200
+            if c == 'E' or c =='G':
+                hits[(x,y)] = 200
             x+= 1
         y+= 1
     w = x
@@ -60,17 +67,17 @@ def shortest_paths(start, goal):
         x,y = current
         if current == goal:
             np = list(path)
-            np.append(goal)
+            # np.append(goal)
             paths.append(np)
-            visited[goal] = len(np)
+            # visited[goal] = len(path)
             continue
-        if current in visited:
+        if current in visited and visited[current] < l and path in paths:
             continue
-        visited[current] = len(path)
+        visited[current] = l
         for neighbor in [loc for loc in [(x-1,y),(x+1,y),(x,y-1),(x,y+1)] if loc in grid and grid[loc] == '.']:
             np = list(path)
             np.append(neighbor)
-            if neighbor not in visited or visited[neighbor] > len(path):
+            if neighbor not in visited or visited[neighbor] > len(np)+1:
                 queue.append((len(np), np, neighbor))
 
 
@@ -83,11 +90,17 @@ def shortest_paths(start, goal):
 def best_loc(locs):
     ymin = h
     xmin = w
+    best_y = []
     best = None
     for loc in locs:
-        if not best or (loc[1] <= ymin and loc[0] <= xmin):
-            xmin = loc[0]
+        if not best_y or loc[1] < ymin:
             ymin = loc[1]
+            best_y = [loc]
+        elif loc[1] == ymin:
+            best_y.append(loc)
+    for loc in best_y:
+        if not best or loc[0] < xmin:
+            xmin = loc[0]
             best = loc
     return best
 
@@ -107,18 +120,25 @@ def move(loc):
         elif plen < splen:
             splen = plen
             targets = [target]
-    if not targets: return False
+    if not targets: return None
     target = best_loc(targets)
     paths = shortest_paths(loc, target)
-    if not paths: return False
+    if not paths: return None
     first_steps = map(lambda x: x[0], paths)
     next_loc = best_loc(first_steps)
             
     grid[loc] = '.'
+    d = abs(loc[0] - next_loc[0]) + abs(loc[1] - next_loc[1])
+    if d != 1:
+        print('Distance from %s to %s is %d' % (loc, next_loc, d))
+        # sys.exit()
     grid[next_loc] = subj
-    return True
+    hits[next_loc] = hits[loc]
+    del hits[loc]
+    return next_loc
 
 def attack(loc):
+    global hits
     enemy = 'E' if grid[loc] == 'G' else 'G'
     x,y = loc
     targets = []
@@ -140,22 +160,22 @@ def attack(loc):
     return True
 
 def tick():
-    units = get_units()
-    if not 'E' in [grid[loc] for loc in units] or not 'G' in [grid[loc] for loc in units]:
-        return False
     # print(units)
     # print([grid[loc] for loc in units])
+    count = 1
     for unit in units:
         if not attack(unit):
-            move(unit)
-            attack(unit)
-            if not 'E' in [grid[loc] for loc in get_units()] or not 'G' in [grid[loc] for loc in get_units()]:
-                return False
+            next_loc = move(unit)
+            if next_loc:
+                attack(next_loc)
+                if not 'E' in [grid[loc] for loc in get_units()] or not 'G' in [grid[loc] for loc in get_units()]:
+                    return False
         else:
-            if not 'E' in [grid[loc] for loc in get_units()] or not 'G' in [grid[loc] for loc in get_units()]:
+            if count < len(units) and (not 'E' in [grid[loc] for loc in get_units()] or not 'G' in [grid[loc] for loc in get_units()]):
                 return False
-    if not 'E' in [grid[loc] for loc in get_units()] or not 'G' in [grid[loc] for loc in get_units()]:
-        return False
+        count+= 1
+    # if not 'E' in [grid[loc] for loc in get_units()] or not 'G' in [grid[loc] for loc in get_units()]:
+    #     return False
     return True
 
 done = False
@@ -163,19 +183,27 @@ global rounds
 rounds = 0
 while not done:
     print('round %d' % rounds)
-    print_grid()
+    if rounds <= 3:
+        print_grid()
+    units = get_units()
+    if not 'E' in [grid[loc] for loc in units] or not 'G' in [grid[loc] for loc in units]:
+        done = True
+        continue
     if tick():
         rounds+= 1
     else:
         done = True
         units = get_units()
-        print(units)
-        print([grid[loc] for loc in units])
+        # print(units)
+        # print([grid[loc] for loc in units])
 
-print_grid()
+# print_grid()
 
-score = rounds * sum(hits.values())
-print('rounds: %d,   hit points: %d' % (rounds, sum(hits.values())))
+hitpoints = sum(filter(lambda x: x>0, hits.values()))
+score = rounds * hitpoints
+print('rounds: %d,   hit points: %d' % (rounds, hitpoints))
 print('Part 1: %d' % score)
 
+# Error occurs in round 26
+#Part 1: 304172 too low not 304680
 
