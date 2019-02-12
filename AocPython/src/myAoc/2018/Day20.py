@@ -88,13 +88,13 @@ grid = {(0,0) : 'X'}
 
 parse(inp[1:-2], (0,0))
 
-minx = maxx = miny = maxy = 0
+# minx = maxx = miny = maxy = 0
 
-for loc in grid.iterkeys():
-	minx = min(minx, loc[0])
-	maxx = max(maxx, loc[0])
-	miny = min(miny, loc[1])
-	maxy = max(maxy, loc[1])
+# for loc in grid.iterkeys():
+# 	minx = min(minx, loc[0])
+# 	maxx = max(maxx, loc[0])
+# 	miny = min(miny, loc[1])
+# 	maxy = max(maxy, loc[1])
 
 seen = {}
 BFS(0, 0, seen)
