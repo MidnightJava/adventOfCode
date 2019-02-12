@@ -34,7 +34,7 @@ def get_open_locs(u):
                         locs.add(loc)
     return locs
 
-with open('./data/Day15') as f:
+with open('2018/data/Day15a') as f:
     global grid, hits
     grid = {}
     hits = {}
@@ -67,18 +67,17 @@ def shortest_paths(start, goal):
         x,y = current
         if current == goal:
             np = list(path)
-            # np.append(goal)
+            np.append(goal)
             paths.append(np)
-            # visited[goal] = len(path)
             continue
-        if current in visited and visited[current] < l and path in paths:
+        if current in visited and visited[current] < l:
             continue
         visited[current] = l
         for neighbor in [loc for loc in [(x-1,y),(x+1,y),(x,y-1),(x,y+1)] if loc in grid and grid[loc] == '.']:
             np = list(path)
             np.append(neighbor)
-            if neighbor not in visited or visited[neighbor] > len(np)+1:
-                queue.append((len(np), np, neighbor))
+            if neighbor not in visited or visited[neighbor] > len(path):
+                queue.append((len(path), np, neighbor))
 
 
     if path: paths.append(list(path))
@@ -86,6 +85,58 @@ def shortest_paths(start, goal):
         return None
     else:
         return filter(lambda x: len(x) == min([len(p) for p in paths]), paths)
+
+def bfs(start):
+    global grid
+    queue, enqueued = deque([((None), start)]), set([start])
+    while queue:
+        parent, n = queue.popleft()
+        yield parent, n
+        x,y = n
+        new = set([loc for loc in [(x-1,y),(x+1,y),(x,y-1),(x,y+1)] if loc in grid and grid[loc] == '.']) - enqueued
+        enqueued |= new
+        queue.extend([(n, child) for child in new])
+
+def dfs(start):
+    stack, enqueued = [(None, start)], set([start])
+    while stack:
+        parent, n = stack.pop()
+        yield parent, n
+        x,y = n
+        new = set([loc for loc in [(x-1,y),(x+1,y),(x,y-1),(x,y+1)] if loc in grid and grid[loc] == '.']) - enqueued
+        enqueued |= new
+        stack.extend([(n, child) for child in new])
+
+# def shortest_paths(start, end):
+#     parents = {}
+#     for parent, child in bfs(start):
+#         parents[child] = parent
+#         if child == end:
+#             revpath = [end]
+#             while True:
+#                 parent = parents[child]
+#                 revpath.append(parent)
+#                 if parent == start:
+#                     break
+#                 child = parent
+#             return list(reversed(revpath))
+#     return None # or raise appropriate exception
+
+# def shortest_paths(start, end, path=[]):
+#     global grid
+#     path = path + [start]
+#     if start == end:
+#         return [path]
+#     if not start in grid:
+#         return []
+#     paths = []
+#     x,y = end
+#     for node in [loc for loc in [(x-1,y),(x+1,y),(x,y-1),(x,y+1)] if loc in grid and grid[loc] == '.']:
+#         if node not in path:
+#             newpaths = shortest_paths(node, end, path)
+#             for newpath in newpaths:
+#                 paths.append(newpath)
+#     return filter(lambda x: len(x) == min([len(p) for p in paths]), paths)
 
 def best_loc(locs):
     ymin = h
@@ -170,12 +221,12 @@ def tick():
                 attack(next_loc)
                 if not 'E' in [grid[loc] for loc in get_units()] or not 'G' in [grid[loc] for loc in get_units()]:
                     return False
-        else:
-            if count < len(units) and (not 'E' in [grid[loc] for loc in get_units()] or not 'G' in [grid[loc] for loc in get_units()]):
-                return False
+        # else:
+        #     if count < len(units) and (not 'E' in [grid[loc] for loc in get_units()] or not 'G' in [grid[loc] for loc in get_units()]):
+        #         return False
         count+= 1
-    # if not 'E' in [grid[loc] for loc in get_units()] or not 'G' in [grid[loc] for loc in get_units()]:
-    #     return False
+    if not 'E' in [grid[loc] for loc in get_units()] or not 'G' in [grid[loc] for loc in get_units()]:
+        return False
     return True
 
 done = False
@@ -205,5 +256,5 @@ print('rounds: %d,   hit points: %d' % (rounds, hitpoints))
 print('Part 1: %d' % score)
 
 # Error occurs in round 26
-#Part 1: 304172 too low not 304680
+#Part 1: 304172 too low not 304680 319410
 
