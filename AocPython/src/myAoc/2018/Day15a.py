@@ -1,87 +1,138 @@
-from collections import deque, Counter
-from itertools import count, product
-with open('2018/data/Day15', 'r') as ifile:
-    field = [list(row.strip().split()[0]) for row in ifile]
-fldht, fldwh = len(field), len(field[0])
-units = []
-for y, x in product(range(fldht), range(fldwh)):
-    if field[y][x] in 'GE':
-        units.append([200, y, x, field[y][x]])
-        field[y][x] = len(units) - 1
-elves = Counter(unit[3] for unit in units)['E']
+from dataclasses import dataclass
+import collections
+import time
 
-def find_mov_target(field, unit):
-    start = (unit[1], unit[2])
-    queue = deque([start])
-    cseen = {}
-    while True:
-        try:
-            cnode = queue.pop()
-        except IndexError: # Runs out of spaces to move
-            return None
-        for dy, dx in ((-1, 0), (0, -1), (0, 1), (1, 0)):
-            j, i = cnode[0] + dy, cnode[1] + dx 
-            if 0 <= j < fldht and 0 <= i < fldwh:
-                nnode = (j, i)
-                cell = field[j][i]
-                if isinstance(cell, list) and cell[3] != unit[3]:
-                    if cnode == start: # Enemy is right in front of it
-                        return None
-                    nnode = cnode
-                    while cseen[nnode] != start:
-                        nnode = cseen[nnode]
-                    return nnode
-                if cell == '.' and nnode not in cseen:
-                    queue.appendleft(nnode)
-                    cseen[nnode] = cnode
+start = time.perf_counter()
+map = []
+personen = []
+nachbarn = [(-1, 0), (0, -1), (0, 1), (1, 0)]
 
-def find_atk_target(field, unit):
-    tlist = []
-    for dy, dx in ((-1, 0), (0, -1), (0, 1), (1, 0)):
-        j, i = unit[1] + dy, unit[2] + dx
-        if 0 <= j < fldht and 0 <= i < fldwh:
-            cell = field[j][i]
-            if isinstance(cell, list) and cell[3] != unit[3]:
-                tlist.append(cell)
-    if tlist:
-        return min(tlist, key=lambda i: i[0])
-    return None
 
-def sim_battle(field, units, elfpw):
-    for turn in count():
-        units = sorted(units, key=lambda i: tuple(i[1:3]))
-        utlen = len(units)
-        for uidx, unit in enumerate(units):
-            if unit[0] < 1: # Dead Elves/Goblins don't fight
-                continue
-            hdcnt = Counter(unit[3] for unit in units if unit[0] > 0)
-            if hdcnt['G'] == 0 or hdcnt['E'] == 0:
-                return hdcnt, turn * sum(unit[0] for unit in units if unit[0] > 0)
-            trgt = find_mov_target(field, unit)
-            if trgt: # Movement step
-                field[unit[1]][unit[2]] = '.'
-                unit[1:3] = trgt
-                field[unit[1]][unit[2]] = unit
-            trgt = find_atk_target(field, unit)
-            if trgt: # Attack step
-                trgt[0] -= elfpw if unit[3] == 'E' else 3 
-                if trgt[0] < 1:
-                    field[trgt[1]][trgt[2]] = '.'
-        units = [unit for unit in units if unit[0] > 0]
+def pos2i(pos):
+  return pos[0]*spalten+pos[1]
 
-for elfpw in count(3):
-    utcpy = [unit[:] for unit in units]
-    fdcpy = []
-    for row in field:
-        fdcpy.append([])
-        for cell in row:
-            if isinstance(cell, str):
-                fdcpy[-1].append(cell)
-            else:
-                fdcpy[-1].append(utcpy[cell])
-    btout = sim_battle(fdcpy, utcpy, elfpw)
-    if elfpw == 3:
-        print(btout[1]) # 1
-    if btout[0]['E'] == elves:
-        print(btout[1]) # 2
-        break
+
+def addPos(pos1, pos2):
+  return (pos1[0]+pos2[0], pos1[1]+pos2[1])
+
+
+def sucheAttackFields(pos):
+  attackFields = []
+  for nachbar in nachbarn:
+    target = addPos(pos, nachbar)
+    if map[pos2i(target)] != '#':
+      attackFields.append(target)
+  return attackFields
+
+
+def sucheFreieNachbarn(pos):
+  freieNachbarn = []
+  for nachbar in nachbarn:
+    target = addPos(pos, nachbar)
+    if map[pos2i(target)] == '.':
+      freieNachbarn.append(target)
+  return freieNachbarn
+
+
+def attackEnemy(person):
+  attackEnemies = []
+  for pos in sucheAttackFields(person.pos):
+    if pos in enemies:
+      attackEnemies.append(enemies[pos])
+  if attackEnemies:
+    enemy = sorted(attackEnemies, key=lambda a: (a.hp, a.pos))[0]
+    person.attackEnemy(enemy)
+    return True
+  return False
+
+
+@dataclass
+class Person():
+  typ: str
+  pos: tuple
+  attack: int
+  hp: int = 200
+
+  def attackEnemy(self, enemy):
+    enemy.hp -= self.attack
+    if enemy.hp < 1:
+      map[pos2i(enemy.pos)] = '.'
+
+  def move(self, newPos):
+    map[pos2i(self.pos)] = '.'
+    map[pos2i(newPos)] = self.typ
+    self.pos = newPos
+
+
+with open('data/Day15') as f:
+  for z, zeile in enumerate(f):
+    zeile = zeile.strip()
+    for sp, zeichen in enumerate(zeile):
+      map.append(zeichen)
+      if zeichen == 'G':
+        personen.append(Person(zeichen, (z, sp), 3))
+      elif zeichen == 'E':
+        personen.append(Person(zeichen, (z, sp), 3))
+spalten = len(zeile)
+
+
+def bfs(person):
+  visited, queue, gefundeneZiele = set(), collections.deque(), []
+  root = person.pos
+  queue.append((root, 0, []))
+  visited.add(root)
+  tiefe = 0
+  while True:
+    vertex, d, path = queue.popleft()
+    if d > tiefe:
+      tiefe += 1
+      if gefundeneZiele:
+        # zuerst nach zielfeld (zeile, spalte = y,x) und dann nach erstem Schritt zum Ziel (zeile, spalte = y,x) sortieren
+        gefundeneZiele.sort(key=lambda x: (x[0], x[1]))
+        return gefundeneZiele[0][1]
+    for nachbar in sucheFreieNachbarn(vertex):
+      if nachbar not in visited:
+        visited.add(nachbar)
+        queue.append((nachbar, tiefe+1, path+[vertex]))
+        if nachbar in targets:
+          path += [vertex]+[nachbar]
+          gefundeneZiele.append([nachbar, path[1]])
+    if not queue:
+      return
+
+
+beendet = False
+runde = 0
+while not beendet:
+  runde += 1
+  personen.sort(key=lambda a: a.pos)
+  for person in personen:
+    if person.hp < 1:
+      continue
+    targets = set()
+    enemies = {}
+
+    for enemy in personen:
+      if person.typ == enemy.typ or enemy.hp < 1:
+        continue
+      targets.update(sucheFreieNachbarn(enemy.pos))
+      enemies[enemy.pos] = enemy
+
+    if not enemies:
+      beendet = True
+      runde -= 1
+      break
+
+    if not attackEnemy(person):
+      pos = bfs(person)
+      if pos:
+        person.move(pos)
+        attackEnemy(person)
+
+
+summeHitPoints = sum([p.hp for p in personen if p.hp > 0])
+print()
+print('Vollendete Runden: ', runde)
+print('Summe HitPoints  : ', summeHitPoints)
+print('Lösung           : ', runde*summeHitPoints)
+print('gefunden in        ', time.perf_counter()-start)
