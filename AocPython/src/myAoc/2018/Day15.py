@@ -30,27 +30,11 @@ def get_open_locs(u):
     locs = set()
     for y in range(h):
         for x in range(w):
-            if grid[(x,y)] == u:
+            if grid[(x,y)] == u and (x,y) in hits and hits[(x,y)] > 0:
                 for loc in [(x-1,y), (x+1,y), (x,y-1), (x,y+1)]:
                     if loc in grid and grid[loc] == '.':
                         locs.add(loc)
     return locs
-
-with open('data/Day15') as f:
-    global grid, hits
-    grid = {}
-    hits = {}
-    y = 0
-    for line in f:
-        x = 0
-        for c in line:
-            grid[(x,y)] = c
-            if c == 'E' or c =='G':
-                hits[(x,y)] = 200
-            x+= 1
-        y+= 1
-    w = x
-    h = y
 
 def best_loc(locs):
     return sorted(locs, key=lambda x: (x[1], x[0]))[0]
@@ -116,7 +100,7 @@ def move(loc):
     del hits[loc]
     return next_loc
 
-def attack(loc):
+def attack(loc, eattack):
     global hits, grid
     enemy = 'E' if grid[loc] == 'G' else 'G'
     x,y = loc
@@ -133,8 +117,10 @@ def attack(loc):
         elif hits[t] == minhp:
             targets2.append(t)
     target = best_loc(targets2)
-    hits[target]-= 3
+    apow = 3 if enemy == 'E' else eattack
+    hits[target]-= apow
     if hits[target] <= 0:
+        if grid[target] == 'E': return 'end'
         del hits[target]
         grid[target] = '.'
     return True
@@ -142,14 +128,27 @@ def attack(loc):
 def enemy_defeated():
     return not 'E' in [grid[loc] for loc in get_units()] or not 'G' in [grid[loc] for loc in get_units()]
 
-def tick():
+def tick(eattack):
+    seen = set()
     for unit in get_units():
-        if unit not in hits or hits[unit] <= 0:
+        if unit not in hits or hits[unit] <= 0 or grid[unit] == '.' or unit in seen:
             continue
-        if not attack(unit):
+        found_enemy = False
+        for _unit in get_units():
+            if not _unit in hits or hits[_unit] <= 0 or grid[_unit] == '.': continue
+            enemy = 'E' if grid[_unit] == 'G' else 'G'
+            if get_open_locs(enemy): found_enemy = True
+        if not found_enemy: return False
+        res = attack(unit, eattack)
+        if res == False:
             next_loc = move(unit)
+            seen.add(next_loc)
             if next_loc:
-                attack(next_loc)
+                if attack(next_loc, eattack) == 'end': return 'end'
+                if enemy_defeated():
+                    return False
+        elif res == 'end':
+            return 'end'
         elif enemy_defeated():
             return False
     return True
@@ -157,26 +156,68 @@ def tick():
 done = False
 global rounds
 round = 0
-while not done:
-    print('round %d' % round)
-    # print(hits.values())
-    # print_grid()
-    round+= 1
-    done = not tick()
-    hitmap[round]= sum(hits.values())
-    if done: round-= 1
-    if enemy_defeated(): done = True
+startagain = False
+eattack = 3
+while True:
+    round = 0
+    eattack+= 1
+    hitmap = defaultdict(int)
+    print('Start sim with eattack %d' % eattack)
+    with open('data/Day15') as f:
+        global grid, hits
+        grid = {}
+        hits = {}
+        y = 0
+        for line in f:
+            x = 0
+            for c in line:
+                grid[(x,y)] = c
+                if c == 'E' or c =='G':
+                    hits[(x,y)] = 200
+                x+= 1
+            y+= 1
+        w = x
+        h = y
+    while True:
+        # if round >= 69 and round <= 72:
+        #     print('round %d' % round)
+        #     print_grid()
+        round+= 1
+        res = tick(eattack)
+        if res == False:
+            done = True
+        elif res == 'end':
+            startagain = True
+            break
+        # hitmap[round] = {}
+        # hitmap[round]['G']= sum([v for k,v in hits.items() if grid[k] == 'G' and v > 0])
+        # hitmap[round]['E']= sum([v for k,v in hits.items() if grid[k] == 'E' and v > 0])
+        # hitmap[round]['T']= sum([v for k,v in hits.items() if v > 0])
+        if done:
+            round-= 1
+            hitpoints = 0
+            for k,v in hits.items():
+                if v > 0: hitpoints+= v
+            score = round * hitpoints
+            # print(hitmap)
+            print('rounds: %d,   hit points: %d' % (round, hitpoints))
+            print('Part 1: %d' % score)
+            sys.exit()
+        # if enemy_defeated(): done = True
 
 print()
 print('round %d' % round)
 print()
 print_grid()
 
-hitpoints = sum(hits.values())
-score = round * hitpoints
-print(hitmap)
-print('rounds: %d,   hit points: %d' % (round, hitpoints))
-print('Part 1: %d' % score)
+# hitpoints = 0
+# for k,v in hits.items():
+#     if grid[k] == 'G' and v > 0: hitpoints+= v
+# score = round * hitpoints
+# print(hitmap)
+# print('rounds: %d,   hit points: %d' % (round, hitpoints))
+# print('Part 1: %d' % score)
 
-#Part 1: 304172 too low not 304680, 320166, 317898 319410
+#Part 1: 319410
+#Part 2: 57642 too low
 
