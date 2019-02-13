@@ -1,6 +1,7 @@
-from dataclasses import dataclass
 import collections
 import time
+from dataclasses import dataclass
+from collections import defaultdict
 
 start = time.perf_counter()
 map = []
@@ -103,6 +104,7 @@ def bfs(person):
 
 beendet = False
 runde = 0
+hitmap = defaultdict(int)
 while not beendet:
   runde += 1
   personen.sort(key=lambda a: a.pos)
@@ -129,6 +131,8 @@ while not beendet:
         person.move(pos)
         attackEnemy(person)
 
+    hitmap[runde]+= person.hp
+
 
 summeHitPoints = sum([p.hp for p in personen if p.hp > 0])
 print()
@@ -136,3 +140,4 @@ print('Vollendete Runden: ', runde)
 print('Summe HitPoints  : ', summeHitPoints)
 print('Lösung           : ', runde*summeHitPoints)
 print('gefunden in        ', time.perf_counter()-start)
+print(hitmap)

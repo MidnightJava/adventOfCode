@@ -1,9 +1,10 @@
 
 from __future__ import print_function
 from heapq import heappop, heappush
-from collections import deque
+from collections import deque, defaultdict
 import sys
 
+hitmap = defaultdict(int)
 def print_grid():
     for y in range(h):
         print('%s) ' % str(y).zfill(2), end='')
@@ -11,7 +12,7 @@ def print_grid():
             print(grid[(x,y)], end='')
         print('  ', end='')
         units = {}
-        for k,v in hits.iteritems():
+        for k,v in hits.items():
             if k[1] == y: units[k] = v
         for k,v in sorted(units.items(), key=lambda unit: unit[0][0]):
             print('%s(%d), ' % (grid[k], v), end='')
@@ -51,143 +52,11 @@ with open('data/Day15') as f:
     w = x
     h = y
 
+def best_loc(locs):
+    return sorted(locs, key=lambda x: (x[1], x[0]))[0]
+
 def heuristic(cell, goal):
     return abs(cell[0] - goal[0]) + abs(cell[1] - goal[1])
-
-# def shortest_path_len(start, goal):
-#     paths = shortest_paths(start, goal)
-#     if not paths: return None
-#     return min([len(x) for x in paths])
-
-# def shortest_paths(start, goal):
-#     paths = []
-#     queue = deque([(0, [], start)])
-#     visited = {}
-#     while queue:
-#         l, path, current = queue.popleft()
-#         x,y = current
-#         if current == goal:
-#             np = list(path)
-#             np.append(goal)
-#             paths.append(np)
-#             continue
-#         if current in visited and visited[current] < l:
-#             continue
-#         visited[current] = l
-#         for neighbor in [loc for loc in [(x-1,y),(x+1,y),(x,y-1),(x,y+1)] if loc in grid and grid[loc] == '.']:
-#             np = list(path)
-#             np.append(neighbor)
-#             if neighbor not in visited or visited[neighbor] > len(path):
-#                 queue.append((len(path), np, neighbor))
-
-
-#     if path: paths.append(list(path))
-#     if not paths:
-#         return None
-#     else:
-#         return filter(lambda x: len(x) == min([len(p) for p in paths]), paths)
-
-# def bfs(start):
-#     global grid
-#     queue, enqueued = deque([((None), start)]), set([start])
-#     while queue:
-#         parent, n = queue.popleft()
-#         yield parent, n
-#         x,y = n
-#         new = set([loc for loc in [(x-1,y),(x+1,y),(x,y-1),(x,y+1)] if loc in grid and grid[loc] == '.']) - enqueued
-#         enqueued |= new
-#         queue.extend([(n, child) for child in new])
-
-# def dfs(start):
-#     stack, enqueued = [(None, start)], set([start])
-#     while stack:
-#         parent, n = stack.pop()
-#         yield parent, n
-#         x,y = n
-#         new = set([loc for loc in [(x-1,y),(x+1,y),(x,y-1),(x,y+1)] if loc in grid and grid[loc] == '.']) - enqueued
-#         enqueued |= new
-#         stack.extend([(n, child) for child in new])
-
-# def shortest_paths(start, end):
-#     parents = {}
-#     for parent, child in bfs(start):
-#         parents[child] = parent
-#         if child == end:
-#             revpath = [end]
-#             while True:
-#                 parent = parents[child]
-#                 revpath.append(parent)
-#                 if parent == start:
-#                     break
-#                 child = parent
-#             return list(reversed(revpath))
-#     return None # or raise appropriate exception
-
-# def shortest_paths(start, end, path=[]):
-#     global grid
-#     path = path + [start]
-#     if start == end:
-#         return [path]
-#     if not start in grid:
-#         return []
-#     paths = []
-#     x,y = end
-#     for node in [loc for loc in [(x-1,y),(x+1,y),(x,y-1),(x,y+1)] if loc in grid and grid[loc] == '.']:
-#         if node not in path:
-#             newpaths = shortest_paths(node, end, path)
-#             for newpath in newpaths:
-#                 paths.append(newpath)
-#     return filter(lambda x: len(x) == min([len(p) for p in paths]), paths)
-
-def best_loc(locs):
-    ymin = h
-    xmin = w
-    best_y = []
-    best = None
-    for loc in locs:
-        if not best_y or loc[1] < ymin:
-            ymin = loc[1]
-            best_y = [loc]
-        elif loc[1] == ymin:
-            best_y.append(loc)
-    for loc in best_y:
-        if not best or loc[0] < xmin:
-            xmin = loc[0]
-            best = loc
-    return best
-
-# def move(loc):
-#     subj = grid[loc]
-#     enemy = 'G' if subj == 'E' else 'E'
-#     paths = []
-#     splen = sys.maxint
-#     targets = []
-#     open_locs = get_open_locs(enemy)
-#     if not open_locs: return False
-#     for target in open_locs:
-#         plen = shortest_path_len(loc, target)
-#         if not plen: continue
-#         if plen == splen:
-#             targets.append(target)
-#         elif plen < splen:
-#             splen = plen
-#             targets = [target]
-#     if not targets: return None
-#     target = best_loc(targets)
-#     paths = shortest_paths(loc, target)
-#     if not paths: return None
-#     first_steps = map(lambda x: x[0], paths)
-#     next_loc = best_loc(first_steps)
-            
-#     grid[loc] = '.'
-#     d = abs(loc[0] - next_loc[0]) + abs(loc[1] - next_loc[1])
-#     if d != 1:
-#         print('Distance from %s to %s is %d' % (loc, next_loc, d))
-#         # sys.exit()
-#     grid[next_loc] = subj
-#     hits[next_loc] = hits[loc]
-#     del hits[loc]
-#     return next_loc
 
 def shortest_path_len(start, goal):
     global grid
@@ -202,19 +71,17 @@ def shortest_path_len(start, goal):
         visited[current] = dist
         x,y = current
         for neighbor in [loc for loc in [(x-1,y),(x+1,y),(x,y-1),(x,y+1)] if loc in grid and grid[loc] == '.']:
-            if not neighbor in visited or visited[neighbor] > dist:
-                queue.append((dist + heuristic(neighbor, goal), dist + 1, neighbor))
+            queue.append((dist + heuristic(neighbor, goal), dist + 1, neighbor))
     
     return None
-                        
 
 def move(loc):
     subj = grid[loc]
     enemy = 'G' if subj == 'E' else 'E'
-    splen = sys.maxint
+    splen = sys.maxsize
     targets = []
     open_locs = get_open_locs(enemy)
-    if not open_locs: return False
+    if not open_locs: return None
     for target in open_locs:
         plen = shortest_path_len(loc, target)
         if plen is None: continue
@@ -223,11 +90,11 @@ def move(loc):
         elif plen < splen:
             splen = plen
             targets = [target]
-    if not targets: return False
+    if not targets: return None
     target = best_loc(targets)
     
     x,y = loc
-    splen = sys.maxint
+    splen = sys.maxsize
     next_steps = []
     for t in [coord for coord in [(x-1,y), (x+1,y),(x,y-1),(x,y+1)] if coord in grid and grid[coord] == '.']:
         plen = shortest_path_len(t, target)
@@ -258,7 +125,7 @@ def attack(loc):
         targets.append(cand)
     if not targets: return False
     targets2 = []
-    minhp = sys.maxint
+    minhp = sys.maxsize
     for t in targets:
         if hits[t] < minhp:
             minhp = hits[t]
@@ -272,50 +139,43 @@ def attack(loc):
         grid[target] = '.'
     return True
 
+def enemy_defeated():
+    return not 'E' in [grid[loc] for loc in get_units()] or not 'G' in [grid[loc] for loc in get_units()]
+
 def tick():
     for unit in get_units():
-        if (grid[unit] != 'E' and grid[unit] != 'G') or hits[unit] <= 0:
-            # if not 'E' in [grid[loc] for loc in get_units()] or not 'G' in [grid[loc] for loc in get_units()]:
-            #     return False
+        if unit not in hits or hits[unit] <= 0:
             continue
         if not attack(unit):
             next_loc = move(unit)
             if next_loc:
                 attack(next_loc)
-                if not 'E' in [grid[loc] for loc in get_units()] or not 'G' in [grid[loc] for loc in get_units()]:
-                    return False
-        else:
-            if not 'E' in [grid[loc] for loc in get_units()] or not 'G' in [grid[loc] for loc in get_units()]:
-                return False
-    if not 'E' in [grid[loc] for loc in get_units()] or not 'G' in [grid[loc] for loc in get_units()]:
-        return False
+        elif enemy_defeated():
+            return False
     return True
 
 done = False
 global rounds
-rounds = 0
+round = 0
 while not done:
-    print('round %d' % rounds)
+    print('round %d' % round)
     # print(hits.values())
-    # if rounds <= 3:
-    print_grid()
-    if tick():
-        rounds+= 1
-    else:
-        done = True
-        # units = get_units()
-        # print(units)
-        # print([grid[loc] for loc in units])
+    # print_grid()
+    round+= 1
+    done = not tick()
+    hitmap[round]= sum(hits.values())
+    if done: round-= 1
+    if enemy_defeated(): done = True
 
 print()
-print('round %d' % rounds)
+print('round %d' % round)
 print()
 print_grid()
 
-hitpoints = sum(filter(lambda x: x>0, hits.values()))
-score = rounds * hitpoints
-print(hits.values())
-print('rounds: %d,   hit points: %d' % (rounds, hitpoints))
+hitpoints = sum(hits.values())
+score = round * hitpoints
+print(hitmap)
+print('rounds: %d,   hit points: %d' % (round, hitpoints))
 print('Part 1: %d' % score)
 
 #Part 1: 304172 too low not 304680, 320166, 317898 319410
