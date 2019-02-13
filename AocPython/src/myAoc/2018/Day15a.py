@@ -131,6 +131,11 @@ while not beendet:
         person.move(pos)
         attackEnemy(person)
 
+   
+  
+  for person in personen:
+    if person.hp < 1:
+      continue
     hitmap[runde]+= person.hp
 
 
