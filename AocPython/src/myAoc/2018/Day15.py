@@ -1,12 +1,13 @@
 
 from __future__ import print_function
-from heapq import heappop, heappush
 from collections import deque, defaultdict
-import sys
+import sys, time
 
-hitmap = defaultdict(int)
+DEBUG = False
+
 def print_grid():
     global h,w
+    print('Round %d' % round)
     for y in range(h):
         print('%s) ' % str(y).zfill(2), end='')
         for x in range(w):
@@ -16,8 +17,9 @@ def print_grid():
         for k,v in hits.items():
             if k[1] == y: units[k] = v
         for k,v in sorted(units.items(), key=lambda unit: unit[0][0]):
-            print('%s(%d), ' % (grid[k], v), end='')
+            print('%s(%d) ' % (grid[k], v), end='')
         print()
+    print()
 
 def get_units():
     l = []
@@ -37,7 +39,7 @@ def get_open_locs(u):
                         locs.add(loc)
     return locs
 
-def best_loc(locs):
+def reading_order(locs):
     return sorted(locs, key=lambda x: (x[1], x[0]))[0]
 
 def heuristic(cell, goal):
@@ -56,7 +58,8 @@ def shortest_path_len(start, goal):
         visited[current] = dist
         x,y = current
         for neighbor in [loc for loc in [(x-1,y),(x+1,y),(x,y-1),(x,y+1)] if loc in grid and grid[loc] == '.']:
-            queue.append((dist + heuristic(neighbor, goal), dist + 1, neighbor))
+            if not neighbor in visited or visited[neighbor] > dist:
+                queue.append((dist + heuristic(neighbor, goal), dist + 1, neighbor))
     
     return None
 
@@ -76,7 +79,7 @@ def move(loc):
             splen = plen
             targets = [target]
     if not targets: return None
-    target = best_loc(targets)
+    target = reading_order(targets)
     
     x,y = loc
     splen = sys.maxsize
@@ -90,14 +93,14 @@ def move(loc):
             next_steps.append(t)
 
     if not next_steps: return None
-    next_loc = best_loc(next_steps)
+    next_loc = reading_order(next_steps)
     grid[loc] = '.'
     grid[next_loc] = subj
     hits[next_loc] = hits[loc]
     del hits[loc]
     return next_loc
 
-def attack(loc, eattack, part2):
+def attack(loc, elf_pwr, part2):
     global hits, grid
     enemy = 'E' if grid[loc] == 'G' else 'G'
     x,y = loc
@@ -107,15 +110,11 @@ def attack(loc, eattack, part2):
     if not targets: return False
     targets2 = []
     minhp = sys.maxsize
-    for t in targets:
-        if hits[t] < minhp:
-            minhp = hits[t]
-            targets2 = [t]
-        elif hits[t] == minhp:
-            targets2.append(t)
-    target = best_loc(targets2)
-    apow = 3 if enemy == 'E' else eattack
-    hits[target]-= apow
+    # Get target or targets with least hitpoints
+    targets2 = [t for t in targets if hits[t] == min([v for k,v in hits.items() if k in targets])]
+    target = reading_order(targets2)
+    attck_pwr = 3 if enemy == 'E' else elf_pwr
+    hits[target]-= attck_pwr
     if hits[target] <= 0:
         if part2 and grid[target] == 'E': return 'end'
         del hits[target]
@@ -125,18 +124,18 @@ def attack(loc, eattack, part2):
 def enemy_defeated():
     return not 'E' in [grid[loc] for loc in get_units()] or not 'G' in [grid[loc] for loc in get_units()]
 
-def tick(eattack, part2):
+def tick(elf_pwr, part2):
     seen = set()
     for unit in get_units():
         if unit not in hits or hits[unit] <= 0 or unit in seen:
             continue
         if enemy_defeated(): return False
-        res = attack(unit, eattack, part2)
+        res = attack(unit, elf_pwr, part2)
         if res == False:
             next_loc = move(unit)
             seen.add(next_loc)
             if next_loc:
-                if attack(next_loc, eattack, part2) == 'end': return 'end'
+                if attack(next_loc, elf_pwr, part2) == 'end': return 'end'
         elif res == 'end':
             return 'end'
     return True
@@ -153,32 +152,40 @@ def read_data():
         w, h = x, y
 
 done = False
-eattack = 3
+elf_atck_pow = 3
 part2 = False
 loop = True
+start_time = time.time()
 while loop:
     round = 0
     read_data()
+
     while True:
+        if DEBUG:
+            print_grid()
+            time.sleep(0.5)
         round+= 1
-        res = tick(eattack, part2)
+        res = tick(elf_atck_pow, part2)
         if res == False:
             round-= 1
             hitpoints = sum(hits.values())
-            # print('rounds: %d,   hit points: %d' % (round, hitpoints))
+            if DEBUG:
+                print_grid()
+                print('rounds: %d,   hit points: %d' % (round, hitpoints))
             if not part2:
-                print('Part 1: %d' % (round * hitpoints))
+                print('Part 1: %d (%d sec)' % (round * hitpoints, time.time() - start_time))
+                if DEBUG: raw_input('Press Return to continue:')
                 part2 = True
-                eattack = 16 #Found by binary search trials
+                elf_atck_pow = 16 #Found by binary search trials
             else:
-                 print('Part 2: %d' % (round * hitpoints))
-                 loop = False
+                print('Part 2: %d (%d sec)' % (round * hitpoints, time.time() - start_time))
+                loop = False
             break
         elif res == 'end':
-            eattack+= 1
+            elf_atck_pow+= 1
             break
             
 
 #Part 1: 319410
-#Part 2: 62279
+#Part 2: 63168
 
