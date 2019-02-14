@@ -4,7 +4,6 @@ Created on Jan 4, 2019
 @author: maleone
 '''
 from __future__ import print_function
-from __builtin__ import True
 
 class Ops:
 
