@@ -3,21 +3,17 @@ from collections import defaultdict
 _map = {}
 seen = set()
 with open('2019/data/day06') as f:
-    for line in f:
-        kv = line.split(')')
+    for kv in [line.split(')') for line in f]:
         _map[kv[1].strip()] = kv[0]
 
 # Part 1
 def solve(node, res):
     while node:
-        if _map.get(node, None):
-            node = _map[node]
+        node = _map.get(node, None)
+        if node:
             res['count']+= 1
-            if not node in seen:
-                solve(node, res)
+            if not node in seen: solve(node, res)
             seen.add(node)
-        else:
-            node = None
 
 leaves = set(_map.keys()) - set(_map.values())
 res = {'count': 0}
@@ -29,11 +25,9 @@ print('Part 1: %d' % res['count'])
 def mk_path(node):
     path = []
     while node:
-        if _map.get(node, None):
-            node = _map[node]
-            path.append(node)
-        else:
-            return path
+        node = _map.get(node, None)
+        node and path.append(node)
+    return path
 
 you_path = mk_path('YOU')
 san_path = mk_path('SAN')
