@@ -86,7 +86,7 @@ class Amp:
     def set_sig(self, sig):
         self.sig = sig
 
-    def start(self):
+    def run(self):
         halted = False
         while True:
             instr = self.code[self.pos]
@@ -161,7 +161,7 @@ for phases in permutations([5,6,7,8,9], 5):
     output = 0
     while not done:
         amps[i].set_sig(output)
-        done, output = amps[i].start()
+        done, output = amps[i].run()
         if i == 4: results.append(output)
         i = (i+1) % 5
 
