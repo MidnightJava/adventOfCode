@@ -7,13 +7,13 @@ with open('./2019/data/day09a') as f:
     def get_inp(pos):
         if pos >= len(inp):
             for i in range(len(inp), pos+1):
-                inp.insert(i, '0')
+                inp.append('0')
         return inp[pos]
 
     def set_inp(pos, val):
         if pos >= len(inp):
             for i in range(len(inp), pos+1):
-                inp.insert(i, '0')
+                inp.append('0')
         inp[pos] = val
 
     def get_params(m1, m2, m3):
@@ -22,19 +22,19 @@ with open('./2019/data/day09a') as f:
         elif m1 == 1:
             p1 = get_inp(pos+1)
         elif m1 == 2:
-           p1 = int(get_inp(pos+1)) + relb
+            p1 = str(int(get_inp(int(get_inp(pos+1)))) + relb)
         if m2 == 0:
             p2 = get_inp(int(get_inp(pos+2)))
         elif m2 == 1:
             p2 = get_inp(pos+2)
         elif m2 == 2:
-            p2 = int(get_inp(pos+2)) + relb
+            p2 = str(int(get_inp(int(get_inp(pos+2)))) + relb)
         if m3 == 0:
             p3 = int(get_inp(int(get_inp(pos+3))))
         elif m3 == 1:
             p3 = int(get_inp(pos+3))
         elif m3 == 2:
-            p3 = int(get_inp(pos+3))+ relb
+            p3 = int(get_inp(int(get_inp(pos+3)))) + relb
         return (p1, p2, p3)
 
     while get_inp(pos) != 99:
@@ -52,18 +52,18 @@ with open('./2019/data/day09a') as f:
             set_inp(p3, str(int(p1) * int(p2)))
             pos+= 4
         elif op == 3:
-            # p1, p2, p3 = get_params(m1, m2, m3)
-            if m1 == 0:
-                set_inp(int(get_inp(int(get_inp(pos+1)))), str(input))
-            elif m1 == 1:
-                set_inp(int(get_inp(pos+1)), str(input))
-            elif m1 == 2:
-                set_inp(int(get_inp(int(get_inp(pos+1))+relb)), str(input))
-            # set_inp(int(p1), str(input))
+            p1, p2, p3 = get_params(m1, m2, m3)
+            # if m1 == 0:
+            #     set_inp(int(get_inp(int(get_inp(pos+1)))), str(input))
+            # elif m1 == 1:
+            #     set_inp(int(get_inp(pos+1)), str(input))
+            # elif m1 == 2:
+            #     set_inp(int(get_inp(int(get_inp(pos+1))+relb)), str(input))
+            set_inp(int(p1), str(input))
             pos+= 2
         elif op == 4: #OUTP
             p1, p2, p3 = get_params(m1, m2, m3)
-            output = get_inp(int(p1))
+            output = p1
             # if m1 == 0:
             #     output = get_inp(int(p1))
             # elif m1 == 1:
@@ -100,13 +100,12 @@ with open('./2019/data/day09a') as f:
         elif op == 9:#SET RELB
             p1, p2, p3 = get_params(m1, m2, m3)
             # if m1 == 0:
-            #     relb+= int(get_inp(p1))
+            #     relb+= int(get_inp(int(get_inp(pos+1))))
             # elif m1 == 1:
-            #     relb+= int(p1)
+            #     relb+= int(get_inp(pos+1))
             # elif m1 == 2:
-            #      relb+= int(get_inp(p1 + relb))
+            #      relb+= int(get_inp(int(get_inp(pos+1))+ relb))
             relb+= int(p1)
-            # get_inp(relb)
             pos+= 2
         elif op == 99:
             print('Halt: %s' % output)
