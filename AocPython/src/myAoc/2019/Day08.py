@@ -14,10 +14,7 @@ for layer in layers:
     zeroes[i] = layer.count('0')
     i+= 1
 
-min_layer = (int(1e12), int(1e12))
-for k, v in zeroes.items():
-    if v < min_layer[1]:
-        min_layer = (k,v)
+min_layer = [(k, v) for k, v in zeroes.items() if v == min(zeroes.values())][0]
 
 print('Part 1: %d' % (layers[min_layer[0]].count('1') * layers[min_layer[0]].count('2')))
 
