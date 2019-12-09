@@ -93,7 +93,7 @@ class Amp:
             op = int(instr[-2]) * 10 + int(instr[-1]) if len(instr) > 1 else int(instr[0])
             m1 = int(instr[-3]) if len(instr) > 2 else 0
             m2 = int(instr[-4]) if len(instr) > 3 else 0
-            if op == 1: #AddADD
+            if op == 1: #ADD
                 p1 = self.code[self.pos+1] if m1 else self.code[int(self.code[self.pos+1])]
                 p2 = self.code[self.pos+2] if m2 else self.code[int(self.code[self.pos+2])]
                 self.code[int(self.code[self.pos+3])] = str(int(p1) + int(p2))

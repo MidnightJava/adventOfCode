@@ -1,12 +1,41 @@
-with open('./2019/data/day09') as f:
+with open('./2019/data/day09a') as f:
     inp = f.readline().split(',')
     input = 1
     pos = 0
     relb = 0
 
-    def check_code_length(pos):
-        for i in range(len(inp), pos+1):
-            inp.insert(i, '0')
+    def get_inp(pos):
+        if pos >= len(inp):
+            for i in range(len(inp), pos+1):
+                inp.insert(i, '0')
+        return inp[pos]
+
+    def set_inp(pos, val):
+        if pos >= len(inp):
+            for i in range(len(inp), pos+1):
+                inp.insert(i, '0')
+        inp[pos] = val
+
+    def get_params(m1, m2, m3):
+        if m1 == 0:
+            p1 = get_inp(int(get_inp(pos+1)))
+        elif m1 == 1:
+            p1 = get_inp(pos+1)
+        elif m1 == 2:
+           p1 = int(get_inp(pos+1)) + relb
+        if m2 == 0:
+            p2 = get_inp(int(get_inp(pos+2)))
+        elif m2 == 1:
+            p2 = get_inp(pos+2)
+        elif m2 == 2:
+            p2 = int(get_inp(pos+2)) + relb
+        if m3 == 0:
+            p3 = int(get_inp(int(get_inp(pos+3))))
+        elif m3 == 1:
+            p3 = int(get_inp(pos+3))
+        elif m3 == 2:
+            p3 = int(get_inp(pos+3))+ relb
+        return (p1, p2, p3)
 
     while get_inp(pos) != 99:
         instr = get_inp(pos)
@@ -15,156 +44,75 @@ with open('./2019/data/day09') as f:
         m2 = int(instr[-4]) if len(instr) > 3 else 0
         m3 = int(instr[-5]) if len(instr) > 4 else 0
         if op == 1:
-            if m1 == 0:
-                check_code_length(int(inp[pos+1]))
-                p1 = inp[int(get_inp(pos+1))]
-            elif m1 == 1:
-                p1 =  get_inp(pos+1)
-            elif m1 == 2:
-                p1 = str(relb + int(get_inp(pos+1)))
-            if m2 == 0:
-                p2 = inp[int(get_inp(pos+2))]
-            elif m2 == 1:
-                p2 =  get_inp(pos+2)
-            elif m2 == 2:
-                p2 = str(relb + int(get_inp(pos+2)))
-            if m3 == 0:
-                p3 = int(inp[int(get_inp(pos+3))])
-            elif m3 == 2:
-                p3 = relb + int(get_inp(pos+3))
-            else:
-                print('Invalid m3: %d' % m3)
+            p1, p2, p3 = get_params(m1, m2, m3)
             set_inp(p3, str(int(p1) + int(p2)))
             pos+= 4
         elif op == 2:
-            if m1 == 0:
-                p1 = inp[int(inp[pos+1])]
-            elif m1 == 1:
-                p1 =  inp[pos+1]
-            elif m1 == 2:
-                p1 = str(relb + int(inp[pos+1]))
-            if m2 == 0:
-                p2 = inp[int(inp[pos+2])]
-            elif m2 == 1:
-                p2 =  inp[pos+2]
-            elif m2 == 2:
-                p2 = str(relb + int(inp[pos+2]))
-            if m3 == 0:
-                check_code_length(int(inp[pos+3]))
-                p3 = int(inp[int(inp[pos+3])])
-            elif m3 == 2:
-                p3 = relb + int(inp[pos+3])
-            else:
-                print('Invalid m3: %d' % m3)
-            check_code_length(p3)
-            inp[p3] = str(int(p1) * int(p2))
+            p1, p2, p3 = get_params(m1, m2, m3)
+            set_inp(p3, str(int(p1) * int(p2)))
             pos+= 4
         elif op == 3:
-            check_code_length(int(inp[pos+1]))
+            # p1, p2, p3 = get_params(m1, m2, m3)
             if m1 == 0:
-                inp[int(inp[pos+1])] = str(input)
-            elif m1 == 2:
-                check_code_length(relb + int(inp[pos+1]))
-                inp[relb + int(inp[pos+1])] = str(input)
-            pos+= 2
-        elif op == 4:
-            if m1 == 0:
-                p1 = inp[int(inp[pos+1])]
+                set_inp(int(get_inp(int(get_inp(pos+1)))), str(input))
             elif m1 == 1:
-                p1 =  inp[pos+1]
+                set_inp(int(get_inp(pos+1)), str(input))
             elif m1 == 2:
-                p1 = str(relb + int(inp[pos+1]))
-            output = p1
+                set_inp(int(get_inp(int(get_inp(pos+1))+relb)), str(input))
+            # set_inp(int(p1), str(input))
+            pos+= 2
+        elif op == 4: #OUTP
+            p1, p2, p3 = get_params(m1, m2, m3)
+            output = get_inp(int(p1))
+            # if m1 == 0:
+            #     output = get_inp(int(p1))
+            # elif m1 == 1:
+            #     output = p1
+            # elif m1 == 2:
+            #     output = get_inp(int(p1) + relb)
+            # if m1 == 0:
+            #    out_addr = get_inp(int(get_inp(pos+1)))
+            # elif m1 == 1:
+            #     out_addr = get_inp(pos+1)
+            # elif m1 == 2:
+            #     out_addr = get_inp(int(get_inp(pos+1))+ relb)
+            # output = get_inp(int(p1))
+            # output = get_inp(int(out_addr))
             print('Output: %s, m1: %d' % (output, m1))
             pos+= 2
-        elif op == 5:
-            if m1 == 0:
-                p1 = inp[int(inp[pos+1])]
-            elif m1 == 1:
-                p1 =  inp[pos+1]
-            elif m1 == 2:
-                p1 = str(relb + int(inp[pos+1]))
-            if m2 == 0:
-                p2 = inp[int(inp[pos+2])]
-            elif m2 == 1:
-                p2 =  inp[pos+2]
-            elif m2 == 2:
-                p2 = str(relb + int(inp[pos+2]))
-            pos = int(p2) if int(p1) else pos+3
-        elif op == 6:
-            if m1 == 0:
-                p1 = inp[int(inp[pos+1])]
-            elif m1 == 1:
-                p1 =  inp[pos+1]
-            elif m1 == 2:
-                p1 = str(relb + int(inp[pos+1]))
-            if m2 == 0:
-                p2 = inp[int(inp[pos+2])]
-            elif m2 == 1:
-                p2 =  inp[pos+2]
-            elif m2 == 2:
-                p2 = str(relb + int(inp[pos+2]))
-            pos = int(p2) if not int(p1) else pos+3
-        elif op == 7:
-            if m1 == 0:
-                p1 = inp[int(inp[pos+1])]
-            elif m1 == 1:
-                p1 =  inp[pos+1]
-            elif m1 == 2:
-                p1 = str(relb + int(inp[pos+1]))
-            if m2 == 0:
-                p2 = inp[int(inp[pos+2])]
-            elif m2 == 1:
-                p2 =  inp[pos+2]
-            elif m2 == 2:
-                p2 = str(relb + int(inp[pos+2]))
-            if m3 == 0:
-                p3 = int(inp[int(inp[pos+3])])
-            elif m3 == 2:
-                p3 = relb + int(inp[pos+3])
-            else:
-                print('Invalid m3: %d' % m3)
-            check_code_length(p3)
+        elif op == 5:#JMP IF TRUE
+            p1, p2, p3 = get_params(m1, m2, m3)
+            pos = int(p2) if int(p1) != 0 else pos+3
+        elif op == 6:#JMP IF FALSE
+            p1, p2, p3 = get_params(m1, m2, m3)
+            pos = int(p2) if int(p1) == 0 else pos+3
+        elif op == 7:#LT
+            p1, p2, p3 = get_params(m1, m2, m3)
             if int(p1) < int(p2):
-                inp[p3] = "1"
+                set_inp(p3, "1")
             else:
-                inp[p3] = "0"
+                set_inp(p3, "0")
             pos+= 4
-        elif op == 8:
-            if m1 == 0:
-                p1 = inp[int(inp[pos+1])]
-            elif m1 == 1:
-                p1 =  inp[pos+1]
-            elif m1 == 2:
-                p1 = str(relb + int(inp[pos+1]))
-            if m2 == 0:
-                p2 = inp[int(inp[pos+2])]
-            elif m2 == 1:
-                p2 =  inp[pos+2]
-            elif m2 == 2:
-                p2 = str(relb + int(inp[pos+2]))
-            if m3 == 0:
-                p3 = int(inp[int(inp[pos+3])])
-            elif m3 == 2:
-                p3 = relb + int(inp[pos+3])
-            else:
-                print('Invalid m3: %d' % m3)
-            check_code_length(p3)
-            inp[p3] = "1" if int(p1) == int(p2) else "0"
+        elif op == 8:#EQ
+            p1, p2, p3 = get_params(m1, m2, m3)
+            set_inp(p3, "1" if int(p1) == int(p2) else "0")
             pos+= 4
-        elif op == 9:
-            if m1 == 0:
-                p1 = inp[int(inp[pos+1])]
-            elif m1 == 1:
-                p1 =  inp[pos+1]
-            elif m1 == 2:
-                p1 = str(relb + int(inp[pos+1]))
+        elif op == 9:#SET RELB
+            p1, p2, p3 = get_params(m1, m2, m3)
+            # if m1 == 0:
+            #     relb+= int(get_inp(p1))
+            # elif m1 == 1:
+            #     relb+= int(p1)
+            # elif m1 == 2:
+            #      relb+= int(get_inp(p1 + relb))
             relb+= int(p1)
+            # get_inp(relb)
             pos+= 2
         elif op == 99:
+            print('Halt: %s' % output)
             break
         else:
             print('Bad Instruction: %d' % op)
             break
 
-#Ans > 203
+#Ans > 203 not 34463338
