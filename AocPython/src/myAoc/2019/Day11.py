@@ -61,53 +61,48 @@ class Proc:
                 break
         return output
 
-f = open('./2019/data/day11')
-code = list(map(int, f.readline().split(',')))
-[code.append(0) for _ in range(10000)]
-p = Proc(code)
+for part in [1, 2]:
 
-grid = defaultdict(int)
-grid[(0,0)] = 1
-seen = set()
-color = 1
-curr = (0,0)
-count = 0
-dir = 0 #0:up, 1:right, 2:down, 3:left
-while color != 'HALT':
-    color = p.run(grid[curr])
-    grid[curr] = color
-    if not curr in seen:
-        count+= 1
-        seen.add(curr)
-    new_dir = p.run(None)
-    if new_dir == 0: #turn left
-        if dir == 0: #up
-            curr = (curr[0]-1, curr[1])
-            dir = 3
-        elif dir == 1: #right
-            curr = (curr[0], curr[1]-1)
-            dir = 0
-        elif dir == 2: #down
-            curr = (curr[0]+1, curr[1])
-            dir = 1
-        elif dir == 3: #left
-            curr = (curr[0], curr[1]+1)
-            dir = 2
-    elif new_dir == 1: #turn right
-        if dir == 0: #up
-            curr = (curr[0]+1, curr[1])
-            dir = 1
-        elif dir == 1: #right
-            curr = (curr[0], curr[1]+1)
-            dir = 2
-        elif dir == 2: #down
-            curr = (curr[0]-1, curr[1])
-            dir = 3
-        elif dir == 3: #left
-            curr = (curr[0], curr[1]-1)
-            dir = 0
+    f = open('./2019/data/day11')
+    code = list(map(int, f.readline().split(',')))
+    [code.append(0) for _ in range(10000)]
+    p = Proc(code)
+    grid = defaultdict(int)
+    seen = set()
+    color = None
+    curr = (0,0)
+    grid[curr] = part - 1
+    count = 0
+    dir = 0 #0:up, 1:right, 2:down, 3:left
+    next_coords = [
+        [ [-1, 0], [0, -1], [1, 0], [0, 1] ],
+        [ [1, 0], [0, 1], [-1, 0], [0, -1] ]
+    ]
 
-print('Part 1: %d' % count)
+    while True:
+        color = p.run(grid[curr])
+        if color == 'HALT': break
+        grid[curr] = color
+        if not curr in seen:
+            count+= 1
+            seen.add(curr)
+        new_dir = p.run(None)
+        idxs = next_coords[new_dir][dir]
+        curr = (curr[0] + idxs[0], curr[1] + idxs[1])
+        dir = (dir + new_dir) % 4 if new_dir == 1 else (dir + 3) % 4
 
-#Part 1: 5794 too high not 5380
+    if part == 1:
+        print('Part 1: %d' % count)
+    else:
+        print("Part 2:")
+        max_x = max(list(map(lambda x: x[0], grid.keys())))
+        max_y = max(list(map(lambda x: x[1], grid.keys())))
+
+        for y in range(max_y+1):
+            for x in range(max_x+1):
+                print('  ' if grid[(x,y)] == 0 else ' #', end='')
+            print()
+
+#Part 1: 1967
+#Part 2: KBUEGZBK
     
