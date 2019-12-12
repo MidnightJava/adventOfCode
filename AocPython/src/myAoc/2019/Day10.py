@@ -46,7 +46,7 @@ def get_mon_data(rock):
     for k, v in slopes.items():
         v = sorted(v, key=lambda x: abs(rock[0] - x[0]) + abs(rock[1] - x[1]))
         slopes[k] = v
-
+    #keys: distinct slopes from this rock to other rocks, value: list of target rocks along each slope, sorted by distance
     return slopes
 
 f = open('2019/data/day10')
