@@ -27,7 +27,7 @@ def update_pos():
         v = moon["v"]
         for i in range(3):
            p[i]+= v[i]
-        snap.append((p[0], p[1], p[2],v[0], v[1], v[2]))
+        snap.append({'p': (p[0], p[1], p[2]), 'v': (v[0], v[1], v[2])})
     return snap
         
 
@@ -68,22 +68,37 @@ snaps = [
     set([(3,5,-1,0,0,0)])
 ]
 
+initial_state = [
+    {"p": (13,9,5), "v": (0,0,0)},
+    {"p": (8,14,-2), "v": (0,0,0)},
+    {"p": (-5,4,11), "v": (0,0,0)},
+    {"p": (2,-6,1), "v": (0,0,0)}
+]
+
 count = 1
 count2 = 1
-found = 0
+seen = [
+    dict(), dict(), dict(), dict()
+]
 while True:
     update_vel()
     snap = update_pos()
     # energy = calc_energy()
-    i = 0
-    # for i in range(4):
-    if snap[i] in snaps[i]:
-        print('moon %d repeated state after : %d, since last repeat : %d' % (i, count, count-count2))
-        count2 = count
-        found+= 1
-    else:
-        snaps[i].add(snap[i])
-    if found == 10: break
+    i = 1
+    for i in range(4):
+        # if snap[i] in snaps[i]:
+        if seen[i].get(snap[i]['p'], None):
+            if count % seen[i].get(snap[i]['p'], None) == 0:
+                print('moon %d is repeating positiom at : %d, since last repeat : %d' % (i, count, count-count2))
+            count2 = count
+        seen[i][snap[i]['p']] = count
+
+        # if snap[i]['v'] == initial_state[i]['v']:
+        #     print('moon %d repeated velocity after : %d, since last repeat : %d' % (i, count, count-count2))
+        #     count2 = count
+    # else:
+    #     snaps[i].add(snap[i])
+    # if found == 10: break0
     count+= 1
 
 print(moons)
