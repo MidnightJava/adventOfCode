@@ -27,7 +27,7 @@ def update_pos():
         v = moon["v"]
         for i in range(3):
            p[i]+= v[i]
-        snap.append((p[0], p[1], p[2]))
+        snap.append((p[0], p[1], p[2],v[0], v[1], v[2]))
     return snap
         
 
@@ -54,30 +54,23 @@ def update_vel():
 
 
 
-for n in range(1000):
-    # global moons
-    update_vel()
-    update_pos()
+# for n in range(1000):
+#     # global moons
+#     update_vel()
+#     update_pos()
     
-print('Part 1: : %d' % calc_energy())
-
-moons = [
-    {"p": [13,9,5], "v": [0,0,0]},
-    {"p": [8,14,-2], "v": [0,0,0]},
-    {"p": [-5,4,11], "v": [0,0,0]},
-    {"p": [2,-6,1], "v": [0,0,0]}
-]
+# print('Part 1: : %d' % calc_energy())
 
 snaps = [
-    set([(13,9,5)]),
-    set([(8,14,-2)]),
-    set([(-5,4,11)]),
-    set([(2,-6,1)])
+    set([(-1,0,2,0,0,0)]),
+    set([(2,-10,-7,0,0,0)]),
+    set([(4,-8,8,0,0,0)]),
+    set([(3,5,-1,0,0,0)])
 ]
 
 count = 1
 count2 = 1
-seen = set()
+found = 0
 while True:
     update_vel()
     snap = update_pos()
@@ -85,30 +78,39 @@ while True:
     i = 0
     # for i in range(4):
     if snap[i] in snaps[i]:
-    # if energy in seen:
-        print('moon %d repeated energy after : %d, since last repeat : %d' % (i, count, count-count2))
+        print('moon %d repeated state after : %d, since last repeat : %d' % (i, count, count-count2))
         count2 = count
+        found+= 1
     else:
         snaps[i].add(snap[i])
-        # seen.add(energy)
+    if found == 10: break
     count+= 1
 
-def lcm(x, y):  
-    if x > y:  
-        greater = x  
-    else:  
-        greater = y  
-    while(True):  
-        if((greater % x == 0) and (greater % y == 0)):  
-            lcm = greater  
-            break  
-        greater += 1  
-    return lcm 
+print(moons)
 
-rpts = [8909451, 14842822, 22810758, ]
-p2 = lcm(rpts[0], rpts[1])
-p2 = lcm(p2, rpts[2])
-p2 = lcm(p2, rpts[3])
-print("Part 2: %d" % p2)
+# def lcm(x, y):  
+#     if x > y:  
+#         greater = x  
+#     else:  
+#         greater = y  
+#     while(True):  
+#         if((greater % x == 0) and (greater % y == 0)):  
+#             lcm = greater  
+#             break  
+#         greater += 1  
+#     return lcm 
+#pos
+# rpts = [45, 46, 799, 1164]
+#320862420
+#vel
+# rpts=[46,88,237,427]
+#204826776
+# p2 = lcm(rpts[0], rpts[1])
+# p2 = lcm(p2, rpts[2])
+# p2 = lcm(p2, rpts[3])
+
+# part2 = lcm(204826776, 320862420)
+print("Part 2: %d" % count)
 
 #Part 1: 6490
+#Part 2: 238120344304920 too low
