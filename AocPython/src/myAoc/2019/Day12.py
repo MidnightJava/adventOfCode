@@ -1,5 +1,9 @@
-
+from collections import defaultdict
+from math import atan2
+from math import sqrt
+import pprint
 global moons
+PRECISION=4
 moons = [
     {"p": [13,9,5], "v": [0,0,0]},
     {"p": [8,14,-2], "v": [0,0,0]},
@@ -20,15 +24,21 @@ def calc_energy():
         energy+= sum(list(map(lambda x: abs(x), moon["p"]))) * sum(list(map(lambda x: abs(x), moon["v"])))
     return energy
 
-def update_pos():
+def update_pos(mult=1):
+    mult = 1
     snap = []
     for moon in moons:
         p = moon["p"]
         v = moon["v"]
         for i in range(3):
-           p[i]+= v[i]
+           p[i]+= (mult * v[i])
         snap.append({'p': (p[0], p[1], p[2]), 'v': (v[0], v[1], v[2])})
+        # snap.append(round(sqrt(p[0]**2 + p[1]**2 + p[2]**2), PRECISION))
+        # snap.append(atan2(p[1], p[0]))
+        # snap.append((p[0], p[1], p[2], v[0], v[1], v[2]))
+    # print(snap[0])
     return snap
+        
         
 
 def update_vel():
@@ -61,47 +71,91 @@ def update_vel():
     
 # print('Part 1: : %d' % calc_energy())
 
-snaps = [
-    set([(-1,0,2,0,0,0)]),
-    set([(2,-10,-7,0,0,0)]),
-    set([(4,-8,8,0,0,0)]),
-    set([(3,5,-1,0,0,0)])
-]
+# snaps = [
+#     set([(-1,0,2,0,0,0)]),
+#     set([(2,-10,-7,0,0,0)]),
+#     set([(4,-8,8,0,0,0)]),
+#     set([(3,5,-1,0,0,0)])
+# ]
 
 initial_state = [
     {"p": (13,9,5), "v": (0,0,0)},
     {"p": (8,14,-2), "v": (0,0,0)},
     {"p": (-5,4,11), "v": (0,0,0)},
     {"p": (2,-6,1), "v": (0,0,0)}
+    # round(sqrt(13**2 + 9**2 + 5**2), PRECISION),
+    # round(sqrt(8**2 + 14**2 + 2**2), PRECISION),
+    # round(sqrt(5**2 + 4**2 + 11**2), PRECISION),
+    # round(sqrt(2**2 + 6**2 +1), PRECISION)
+    # atan2(9, 13),
+    # atan2(14, 8,),
+    # atan2(4, -5),
+    # atan2(-6, 2)
+]
+
+snaps = [
+    set([atan2(9, 13)]),
+    set([atan2(14, 8)]),
+    set([atan2(4, -5)]),
+    set([atan2(-6, 2)])
 ]
 
 count = 1
 count2 = 1
 seen = [
-    dict(), dict(), dict(), dict()
+    defaultdict(list), defaultdict(list), defaultdict(list), defaultdict(list)
 ]
+
+# i = 1
+# res = update_pos(1)
+# while True:
+#     i+= 1
+#     update_vel()
+#     res2 = update_pos(i)
+#     if res == res2:
+#         print(i)
+#         break
+#     res = res2
+#     if i % 1000000 == 0:
+#         print('Checking %d' % i)
+#     i+=1
+
+freqs = defaultdict(list)
 while True:
     update_vel()
     snap = update_pos()
-    # energy = calc_energy()
-    i = 1
-    for i in range(4):
-        # if snap[i] in snaps[i]:
-        if seen[i].get(snap[i]['p'], None):
-            if count % seen[i].get(snap[i]['p'], None) == 0:
-                print('moon %d is repeating positiom at : %d, since last repeat : %d' % (i, count, count-count2))
-            count2 = count
-        seen[i][snap[i]['p']] = count
 
-        # if snap[i]['v'] == initial_state[i]['v']:
-        #     print('moon %d repeated velocity after : %d, since last repeat : %d' % (i, count, count-count2))
-        #     count2 = count
-    # else:
-    #     snaps[i].add(snap[i])
-    # if found == 10: break0
+    # for i in range(4):
+    #     if snap[i] == snaps[i]:
+    #         print('moon %d repeated orbit after : %d' % (i, count))
+    #     else:
+    #         snaps[i].add(snap[i])
+    
+
+    # i = 1
+    # for i in range(4):
+    #     # if snap[i] in snaps[i]:
+    #     if len(seen[i][snap[i]['v']]):
+    #         if count % seen[i][snap[i]['v']][-1] == 0:
+    #             print('moon %d is repeating velocity at : %d' % (i, count))
+    #             count2 = count
+    #             seen[i][snap[i]['v']].append(count)
+    #     else:
+    #         seen[i][snap[i]['v']].append(count)
+    # if count == 1000000:
+    #     for k,v in seen[i].items():
+    #         if len(v) > 3:
+    #             print('%s has %d values %s' % (k, len(v), v))
+    #     break
+
+    for i in range(4):
+        if snap[i]['p'] == initial_state[i]['p']:
+            # print('moon %d repeated initial radius after : %d' % (i, count))
+            freqs[i].append(count)
+            pprint.PrettyPrinter().pprint(freqs.items())
     count+= 1
 
-print(moons)
+# print(moons)
 
 # def lcm(x, y):  
 #     if x > y:  

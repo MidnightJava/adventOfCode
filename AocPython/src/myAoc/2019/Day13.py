@@ -11,7 +11,7 @@ inp = 0
 paddle = (0,0)
 times = [1, 0.5, 0.2, 0.1, 0.06, 0]
 speed = 4
-mode = 3 # 0: auto no display, 1: auto display, 2: Semi-Manual 3: Manual
+mode = 1 # 0: auto no display, 1: auto display, 2: Semi-Manual 3: Manual
 class Proc:
     def __init__(self, code):
         self.code = code
@@ -136,5 +136,4 @@ while True:
             cmd = []
         
 #Part 1: 363
-#Part 17159: 
-    
+#Part 17159
