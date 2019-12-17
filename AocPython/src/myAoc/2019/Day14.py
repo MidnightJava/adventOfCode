@@ -31,8 +31,8 @@ def get_ore(ele, needed):
     need = ceil(float(needed) / float(yld))
     for chem in ingredients:
         if chem[1] in ore_sources:
-            ore_needed_dict[chem[1]]+=( chem[0] * need)
-            extra_ore_dict[chem[1]]+= (_map[chem[1]][0] * need)
+            ore_needed_dict[chem[1]]+=( _map[chem[1]][0] * need)
+            extra_ore_dict[chem[1]]+=(((_map[chem[1]][0] * need) % chem[0]) * need)
         else:
             get_ore(chem[1], chem[0] * need)
 
@@ -51,12 +51,19 @@ for k,v in ore_needed_dict.items():
     #Ex a for item A: ore_used = 40; excess = 12; net_ore = 28
     #so we actually used 30, since it comes in quantities of 10
     #ore_used-= extra_ore
-    if v % _map[k][0] != 0:
-        for i in range(v, v + _map[k][0]):
-            if i % _map[k][0] == 0:
-                v = i
-                break
-    ore_used = ceil(float(v) / float(yld)) * quantum
+    # if v % _map[k][0] != 0:
+    #     for i in range(v, v + _map[k][0]):
+    #         if i % _map[k][0] == 0:
+    #             v = i
+    #             break
+    # chem_used = v + extra_ore_dict[k]
+    # if v % _map[k][0] != 0:
+    #     for i in range(v, v +  _map[k][0]):
+    #          if i % _map[k][0] == 0:
+    #              v = i
+    #              break
+    net_chem = v - extra_ore_dict[k]
+    ore_used = ceil(float(net_chem) / float(yld)) * quantum
     ore+= ore_used
 
 print('Part 1: %d' % ore)
@@ -69,7 +76,7 @@ Test Answers:
 a: 31 correct
 b: 165 correct
 c: 13312 correct
-d: 180697
+d: 180697 (NVRD: 551, VJHF: 1989, MNCFX: 4192)
 e: 2210736
 
 """
