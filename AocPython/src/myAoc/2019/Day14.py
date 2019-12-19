@@ -7,7 +7,7 @@ _map = {}
 extra = defaultdict(int)
 ore = 0
 
-f = open('2019/data/day14a')
+f = open('2019/data/day14b')
 for line in f:
     parts = line.split('=>')
     _prod = parts[1].split()
@@ -35,14 +35,24 @@ def get_ore(ele, needed):
         if chem[1] == 'ORE':
             ore+= (chem[0] * need)
             return
-        elif extra[chem[1]]:
+        elif extra[chem[1]] and need > chem[0]:
             used = min(need, extra[chem[1]])
             need-= used
             extra[chem[1]]-= used
-        extra[chem[1]]+= (chem[0] * need) % _map[chem[1]][0]
+        if (chem[0] * need ) <_map[chem[1]][0]:
+            excess = _map[chem[1]][0] - (chem[0] * need )
+        else:
+            excess = (chem[0] * need ) % _map[chem[1]][0]
+        extra[chem[1]]+= excess
         get_ore(chem[1], chem[0] * need)
 
 get_ore('FUEL', 1)
+for k,v in extra.items():
+    if _map[k][1][0][1] == 'ORE':
+        excess = v
+        while excess >= _map[k][0]:
+            ore-= _map[k][1][0][0]
+            excess-= _map[k][1][0][0]
 print('Part 1: %d' % ore)
 pprint(extra)
 
