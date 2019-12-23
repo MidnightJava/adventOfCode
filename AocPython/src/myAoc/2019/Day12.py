@@ -4,12 +4,12 @@ from math import sqrt
 import pprint
 global moons
 PRECISION=4
-moons = [
-    {"p": [13,9,5], "v": [0,0,0]},
-    {"p": [8,14,-2], "v": [0,0,0]},
-    {"p": [-5,4,11], "v": [0,0,0]},
-    {"p": [2,-6,1], "v": [0,0,0]}
-]
+# moons = [
+#     {"p": [13,9,5], "v": [0,0,0]},
+#     {"p": [8,14,-2], "v": [0,0,0]},
+#     {"p": [-5,4,11], "v": [0,0,0]},
+#     {"p": [2,-6,1], "v": [0,0,0]}
+# ]
 
 # moons = [
 #     {"p": [-1,0,2], "v": [0,0,0]},
@@ -18,10 +18,25 @@ moons = [
 #     {"p": [3,5,-1], "v": [0,0,0]}
 # ]
 
+moons = [
+    {"p": [8,-10,0], "v": [0,0,0]},
+    {"p": [5,5,10], "v": [0,0,0]},
+    {"p": [2,-7,3], "v": [0,0,0]},
+    {"p": [9,-8,-3], "v": [0,0,0]}
+]
+
 def calc_energy():
     energy = 0
     for moon in moons:
         energy+= sum(list(map(lambda x: abs(x), moon["p"]))) * sum(list(map(lambda x: abs(x), moon["v"])))
+    return energy
+
+def calc_energy2():
+    energy = [0,0,0,0]
+    i = 0
+    for moon in moons:
+        energy[i] = sum(list(map(lambda x: abs(x), moon["p"]))) * sum(list(map(lambda x: abs(x), moon["v"])))
+        i+= 1
     return energy
 
 def update_pos(mult=1):
@@ -93,12 +108,14 @@ initial_state = [
     # atan2(-6, 2)
 ]
 
-snaps = [
-    set([atan2(9, 13)]),
-    set([atan2(14, 8)]),
-    set([atan2(4, -5)]),
-    set([atan2(-6, 2)])
-]
+# snaps = [
+#     set([atan2(9, 13)]),
+#     set([atan2(14, 8)]),
+#     set([atan2(4, -5)]),
+#     set([atan2(-6, 2)])
+# ]
+
+snaps = set()
 
 count = 1
 count2 = 1
@@ -121,9 +138,11 @@ seen = [
 #     i+=1
 
 freqs = defaultdict(list)
+found = 0
 while True:
     update_vel()
     snap = update_pos()
+    energy = calc_energy2()
 
     # for i in range(4):
     #     if snap[i] == snaps[i]:
@@ -148,12 +167,26 @@ while True:
     #             print('%s has %d values %s' % (k, len(v), v))
     #     break
 
-    for i in range(4):
-        if snap[i]['p'] == initial_state[i]['p']:
-            # print('moon %d repeated initial radius after : %d' % (i, count))
-            freqs[i].append(count)
-            pprint.PrettyPrinter().pprint(freqs.items())
+    # for i in range(4):
+    #     if snap[i]['p'] == initial_state[i]['p']:
+    #         # print('moon %d repeated initial radius after : %d' % (i, count))
+    #         freqs[i].append(count)
+    #         pprint.PrettyPrinter().pprint(freqs.items())
+
+    # found = [0,0,0,0]
+    # for i in range(4):
+    i = 0
+    if (i, energy[i]) in snaps:
+        if count % 74 == 0:
+            print('Moon %d repeats energy %d at %d' % (i, energy[i], count))
+            # found[i] = 1
+            found+= 1
+    else:
+        snaps.add((i, energy[i]))
     count+= 1
+    # if sum(found) == 4:
+    #     break
+    if found == 50: break
 
 # print(moons)
 
