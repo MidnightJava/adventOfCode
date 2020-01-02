@@ -50,28 +50,34 @@ def get_ore(ele, needed):
         else:
             get_ore(chem[1], need2)
 
-fuel = 2200000
+fuel = 1
 lastFuel = None
+minFuel = 1.
+maxFuel = 1e7
+target_ore = 1e12
+overshoot = 1e5
 while True:
     extra = defaultdict(int)
     ore = 0
     ore_prod_counts = defaultdict(int)
     get_ore('FUEL', fuel)
     for k,v in ore_prod_counts.items():
-        v = v + extra[k]
+        v = v - extra[k]
         yld = _map[k][0]
         quant = _map[k][1][0][0]
         ore+= (ceil(float(v) / yld)  * quant)
     if fuel == 1:
         print('Part 1: %d' % ore)
-    if ore >= 1000000000000:
+    if ore >= target_ore and ore <= target_ore + overshoot:
         break
     else:
-        if fuel % 100000 == 0:
-            print('fuel %d  ore %d' % (fuel, ore))
         lastFuel = fuel
-        fuel+= 1
-print('Part 2 %d %d' % (lastFuel, ore))
+        if ore > target_ore:
+            maxFuel = fuel
+        else:
+            minFuel = fuel
+        fuel = minFuel + int((maxFuel - minFuel) / 2)
+print('Part 2: %d' % lastFuel)
 
 #Part 1: 1582325
 #Part 2: 2267486
