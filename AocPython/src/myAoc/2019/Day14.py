@@ -4,12 +4,9 @@ from math import floor
 from collections import defaultdict
 pprint = _pprint.PrettyPrinter().pprint
 _map = {}
-extra = defaultdict(int)
-ore = 0
 ore_products = set()
-ore_prod_counts = defaultdict(int)
 
-f = open('2019/data/day14d')
+f = open('2019/data/day14e')
 for line in f:
     parts = line.split('=>')
     _prod = parts[1].split()
@@ -26,53 +23,50 @@ for line in f:
 pprint(_map)
 pprint('ore products: %s' % ore_products)
 
+def next_mod_up(n, mod):
+    while n % mod !=0:
+        n+= 1
+    return n
+    
 def get_ore(ele, needed):
-    global ore
     ingredients = _map[ele][1]
     yld = _map[ele][0]
     need = ceil(float(needed) / float(yld))
-    if extra[ele] >= need:
-        used = min(need, extra[ele])
-        need-= used
-        extra[ele]-= used
-        if need == 0: return
-
-    elif need % yld != 0:
-        excess = ceil(float(need) / float(yld)) * yld
-        if excess > 0:
-            extra[ele]+= excess
+    
     for chem in ingredients:
+        need2 = need * chem[0]
+        yld2 = _map[chem[1]][0]
+        if extra[chem[1]]:
+            used = extra[chem[1]]
+            need2-= used
+            extra[chem[1]]-= used
+        if need2 % yld2 != 0:
+            orig_need = need2
+            need2 = next_mod_up(need2, yld2)
+            excess = need2 - orig_need
+            extra[chem[1]]+= excess
         if chem[1] in ore_products:
-            ore_prod_counts[chem[1]]+= (need * chem[0])
+            ore_prod_counts[chem[1]]+= need2
         else:
-            get_ore(chem[1], chem[0] * need)
+            get_ore(chem[1], need2)
 
-get_ore('FUEL', 1)
-pprint('extra %s ' % extra)
-ore_prod_counts2 = dict()
-for k,v in ore_prod_counts.items():
-    if v % _map[k][0] !=0:
+fuel = 1
+while True:
+    extra = defaultdict(int)
+    ore = 0
+    ore_prod_counts = defaultdict(int)
+    get_ore('FUEL', fuel)
+    for k,v in ore_prod_counts.items():
+        v = v - extra[k]
         yld = _map[k][0]
-        ore_prod_counts2[k] = ceil(float(v) / yld) * yld
+        quant = _map[k][1][0][0]
+        ore+= (ceil(float(v) / yld)  * quant)
+    if fuel == 1:
+        print('Part 1: %d' % ore)
+    if ore >= 1000000000000:
+        break
     else:
-        ore_prod_counts2[k] =v
-pprint('ore prod counts: %s ' % ore_prod_counts2)
-for k,v in ore_prod_counts2.items():
-    yld = _map[k][0]
-    quant = _map[k][1][0][0]
-    ore+= (v / yld  * quant)
-print('Part 1: %d' % ore)
-# pprint(extra)
+        fuel+= 1
+print('Part 2 %d %d' % (fuel, ore))
 
-# Part 1: 637,682 too low, 10,645,906 too high not 1,693,718
-
-"""
-Test Answers:
-
-a: 31 correct
-b: 165 correct
-c: 13312 correct
-d: 180697 (NVRD: 551, JNWZP: 78, VJHF: 1989, MNCFX: 4192)
-e: 2210736
-
-"""
+#Part 1: 1582325

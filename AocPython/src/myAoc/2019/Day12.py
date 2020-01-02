@@ -2,6 +2,7 @@ from collections import defaultdict
 from math import atan2
 from math import sqrt
 import pprint
+import sys
 global moons
 PRECISION=4
 # moons = [
@@ -47,10 +48,11 @@ def update_pos(mult=1):
         v = moon["v"]
         for i in range(3):
            p[i]+= (mult * v[i])
-        snap.append({'p': (p[0], p[1], p[2]), 'v': (v[0], v[1], v[2])})
+        # snap.append({'p': (p[0], p[1], p[2]), 'v': (v[0], v[1], v[2])})
         # snap.append(round(sqrt(p[0]**2 + p[1]**2 + p[2]**2), PRECISION))
         # snap.append(atan2(p[1], p[0]))
-        # snap.append((p[0], p[1], p[2], v[0], v[1], v[2]))
+        snap.append((p[0], p[1], p[2]))
+        # snap.append(abs(p[0]) + abs(p[1]) + abs(p[2]))
     # print(snap[0])
     return snap
         
@@ -144,6 +146,9 @@ while True:
     snap = update_pos()
     energy = calc_energy2()
 
+    for i in range(4):
+        if snap[i] == snaps[i]:
+            print('Moon %d repeats position at count %d' % (i, count))
     # for i in range(4):
     #     if snap[i] == snaps[i]:
     #         print('moon %d repeated orbit after : %d' % (i, count))
@@ -188,6 +193,8 @@ while True:
     #     break
     if found == 50: break
 
+print(high_z)
+print(max_z)
 # print(moons)
 
 # def lcm(x, y):  
@@ -215,4 +222,4 @@ while True:
 print("Part 2: %d" % count)
 
 #Part 1: 6490
-#Part 2: 238120344304920 too low
+#Part 2: 238,120,344,304,920 too low 863,592,666,407,024,130 too high
