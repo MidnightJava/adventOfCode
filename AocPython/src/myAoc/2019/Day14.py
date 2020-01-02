@@ -6,7 +6,7 @@ pprint = _pprint.PrettyPrinter().pprint
 _map = {}
 ore_products = set()
 
-f = open('2019/data/day14e')
+f = open('2019/data/day14')
 for line in f:
     parts = line.split('=>')
     _prod = parts[1].split()
@@ -20,8 +20,8 @@ for line in f:
         _inpl.append((int(_inp[0].strip()), _inp[1].strip()))
     _map[prod] = [int(_prod[0].strip()), _inpl]
 
-pprint(_map)
-pprint('ore products: %s' % ore_products)
+# pprint(_map)
+# pprint('ore products: %s' % ore_products)
 
 def next_mod_up(n, mod):
     while n % mod !=0:
@@ -50,14 +50,15 @@ def get_ore(ele, needed):
         else:
             get_ore(chem[1], need2)
 
-fuel = 1
+fuel = 2200000
+lastFuel = None
 while True:
     extra = defaultdict(int)
     ore = 0
     ore_prod_counts = defaultdict(int)
     get_ore('FUEL', fuel)
     for k,v in ore_prod_counts.items():
-        v = v - extra[k]
+        v = v + extra[k]
         yld = _map[k][0]
         quant = _map[k][1][0][0]
         ore+= (ceil(float(v) / yld)  * quant)
@@ -66,7 +67,11 @@ while True:
     if ore >= 1000000000000:
         break
     else:
+        if fuel % 100000 == 0:
+            print('fuel %d  ore %d' % (fuel, ore))
+        lastFuel = fuel
         fuel+= 1
-print('Part 2 %d %d' % (fuel, ore))
+print('Part 2 %d %d' % (lastFuel, ore))
 
 #Part 1: 1582325
+#Part 2: 2267486
