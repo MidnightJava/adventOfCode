@@ -10,40 +10,41 @@ f = open('2019/data/day14')
 for line in f:
     parts = line.split('=>')
     _prod = parts[1].split()
-    prod = _prod[1].strip()
-    inpl = parts[0].split(',')
-    if len(inpl)== 1 and inpl[0].split()[1] == 'ORE':
-        ore_products.add(prod)
-    _inpl = []
-    for inp in inpl:
-        _inp = inp.split()
-        _inpl.append((int(_inp[0].strip()), _inp[1].strip()))
-    _map[prod] = [int(_prod[0].strip()), _inpl]
+    yld = int(_prod[0].strip())
+    name = _prod[1].strip()
+    ingredients = parts[0].split(',')
+    if len(ingredients)== 1 and ingredients[0].split()[1] == 'ORE':
+        ore_products.add(name)
+    _ingrl = []
+    for ingr in ingredients:
+        _ingr = ingr.split()
+        _ingrl.append((int(_ingr[0].strip()), _ingr[1].strip()))
+    _map[name] = [yld, _ingrl]
 
 # pprint(_map)
 # pprint('ore products: %s' % ore_products)
     
-def get_ore(ele, needed):
-    ingredients = _map[ele][1]
-    yld = _map[ele][0]
+def make_comp(comp, needed):
+    reactants = _map[comp][1]
+    yld = _map[comp][0]
     need = ceil(float(needed) / float(yld))
     
-    for chem in ingredients:
-        need2 = need * chem[0]
-        yld2 = _map[chem[1]][0]
-        if extra[chem[1]]:
-            used = extra[chem[1]]
+    for reactant in reactants:
+        need2 = need * reactant[0]
+        yld2 = _map[reactant[1]][0]
+        if extra[reactant[1]]:
+            used = extra[reactant[1]]
             need2-= used
-            extra[chem[1]]-= used
+            extra[reactant[1]]-= used
         if need2 % yld2 != 0:
             orig_need = need2
             need2 = need2 // yld2 * yld2 + yld2
             excess = need2 - orig_need
-            extra[chem[1]]+= excess
-        if chem[1] in ore_products:
-            ore_prod_counts[chem[1]]+= need2
+            extra[reactant[1]]+= excess
+        if reactant[1] in ore_products:
+            ore_prod_counts[reactant[1]]+= need2
         else:
-            get_ore(chem[1], need2)
+            make_comp(reactant[1], need2)
 
 fuel = 1
 lastFuel = None
@@ -55,7 +56,7 @@ while True:
     extra = defaultdict(int)
     ore = 0
     ore_prod_counts = defaultdict(int)
-    get_ore('FUEL', fuel)
+    make_comp('FUEL', fuel)
     for k,v in ore_prod_counts.items():
         yld = _map[k][0]
         quant = _map[k][1][0][0]
