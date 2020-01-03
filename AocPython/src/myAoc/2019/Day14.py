@@ -22,11 +22,6 @@ for line in f:
 
 # pprint(_map)
 # pprint('ore products: %s' % ore_products)
-
-def next_mod_up(n, mod):
-    while n % mod !=0:
-        n+= 1
-    return n
     
 def get_ore(ele, needed):
     ingredients = _map[ele][1]
@@ -42,7 +37,7 @@ def get_ore(ele, needed):
             extra[chem[1]]-= used
         if need2 % yld2 != 0:
             orig_need = need2
-            need2 = next_mod_up(need2, yld2)
+            need2 = need2 // yld2 * yld2 + yld2
             excess = need2 - orig_need
             extra[chem[1]]+= excess
         if chem[1] in ore_products:
@@ -55,27 +50,26 @@ lastFuel = None
 minFuel = 1.
 maxFuel = 1e7
 target_ore = 1e12
-overshoot = 1e5
+tolerance = 1e5
 while True:
     extra = defaultdict(int)
     ore = 0
     ore_prod_counts = defaultdict(int)
     get_ore('FUEL', fuel)
     for k,v in ore_prod_counts.items():
-        v = v - extra[k]
         yld = _map[k][0]
         quant = _map[k][1][0][0]
         ore+= (ceil(float(v) / yld)  * quant)
     if fuel == 1:
         print('Part 1: %d' % ore)
-    if ore >= target_ore and ore <= target_ore + overshoot:
+    if abs(ore - target_ore) <= tolerance:
         break
     else:
-        lastFuel = fuel
         if ore > target_ore:
             maxFuel = fuel
         else:
             minFuel = fuel
+        lastFuel = fuel
         fuel = minFuel + int((maxFuel - minFuel) / 2)
 print('Part 2: %d' % lastFuel)
 
