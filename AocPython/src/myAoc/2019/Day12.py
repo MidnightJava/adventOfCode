@@ -49,9 +49,8 @@ while True:
     snap = update_pos(moons)
     if count == 1000: print('Part 1: %d' % calc_energy())
     zipped = list(zip(*snap))
-    if zipped[0].count(0) == 4: periods[0] = count
-    if zipped[1].count(0) == 4: periods[1] = count
-    if zipped[2].count(0) == 4: periods[2] = count
+    for i in range(3):
+        if zipped[i].count(0) == 4: periods[i] = count
     if not None in periods: break
     count+= 1
 
