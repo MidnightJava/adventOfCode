@@ -56,6 +56,11 @@ class Proc:
                 break
         return output
 
+min_x = int(1e6)
+max_x = -int(1e6)
+min_y = int(1e6)
+max_y = -int(1e6)
+
 OPP_MOVE = {
     1: 2,
     2: 1,
@@ -71,6 +76,13 @@ def move(x, y, direc):
     else: print('Invalid direction %d' % direc)
     return (x, y)
 
+def set_min_max_coords(x, y):
+    global min_x, min_y, max_x, max_y
+    min_x = min(min_x, x)
+    max_x = max(max_x, x)
+    min_y = min(min_y, y)
+    max_y = max(max_y, y)
+
 f = open('./2019/data/day15')
 code = list(map(int, f.readline().split(',')))
 [code.append(0) for _ in range(10000)]
@@ -80,12 +92,8 @@ dists = set()
 path = []
 dist = 0
 grid = {}
-min_x = int(1e6)
-max_x = -int(1e6)
-min_y = int(1e6)
-max_y = -int(1e6)
 
-def test_move(x, y, direc):
+def test_move(direc):
     global grid
     res = p.move(direc)
     if res: p.move(OPP_MOVE[direc])
@@ -97,17 +105,14 @@ grid[(x,y)] = '.'
 while True:
     moved = False
     for direc in range(1, 5):
-        if test_move(x, y, direc):
+        if test_move(direc):
             if not move(x,y, direc) in seen:
                 dist+= 1
                 res = p.move(direc)
                 moved = True
                 path.append((OPP_MOVE[direc], dist))
                 x, y = move(x, y, direc)
-                min_x = min(min_x, x)
-                max_x = max(max_x, x)
-                min_y = min(min_y, y)
-                max_y = max(max_y, y)
+                set_min_max_coords(x, y)
                 seen.add((x, y))
                 if res == 2:
                     dists.add(dist)
@@ -130,8 +135,10 @@ print('Part 1: %d' % min(dists))
 def print_grid():
     for y in range(min_y, max_y +1):
         for x in range(min_x, max_x + 1):
-            print(grid.get((x,y),'.'), end='')
+            print(grid.get((x,y),' '), end='')
         print()
+
+# print_grid()
 
 ox = True
 count = 0
@@ -153,4 +160,4 @@ while ox:
 print('Part 2: %d' % (count-1))
 
 #Part 1: 266
-#Part 2: 121 too low 275 too high
+#Part 2: 274
