@@ -4,6 +4,7 @@ inp = open('2019/data/day16').read()
 inp*= 1000
 offset = int(inp[:7])
 print('Offset', offset)
+print('Len input', len(inp))
 # inp ="12345678"
 # inp ="80871224585914546619083218645595"
 
