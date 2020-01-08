@@ -17,46 +17,55 @@ from itertools import cycle
 # print('Part 1: %s' % outp[:8])
 
 # inp = open('2019/data/day16').read()
-inp = "03036732577212944063491565474664"
-inp*= 10000
-answ = '84462026'
-offset = int(inp[:7])
-print('Offset', offset)
+# inp = "03036732577212944063491565474664"
+# offset = int(inp[:7])
+# print('Offset', offset)
+# inp*= 10000
+# inp = inp[offset:]
+# answ = '84462026'
 
 
-for n in range(100):
-    tot = sum(map(int, list(inp[offset:])))
-    # print(inp[offset:offset + 8])
-    outp  = ''
-    subtr = 0
-    for j in range(offset+3, len(inp)):
-        subtr+= int(inp[j])
-        outp+= str(tot - subtr)[-1]
-    inp = outp.rjust(len(inp), '0')
-    if answ in outp: print('Found',  n, outp.index(answ))
 
-print('Part 2: %s' % (inp[offset:offset+8]))
+# for n in range(100):
+#     tot = sum(map(int, list(inp)))
+#     # print(inp[:8])
+#     outp  = ''
+#     subtr = 0
+#     for j in range(len(inp)):
+#         subtr+= int(inp[j])
+#         outp+= str(tot - subtr)[-1]
+#     inp = outp
+#     if answ in outp: print('Found',  n, outp.index(answ))
 
-inp = '02935109699940807407585447034323'
-inp*= 10000
-answ = '78725270'
-offset = int(inp[:7])
-print('Offset', offset)
+# print('Part 2: %s' % (inp[:8]))
 
+inps = ["03036732577212944063491565474664", "02935109699940807407585447034323", "03081770884921959731165446850517"]
+answs = ['84462026', '78725270', '53553731']
+corrections = [7868, 7900, 3932]
 
-for n in range(100):
-    tot = sum(map(int, list(inp[offset:])))
-    # print(inp[offset:offset + 8])
-    outp  = ''
-    subtr = 0
-    # print('offset', inp[offset:offset+7])
-    for j in range(offset, len(inp)):
-        subtr+= int(inp[j])
-        outp+= str(tot - subtr)[-1]
-    inp = outp.rjust(len(inp), '0')
-    if answ in outp: print('Found',  n, outp.index(answ))
+for test in range(3):
+    inp = inps[test]
+    answ = answs[test]
+    inp*= 10000
+    offset = int(inp[:7])
+    print('Offset', offset)
+    offset+= + corrections[test]
+    print('sum', sum(map(int, list(inp[:7868]))))
+    inp = inp[offset:]
 
-# print('Part 2: %s' % res)
+    for n in range(100):
+        # print('len', len(inp))
+        tot = sum(map(int, list(inp)))
+        # print(inp[:8])
+        outp  = ''
+        subtr = 0
+        for j in range(len(inp)):
+            subtr+= int(inp[j])
+            outp+= str(tot - subtr)[-1]
+        inp = outp
+        if answ in inp: print('Found after %d iterations at offset %d' % (n+1, inp.index(answ)))
+
+    print('Part 2: %s' % inp[:8])
 
 """
 Test Data:
