@@ -114,6 +114,7 @@ def run(p, rules=None, part1=False):
             x+= 1
         else:
             grid[(x,y)] = chr(res)
+            if res > 255: print('CHAR:', res)
             print(chr(res), end='')
         
 
@@ -143,7 +144,7 @@ code = list(map(int, f.readline().split(',')))
 [code.append(0) for _ in range(10000)]
 code[0] = 2
 p = Proc(code)
-rules = [65,44,66,44,67,10,76,10,49,10,49,10,110,10][::-1]
+rules = [65,44,66,44,67,10,76,10,49,44,49,44,49,10,49,44,49,44,49,10,121,10][::-1]
 run(p, rules)
 #Part 1: 6672
 
