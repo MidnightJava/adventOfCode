@@ -1,4 +1,4 @@
-from itertools import permutations
+from itertools import combinations
 import re
 intersections = set()
 loc = None
@@ -119,10 +119,12 @@ def run(p, rules=None, part1=False):
             x+= 1
         else:
             grid[(x,y)] = chr(res)
-            if res <= 255:
-                print(chr(res), end='')
-            else:
-                print()
+            # if res <= 255:
+            #     print(chr(res), end='')
+            # else:
+                # print()
+                # print('Part 2: %d' % res)
+            if res > 255:
                 print('Part 2: %d' % res)
         
 
@@ -189,17 +191,15 @@ def substrings(s, n):
             if (len(ans) == n):
                 st.add(ans)
                 break
-
     return list(st)
     
 def getRules(moves):
     all_ss = []
     for n in range(3,12):
         all_ss+= substrings(moves, n)
-    for p in permutations(all_ss, 3):
-        res = fit(moves, p[0], p[1], p[2])
-        if res:
-            return res[::-1]
+    for c in combinations(all_ss, 3):
+        res = fit(moves, c[0], c[1], c[2])
+        if res: return res[::-1]
 
 def insert_commas(l):
     l2 = []
@@ -227,7 +227,7 @@ def fit(moves, a, b,c):
         elif moves[i: i+len(c)] == c:
             i+= len(c)
         else:
-            return False
+            return None
 
     m_list = []
     for i in range(len(moves)):
