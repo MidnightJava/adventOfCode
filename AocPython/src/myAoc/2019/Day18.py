@@ -134,20 +134,33 @@ def min_dist(dist, start, key, keys, grid):
             currentChar = grid[current]
             grid[current] = '.'
             keys.discard(currentChar)
+            if len(keys) == 0:
+                minimums.add(dist)
+                return None
             # print(len(keys), 'keys')
             loc = doors.get(currentChar.upper())
             if loc: grid[loc] = '.'
             if currentChar == key:
                 dists =[]
                 reachable_keys = reachable(keys, current, grid.copy())
+                broke = False
                 for key in reachable_keys:
+                    print('REACHABLE KEY')
                     d = min_dist(dist, current, key, keys.copy(), grid.copy())
-                    if d: dists.append(d)
-                if len(dists): dist+= min(dists)
+                    if d:
+                        print("APPENDING d")
+                        dists.append(d)
+                    else:
+                        broke = True
+                        break
+                if len(dists):
+                    print('NOT BROKE')
+                    minimums.add(dist + min(dists))
+                    return dist + min(dists)
                 # if len(dists) == len(reachable_keys):
                 #     print(dist)
                 #     return dist
-                return dist
+                return None
         if current in visited:
             continue
         visited[current] = dist
@@ -165,8 +178,8 @@ grid[entr] = '.'
 
 for key in reachable(keys, entr, grid.copy()):
    d = min_dist(0, entr, key, keys.copy(), grid.copy())
-   print(d)
-   minimums.add(d)
+#    print(d)
+#    minimums.add(d)
 
 print('Part 1', min(minimums))
 
