@@ -3,9 +3,9 @@ import heapq
 from collections import deque
 from itertools import permutations
 
-grid = {}
+_grid = {}
 doors = dict()
-keys = set()
+_keys = set()
 
 f = open('2019/data/day18a')
 y = 0
@@ -15,9 +15,9 @@ for line in f:
         if re.match(r"[A-Z]", c):
             doors[c] = (x, y)
         elif re.match(r"[a-z]", c):
-            keys.add(c)
+            _keys.add(c)
         elif c== '@': entr = (x,y)
-        grid[(x,y)] = c
+        _grid[(x,y)] = c
         x+= 1
     x_max = x
     y+= 1
@@ -29,9 +29,9 @@ def print_grid(grid):
             print(grid[(x,y)], end='')
         print()
 
-print_grid(grid)
+print_grid(_grid)
 print(doors)
-print(keys)
+print(_keys)
 minimums = set()
 
 # def distance(start, grid):
@@ -84,7 +84,7 @@ def reachable(keys, loc, grid):
     res = set()
     for key in keys:
         if can_reach(key, loc, grid.copy()): res.add(key)
-    return res
+    return sorted(res)
 
 # def min_dist(dist, start, key, keys, grid):
 #     keys = set(keys)
@@ -133,8 +133,8 @@ def min_dist(dist, start, key, keys, grid):
         if grid[current] == key:
             currentChar = grid[current]
             grid[current] = '.'
-            keys.discard(currentChar)
-            if len(keys) == 0:
+            keys.remove(currentChar)
+            if not keys:
                 if not dist in minimums:
                     minimums.add(dist)
                     print(min(minimums), minimums)
@@ -154,14 +154,14 @@ def min_dist(dist, start, key, keys, grid):
                 queue.append((dist + 1, neighbor))
 
 
-grid[entr] = '.'
+_grid[entr] = '.'
 # for _keys in permutations(reachable(keys, (x,y), grid)):
 #implement function dist
 # for key in sorted(keys, key=distance((x,y), grid), reverse=True):
 #     min_dist(0, (x,y), key, keys, grid)
 
-for key in reachable(keys, entr, grid.copy()):
-   min_dist(0, entr, key, keys.copy(), grid.copy())
+for key in reachable(_keys, entr, _grid.copy()):
+   min_dist(0, entr, key, _keys.copy(), _grid.copy())
 
 print('Part 1', min(minimums))
 
