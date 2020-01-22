@@ -61,30 +61,29 @@ minimums = set()
 def can_reach(key, start, grid):
     global doors
     grid = grid.copy()
-    queue = deque([(0, start)])
-    visited = {}
+    queue = deque([(start)])
+    visited = set()
     while queue:
-        dist, current = queue.popleft()
+        current = queue.popleft()
         if grid[current] == key:
             return True
         # elif re.match(r"[a-z]", grid[current]):
         #     loc = doors.get(grid[current].upper())
         #     if loc: grid[loc] = '.'
         #     grid[current] = '.'
-        if current in visited:
-            continue
-        visited[current] = dist
+        # if current in visited:
+        #     continue
+        visited.add(current)
         x,y = current
         for neighbor in [n for n in [(x-1, y), (x+1, y), (x, y-1), (x, y+1)] if grid[n] == '.' or grid[n] == key]:
-            if not neighbor in visited or visited[neighbor] > dist:
-                queue.append((dist + 1, neighbor))
+            if not neighbor in visited: queue.append((neighbor))
     return False
 
 def reachable(keys, loc, grid):
     res = set()
     for key in keys:
         if can_reach(key, loc, grid.copy()): res.add(key)
-    return sorted(res)
+    return res
 
 # def min_dist(dist, start, key, keys, grid):
 #     keys = set(keys)
@@ -131,22 +130,24 @@ def min_dist(dist, start, key, keys, grid):
         # print(len(queue), ' queue items')
         dist, current = queue.popleft()
         if grid[current] == key:
-            currentChar = grid[current]
+            currentKey = grid[current]
             grid[current] = '.'
-            keys.remove(currentChar)
+            keys.remove(currentKey)
             if not keys:
                 if not dist in minimums:
                     minimums.add(dist)
                     print(min(minimums), minimums)
                 return
-            loc = doors.get(currentChar.upper())
+            loc = doors.get(currentKey.upper())
             if loc: grid[loc] = '.'
 
             reachable_keys = reachable(keys, current, grid.copy())
-            for key in reachable_keys:
-                min_dist(dist, current, key, keys.copy(), grid.copy())
-        # if current in visited:
-        #     continue
+            # if not reachable_keys: return
+            for rkey in reachable_keys:
+                if rkey != currentKey and rkey in keys:
+                    min_dist(dist, current, rkey, keys.copy(), grid.copy())
+        if current in visited:
+            continue  
         visited[current] = dist
         x,y = current
         for neighbor in [n for n in [(x-1, y), (x+1, y), (x, y-1), (x, y+1)] if grid[n] == '.' or grid[n] == key]:
@@ -160,7 +161,7 @@ _grid[entr] = '.'
 # for key in sorted(keys, key=distance((x,y), grid), reverse=True):
 #     min_dist(0, (x,y), key, keys, grid)
 
-for key in reachable(_keys, entr, _grid.copy()):
+for key in reachable(_keys, entr, _grid):
    min_dist(0, entr, key, _keys.copy(), _grid.copy())
 
 print('Part 1', min(minimums))
