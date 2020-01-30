@@ -7,7 +7,8 @@ from itertools import permutations
 
 import networkx as nx
 
-sys.setrecursionlimit(10**5)
+sys.setrecursionlimit(10**4)
+
 _grid = {}
 doors = dict()
 _keys = dict()
@@ -49,7 +50,7 @@ for y in range(y_max):
                 edges+= 1
                 G.add_edge((x,y), nbr)
                 G.add_edge(nbr, (x,y))
-print('%d edges' % edges)
+# print('%d edges' % edges)
 
 def print_grid(grid):
     for y in range(y_max):
@@ -60,7 +61,7 @@ def print_grid(grid):
 print_grid(_grid)
 print(doors)
 print(_keys.keys())
-minimums = set()
+# minimums = set()
 
 # def distance(start, grid):
 #     grid = grid.copy()
@@ -86,10 +87,10 @@ minimums = set()
 #         return 0
 #     return func
 
-def heuristic(key, loc):
-    # key_loc = _keys[key]
-    # return abs(key_loc[0] - loc[0]) + abs(key_loc[1] - loc[1])
-    return 0
+# def heuristic(key, loc):
+#     # key_loc = _keys[key]
+#     # return abs(key_loc[0] - loc[0]) + abs(key_loc[1] - loc[1])
+#     return 0
 
 # def min_dist2(start, key, grid):
 #     grid = grid.copy()
@@ -209,29 +210,72 @@ def heuristic(key, loc):
 
 # print('Part 1', min(minimums))
 
-def min_dist(start, grid):
+paths = []
+_grid[entr] = '.'
+
+def min_dist(loc, key, path, locs, keys, seen, grid):
     global doors
-    paths = []
-    path = []
-    queue = [(start)]
-    keys_seen = set()
-    while queue:
-        current = heapq.heappop(queue)
+    if re.match(r"[a-z]", grid[loc]):
+        keys.add(grid[loc])
+        path.append(grid[loc])
+        seen.add(loc)
+    elif re.match(r"[A-Z]", grid[loc]):
+        path.append(grid[loc])
+        seen.add(loc)
+    locs.append(loc)
 
-        if len(keys_seen) == len(_keys):
-            print('All keys collected')
-            if path in paths: return paths
-            paths.append(path)
-            path = []
-            keys_seen = set()
-        if re.match(r"[a-z]", grid[current]) or re.match(r"[A-Z]", grid[current]):
-            if re.match(r"[a-z]", grid[current]): keys_seen.add(grid[current])
-            if grid[current] != '.': path.append(grid[current])
+    if key == grid[loc]:
+        print('RETURNING')
+        paths.append(path)
+        path = []
+        seen = set()
+        return
+    elif re.match(r"[a-z]", grid[loc]):
+        print(key, grid[loc])
 
-        x,y = current
-        for neighbor in [n for n in [(x-1, y), (x+1, y), (x, y-1), (x, y+1)] if grid[n] != '#']:
-            heapq.heappush(queue, (neighbor))
-    return paths
+    x,y = loc
+    neighbors = [n for n in [(x-1, y), (x+1, y), (x, y-1), (x, y+1)] if grid[n] != '#' and not n in seen]
+    if not neighbors:
+        if path: keys.discard(path.pop())
+        if locs:
+            new_loc = locs.pop()
+            seen.add((x,y))
+            min_dist(new_loc, key, path, locs, keys, seen, grid)
+    else:
+        for nbr in neighbors:
+            min_dist(nbr, key, path.copy(), locs.copy(), keys.copy(), seen.copy(), grid)
+
+for key in _keys.keys():
+    print('trying key', key)
+    min_dist(entr, key, [], [], set(), set(), _grid)
+
+# print(len(paths), 'Paths')
+for path in paths:
+    print(path)
+
+# def min_dist(start, grid):
+#     global doors
+#     paths = []
+#     path = []
+#     queue = [(start)]
+#     keys_seen = set()
+#     while queue:
+#         current = heapq.heappop(queue)
+
+#         if len(keys_seen) == len(_keys):
+#             print('All keys collected')
+#             if path in paths: return paths
+#             paths.append(path)
+#             path = []
+#             keys_seen = set()
+#         if re.match(r"[a-z]", grid[current]) or re.match(r"[A-Z]", grid[current]):
+#             if re.match(r"[a-z]", grid[current]): keys_seen.add(grid[current])
+#             if grid[current] != '.': path.append(grid[current])
+
+#         x,y = current
+#         for neighbor in [n for n in [(x-1, y), (x+1, y), (x, y-1), (x, y+1)] if grid[n] != '#']:
+#             heapq.heappush(queue, (neighbor))
+#     return paths
 
 
 # def search(start, key, path):
@@ -248,7 +292,7 @@ def min_dist(start, grid):
 #                 yield possible_path
         
 
-print('%d paths found' % len(min_dist(entr, _grid.copy())))
+# print('%d paths found' % len(min_dist(entr, _grid.copy())))
 # for key in _keys.keys():
 #     print('trying key %s' % key)
 #     print('%d paths found' % len(min_dist(0, entr, key, _grid.copy())))
