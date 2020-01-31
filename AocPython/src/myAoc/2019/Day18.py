@@ -223,7 +223,6 @@ def min_dist(loc, key, path, locs, keys, seen, grid):
         elif re.match(r"[A-Z]", grid[loc]):
             path.append(grid[loc])
             seen.add(loc)
-        locs.append(loc)
 
         if key == grid[loc]:
             print('RETURNING')
@@ -242,6 +241,7 @@ def min_dist(loc, key, path, locs, keys, seen, grid):
                 loc = locs.pop()
         else:
             loc = neighbors[0]
+            locs.append(loc)
 
 for key in _keys.keys():
     print('trying key', key)
