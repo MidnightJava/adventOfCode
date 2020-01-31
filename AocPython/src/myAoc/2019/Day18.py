@@ -238,6 +238,7 @@ def min_dist(loc, key, path, locs, keys, seen, grid):
         if not neighbors:
             if path: keys.discard(path.pop())
             if locs:
+                locs.pop()
                 loc = locs.pop()
         else:
             loc = neighbors[0]
