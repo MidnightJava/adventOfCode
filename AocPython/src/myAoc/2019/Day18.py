@@ -215,35 +215,33 @@ _grid[entr] = '.'
 
 def min_dist(loc, key, path, locs, keys, seen, grid):
     global doors
-    if re.match(r"[a-z]", grid[loc]):
-        keys.add(grid[loc])
-        path.append(grid[loc])
-        seen.add(loc)
-    elif re.match(r"[A-Z]", grid[loc]):
-        path.append(grid[loc])
-        seen.add(loc)
-    locs.append(loc)
+    while True:
+        if re.match(r"[a-z]", grid[loc]):
+            keys.add(grid[loc])
+            path.append(grid[loc])
+            seen.add(loc)
+        elif re.match(r"[A-Z]", grid[loc]):
+            path.append(grid[loc])
+            seen.add(loc)
+        locs.append(loc)
 
-    if key == grid[loc]:
-        print('RETURNING')
-        paths.append(path)
-        path = []
-        seen = set()
-        return
-    elif re.match(r"[a-z]", grid[loc]):
-        print(key, grid[loc])
+        if key == grid[loc]:
+            print('RETURNING')
+            paths.append(path)
+            path = []
+            seen = set()
+            return
+        elif re.match(r"[a-z]", grid[loc]):
+            print(key, grid[loc])
 
-    x,y = loc
-    neighbors = [n for n in [(x-1, y), (x+1, y), (x, y-1), (x, y+1)] if grid[n] != '#' and not n in seen]
-    if not neighbors:
-        if path: keys.discard(path.pop())
-        if locs:
-            new_loc = locs.pop()
-            seen.add((x,y))
-            min_dist(new_loc, key, path, locs, keys, seen, grid)
-    else:
-        for nbr in neighbors:
-            min_dist(nbr, key, path.copy(), locs.copy(), keys.copy(), seen.copy(), grid)
+        x,y = loc
+        neighbors = [n for n in [(x-1, y), (x+1, y), (x, y-1), (x, y+1)] if grid[n] != '#' and not n in seen]
+        if not neighbors:
+            if path: keys.discard(path.pop())
+            if locs:
+                loc = locs.pop()
+        else:
+            loc = neighbors[0]
 
 for key in _keys.keys():
     print('trying key', key)
