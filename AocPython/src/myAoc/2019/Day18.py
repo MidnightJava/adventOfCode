@@ -100,7 +100,7 @@ print(_keys.keys())
 #     while queue:
 #         dist, current = queue.popleft()
 #         if grid[current] == key:
-#             return dist
+#             return distreachable
 #         # elif re.match(r"[a-z]", grid[current]):
 #         #     loc = doors.get(grid[current].upper())
 #         #     if loc: grid[loc] = '.'
