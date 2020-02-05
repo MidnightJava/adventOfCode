@@ -116,7 +116,7 @@ def reachable(paths, key, grid):
                 return True
     return False
 
-def min_dist(dist, start, key, grid):
+def min_dist(dist, start, key, grid, keys_left, keypath):
     global doors
     queue = deque([( dist, start)])
     visited = {}
@@ -127,6 +127,8 @@ def min_dist(dist, start, key, grid):
             currentKey = grid[current]
             grid[current] = '.'
             # G.remove_node(current)
+            keys_left.remove(currentKey)
+            keypath.append(currentKey)
             loc = doors.get(currentKey.upper())
             if loc:
                 grid[loc] = '.'
@@ -140,16 +142,54 @@ def min_dist(dist, start, key, grid):
         for neighbor in [n for n in [(x-1, y), (x+1, y), (x, y-1), (x, y+1)] if re.match(r"[a-z]|\.", grid[n])]:
             if not neighbor in visited or visited[neighbor] > dist:
                 queue.append((dist + 1, neighbor))
-    return dist
+
+
+# def get_nearest_key(start, grid):
+#     d = {}
+#     dist = 0
+#     queue = deque([(dist, start)])
+#     visited = {}
+#     while queue:
+#         dist, current = queue.popleft()
+
+#         if re.match(r"[a-z]", grid[current]):
+#             return grid[current]
+
+#         visited[current] = dist
+#         x,y = current
+#         for neighbor in [n for n in [(x-1, y), (x+1, y), (x, y-1), (x, y+1)] if re.match(r"[a-z]|\.", grid[n])]:
+#             if not neighbor in visited or visited[neighbor] > dist:
+#                 queue.append((dist + 1, neighbor))
+
+
+def get_nearest_key(start, grid):
+    d = {}
+    dist = 0
+    queue = deque([(dist, start)])
+    visited = {}
+    while queue:
+        dist, current = queue.popleft()
+
+        if re.match(r"[a-z]", grid[current]):
+            d[grid[current]] = dist
+
+        visited[current] = dist
+        x,y = current
+        for neighbor in [n for n in [(x-1, y), (x+1, y), (x, y-1), (x, y+1)] if re.match(r"[a-z]|\.", grid[n])]:
+            if not neighbor in visited or visited[neighbor] > dist:
+                queue.append((dist + 1, neighbor))
+
+    for k,v in d.items():
+        if v == min(d.values()): return k
 
 def next_key(start, leaves, grid, G):
     """
     Get the reachable key corresponding to the door which is hiding the most keys, as seen from.
     start. If there are more than one such keys, return the one with the shortest path from start.
-    A key is reachable if there is a path to it from start hat does not pass through a door.
+    A key is reachable if there is a path to it from start that does not pass through a door.
     """
     candidates = defaultdict(int)
-    print('leaves', list(map(lambda x: grid[x], leaves)))
+    # print('leaves', list(map(lambda x: grid[x], leaves)))
     all_paths = []
     for leaf in leaves:
         paths = list(nx.all_shortest_paths(G, start, leaf))
@@ -162,41 +202,36 @@ def next_key(start, leaves, grid, G):
                 if re.match(r"[a-z]|\.", c):
                     idx+= 1
                 else:
-                    candidates[c.upper()] = idx
+                    if idx < candidates[c.upper()]: candidates[c.upper()] = idx
                     break
     next_keys = [k.lower() for k,v in candidates.items() if v == min(candidates.values()) and reachable(all_paths, k.lower(), grid)]
     min_idx = 1e6
     next_key = None
     if next_keys:
+        # print('%d next keys found' % len(next_keys))
         for path in all_paths:
             for key in next_keys:
                 if key in path and path.index(key) < min_idx:
                     min_idx = path.index(key)
                     next_key = key
-    return next_key
+    if next_key:
+        return next_key
+    else:
+        return get_nearest_key(start, grid)
 
 keys_left = set(_keys.keys())
 dist = 0
+_grid[entr] = '.'
 start = entr
+keypath = []
 while keys_left:
     leaves = [x for x in G.nodes() if G.out_degree(x) == 1]
     leaves = list(filter(lambda x: _grid[x] != '.', leaves))
     key = next_key(start, leaves, _grid, G)
-    d = min_dist(dist, start, key, _grid)
-    if d:
-        dist+= d
-    else:
-        print('No distance returned')
+    dist+= min_dist(0, start, key, _grid, keys_left, keypath)
     start = rmap[key]
-    keys_left-= set([key])
 
+print("".join(keypath))
 print('Part 1:', dist)
-        # print("".join(path))
-# for key in _keys.keys():
-#     print('trying key', key)
-#     for leaf in leaves:
-#         # print('trying path from %s to %s' % (rmap[key], leaf))
-#         paths = nx.all_shortest_paths(G, rmap[key], leaf)
-#         for path in paths:
-#             path = map(lambda x: _grid[x], filter(lambda x: _grid[x] != '.', path))
-#             print("".join(list(path)))
+
+# Part 1 not 4620
