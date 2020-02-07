@@ -4,13 +4,13 @@ import sys
 from collections import deque
 from collections import defaultdict
 from itertools import permutations
+from bitarray import bitarray, frozenbitarray
 
 grid = {}
 doors = dict()
 keys = dict()
-path = []
 
-f = open('2019/data/day18b')
+f = open('2019/data/day18')
 y = 0
 for line in f:
     x = 0
@@ -36,54 +36,31 @@ def print_grid(grid):
         print()
 
 def BFS(start, seen):
-    global path, grid, grid2
-    keys_found = set()
+    max_keys = 0
+    ba = bitarray(len(keys))
+    ba.setall(False)
+    fba = frozenbitarray(ba)
+    skeys = sorted(keys.keys())
     x,y = start
-    queue = [(0,x,y)]
-    dist = 0
-    dists = []
-    last_d = 0
+    queue = [(0,x,y,fba)]
     while len(queue)>0:
-        d,x,y = heapq.heappop(queue)
-        path.append((x,y))
-        if re.match(r"[a-z]", grid[(x,y)]) and ((x,y) not in seen or seen[(x,y)] > d):
-            dist+= (d - last_d)
-            dists.append(d)
-            last_d = d
-            path+= grid[(x,y)]
+        d,x,y,fba = heapq.heappop(queue)
+        ba =bitarray(fba)
         if re.match(r"[a-z]", grid[(x,y)]):
-            keys_found.add(grid[(x,y)])
-            print('Found key %s' % grid[(x,y)])
-            grid2[(x,y)] = '*'
-            loc = doors.get(grid[(x,y)].upper())
-            if loc:
-                print('Opening door %s' % grid[loc])
-                grid[loc] = '.'
-                # heapq.heappush(queue, (d+1,loc[0],loc[1]))
-                # a,b = loc
-                # for nbr in [n for n in [(a-1,b), (a+1,b), (a,b-1), (a,b+1)] if grid[n] == '.' or re.match(r"[a-z]", grid[n])]:
-                #      heapq.heappush(queue, (d+1,nbr[0],nbr[1]))
-                # seen = {}
-            grid[(x,y)] = '.'
-            if len(keys_found) == len(keys):
-                # print('last loc %s', (x,y))
-                print(dists, sum(dists), path)
-                return dist
-        if (x,y) in seen and seen[(x,y)] < d:
-            continue
-        seen[(x,y)] = d
-        grid2[(x,y)] = '*'
-        neighbors = [n for n in [(x-1,y), (x+1,y), (x,y-1), (x,y+1)] if grid[n] == '.' or re.match(r"[a-z]", grid[n])]       
+            ba[skeys.index(grid[(x,y)])] = True
+            count= ba.count(True)
+            if count < max_keys-1: continue
+            max_keys = max(max_keys, count)
+            if count == len(keys):
+                return d
+        fba = frozenbitarray(ba)
+        seen[(x,y,fba)] = d
+        neighbors = [n for n in [(x-1,y), (x+1,y), (x,y-1), (x,y+1)]]
         for nb in neighbors:
-            heapq.heappush(queue, (d+1,nb[0],nb[1]))
+            if (nb[0], nb[1], fba) not in seen or seen[(nb[0], nb[1], fba)] > d:
+                if re.match(r"[a-z]|\.", grid[nb]) or (re.match(r"[A-Z]", grid[nb]) and fba[skeys.index(grid[nb].lower())]):
+                    heapq.heappush(queue, (d+1,nb[0],nb[1], fba))
 
 grid[entr] = '.'
 d = BFS(entr, {})
-print_grid(grid)
-print()
-i = 0
-for p in path:
-    grid[p] = ('(' + str(i) + ')').zfill(4)
-    i+= 1
-print_grid(grid)
 print('Part 1: %d' % d)
