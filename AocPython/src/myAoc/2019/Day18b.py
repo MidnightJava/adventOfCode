@@ -8,8 +8,9 @@ from itertools import permutations
 grid = {}
 doors = dict()
 keys = dict()
+path = []
 
-f = open('2019/data/day18c')
+f = open('2019/data/day18b')
 y = 0
 for line in f:
     x = 0
@@ -35,17 +36,22 @@ def print_grid(grid):
         print()
 
 def BFS(start, seen):
-    global grid, grid2
+    global path, grid, grid2
     keys_found = set()
     x,y = start
     queue = [(0,x,y)]
     dist = 0
+    dists = []
+    last_d = 0
     while len(queue)>0:
         d,x,y = heapq.heappop(queue)
+        path.append((x,y))
+        if re.match(r"[a-z]", grid[(x,y)]) and ((x,y) not in seen or seen[(x,y)] > d):
+            dist+= (d - last_d)
+            dists.append(d)
+            last_d = d
+            path+= grid[(x,y)]
         if re.match(r"[a-z]", grid[(x,y)]):
-            dist+= d
-            print(d)
-            # d = 0
             keys_found.add(grid[(x,y)])
             print('Found key %s' % grid[(x,y)])
             grid2[(x,y)] = '*'
@@ -53,14 +59,15 @@ def BFS(start, seen):
             if loc:
                 print('Opening door %s' % grid[loc])
                 grid[loc] = '.'
-                heapq.heappush(queue, (d+1,loc[0],loc[1]))
-                a,b = loc
-                for nbr in [n for n in [(a-1,b), (a+1,b), (a,b-1), (a,b+1)] if grid[n] == '.' or re.match(r"[a-z]", grid[n])]:
-                     heapq.heappush(queue, (d+1,nbr[0],nbr[1]))
+                # heapq.heappush(queue, (d+1,loc[0],loc[1]))
+                # a,b = loc
+                # for nbr in [n for n in [(a-1,b), (a+1,b), (a,b-1), (a,b+1)] if grid[n] == '.' or re.match(r"[a-z]", grid[n])]:
+                #      heapq.heappush(queue, (d+1,nbr[0],nbr[1]))
                 # seen = {}
             grid[(x,y)] = '.'
             if len(keys_found) == len(keys):
-                print('last loc %s', (x,y))
+                # print('last loc %s', (x,y))
+                print(dists, sum(dists), path)
                 return dist
         if (x,y) in seen and seen[(x,y)] < d:
             continue
@@ -74,5 +81,9 @@ grid[entr] = '.'
 d = BFS(entr, {})
 print_grid(grid)
 print()
-print_grid(grid2)
+i = 0
+for p in path:
+    grid[p] = ('(' + str(i) + ')').zfill(4)
+    i+= 1
+print_grid(grid)
 print('Part 1: %d' % d)
