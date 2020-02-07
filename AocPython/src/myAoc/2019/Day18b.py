@@ -49,17 +49,18 @@ def BFS(start, seen):
         if re.match(r"[a-z]", grid[(x,y)]):
             ba[skeys.index(grid[(x,y)])] = True
             count= ba.count(True)
-            if count < max_keys-1: continue
+            # if count < max_keys-1: continue
             max_keys = max(max_keys, count)
             if count == len(keys):
                 return d
         fba = frozenbitarray(ba)
-        seen[(x,y,fba)] = d
-        neighbors = [n for n in [(x-1,y), (x+1,y), (x,y-1), (x,y+1)]]
-        for nb in neighbors:
-            if (nb[0], nb[1], fba) not in seen or seen[(nb[0], nb[1], fba)] > d:
-                if re.match(r"[a-z]|\.", grid[nb]) or (re.match(r"[A-Z]", grid[nb]) and fba[skeys.index(grid[nb].lower())]):
-                    heapq.heappush(queue, (d+1,nb[0],nb[1], fba))
+        if (x,y,fba) not in seen or seen[(x,y,fba)] > d:
+            seen[(x,y,fba)] = d
+            neighbors = [n for n in [(x-1,y), (x+1,y), (x,y-1), (x,y+1)]]
+            for nb in neighbors:
+                if (nb[0], nb[1], fba) not in seen or seen[(nb[0], nb[1], fba)] > d:
+                    if re.match(r"[a-z]|\.", grid[nb]) or (re.match(r"[A-Z]", grid[nb]) and fba[skeys.index(grid[nb].lower())]):
+                        heapq.heappush(queue, (d+1,nb[0],nb[1], fba))
 
 grid[entr] = '.'
 d = BFS(entr, {})
