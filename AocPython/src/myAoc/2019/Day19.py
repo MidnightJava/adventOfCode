@@ -77,11 +77,12 @@ code = list(map(int, f.readline().split(',')))
 p = Proc(code)
 
 count=0
-y = 0
+start = y = 10000
 rows = {}
 while True:
-    x = 0
+    x = y
     xmin = None
+    xmax = None
     while True:
         res = Proc(code.copy()).run([y,x])
         res = int(res)
@@ -94,17 +95,45 @@ while True:
         else:
             c = '.'
             if xmin:
-                xmax = x -1
+                xmax = x
                 rows[y].append(xmax)
                 break
-        #     print(c, end = '')
-        # print()
-        if not xmin and x > 500:
+        # print(c, end = '')
+        if not xmin and x > y:
+            break
+        if xmin and not xmax and x - xmin > 200:
+            rows[y].append(x)
             break
         x+= 1
     
-    if y in rows: print(rows[y])
-    if y == 49:
-        print('Part 1:', count)
-        break
-    y+= 1
+    # print()
+    
+    if y in rows and len(rows[y]) == 2 and rows[y][1] - rows[y][0] >= 100:
+        print('Row %d' % y)
+    if y in rows: print(y, len(rows[y]))
+    y+= 1000
+        # print(y, rows[y][0], rows[y][1], rows[y][1] - rows[y][0])
+    # if len(rows[y]) == 2 and y > start+99 and len(rows[y-99]) == 2:
+    #     r1 = rows[y]
+    #     r2 = rows[y-99]
+    #     if r2[0] > r1[0] and r2[1] < r1[1]:
+    #         print('Found match at row %d' % y)
+    #         break
+
+
+
+    #     print('Current row: %s,  up100 row: %s' % (rows[y], rows[y-99]))
+    #     r = rows[y]
+    #     if r[1] - r[0] >= 100 and y >= 900 and rows[y-99][0] >= r[0] and rows[y-99][1] - rows[y-99][0] >= 100:
+    #         print("part 2:", (x * 10000 + y - 100))
+    #         break
+    # if len(rows[y]) == 2 and rows[y][1] - rows[y][0] > 100:
+    #     print(y, rows[y])
+
+    # if y in rows: print(rows[y])
+    # if y == 49:
+    #     print('Part 1:', count)
+    #     break
+    # y+= 1
+    # if xmax and xmin: print('DIFF', xmax - xmin)
+    # if xmin: print((xmin, xmax))
