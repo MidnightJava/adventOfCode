@@ -77,10 +77,12 @@ code = list(map(int, f.readline().split(',')))
 p = Proc(code)
 
 count=0
-start = y = 10000
+start = y = 800
 rows = {}
+last_x = 0
 while True:
-    x = y
+    # x = max(0, y-1)
+    x = last_x
     xmin = None
     xmax = None
     while True:
@@ -94,24 +96,34 @@ while True:
                 rows[y] = [xmin]
         else:
             c = '.'
-            if xmin:
+            if xmin is not None:
                 xmax = x
                 rows[y].append(xmax)
                 break
         # print(c, end = '')
         if not xmin and x > y:
             break
-        if xmin and not xmax and x - xmin > 200:
+        if xmin and not xmax and x - xmin > 300:
             rows[y].append(x)
             break
         x+= 1
+    last_x = xmin
+
+    # if y == 49:
+    #     break
+    # if y in rows: print('  %d' % (rows[y][1] - rows[y][0]))
+    if y in rows and len(rows[y]) == 2:
+        if rows[y][1] - rows[y][0] >= 100:
+            print('Row %d has length %d  %s' % (y,  rows[y][1] - rows[y][0], (rows[y][0], rows[y][1])))
+    y+= 1
     
+print('\nPart 1:', (count))
     # print()
     
-    if y in rows and len(rows[y]) == 2 and rows[y][1] - rows[y][0] >= 100:
-        print('Row %d' % y)
-    if y in rows: print(y, len(rows[y]))
-    y+= 1000
+    # if y in rows and len(rows[y]) == 2 and rows[y][1] - rows[y][0] >= 100:
+    #     print('Row %d' % y)
+    # if y in rows: print(y, len(rows[y]))
+    # y+= 1000
         # print(y, rows[y][0], rows[y][1], rows[y][1] - rows[y][0])
     # if len(rows[y]) == 2 and y > start+99 and len(rows[y-99]) == 2:
     #     r1 = rows[y]
@@ -137,3 +149,14 @@ while True:
     # y+= 1
     # if xmax and xmin: print('DIFF', xmax - xmin)
     # if xmin: print((xmin, xmax))
+
+# Row 819 has length 100  (641, 741)
+# Row 820 has length 100  (642, 742)
+# Row 823 has length 100  (644, 744)
+# Not 6440823 (644*10000 + 823)
+
+"""
+Keep track of highest xmin so far of right-justified 100-length section.
+Then when you encounter a section with xmin >= that, which is at least 100 in length,
+use the stored highest xmin to get the answer.
+"""
