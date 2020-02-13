@@ -1,4 +1,8 @@
 import re
+import sys
+import time
+from collections import defaultdict
+
 intersections = set()
 loc = None
 
@@ -61,27 +65,19 @@ class Proc:
                 break
         return output
 
-def print_grid(grid, max_x, max_y):
-    print()
-    for y in range(max_y + 1):
-        for x in range(max_x + 1):
-            print(grid.get((x, y), ' '), end='')
-        y+= 1
-        print()
-    print()
-
-
 f = open('./2019/data/day19')
 code = list(map(int, f.readline().split(',')))
 [code.append(0) for _ in range(10000)]
 p = Proc(code)
 
 count=0
-start = y = 800
+y = 0
 rows = {}
 last_x = 0
+candidate = None
+candidates = defaultdict(list)
+start_time = time.time()
 while True:
-    # x = max(0, y-1)
     x = last_x
     xmin = None
     xmax = None
@@ -89,74 +85,39 @@ while True:
         res = Proc(code.copy()).run([y,x])
         res = int(res)
         if res:
-            count+= 1
+            if x < 50 and y < 50: count+= 1
             c = '#'
             if xmin is None:
                 xmin = x
-                rows[y] = [xmin]
         else:
             c = '.'
             if xmin is not None:
                 xmax = x
-                rows[y].append(xmax)
                 break
         # print(c, end = '')
         if not xmin and x > y:
             break
-        if xmin and not xmax and x - xmin > 300:
-            rows[y].append(x)
-            break
         x+= 1
-    last_x = xmin
+    if xmin is not None: last_x = xmin 
 
-    # if y == 49:
-    #     break
-    # if y in rows: print('  %d' % (rows[y][1] - rows[y][0]))
-    if y in rows and len(rows[y]) == 2:
-        if rows[y][1] - rows[y][0] >= 100:
-            print('Row %d has length %d  %s' % (y,  rows[y][1] - rows[y][0], (rows[y][0], rows[y][1])))
-    y+= 1
-    
-print('\nPart 1:', (count))
-    # print()
-    
-    # if y in rows and len(rows[y]) == 2 and rows[y][1] - rows[y][0] >= 100:
-    #     print('Row %d' % y)
-    # if y in rows: print(y, len(rows[y]))
-    # y+= 1000
-        # print(y, rows[y][0], rows[y][1], rows[y][1] - rows[y][0])
-    # if len(rows[y]) == 2 and y > start+99 and len(rows[y-99]) == 2:
-    #     r1 = rows[y]
-    #     r2 = rows[y-99]
-    #     if r2[0] > r1[0] and r2[1] < r1[1]:
-    #         print('Found match at row %d' % y)
-    #         break
+    if xmin is not None and xmax is not None:
+        if xmax - xmin >= 100:
+            _x = xmax - 100
+            for k,v in sorted(candidates.items(), key=lambda x: x[0], reverse=True):
+                if k >= xmin:
+                    for _y in sorted(v):
+                        if y - _y >= 99:
+                            print("part 2: %d", (xmin * 10000 + _y))
+                            sys.exit()
+            
+            candidates[_x].append(y)
+               
 
+    if y == 49:
+        print('Part 1: %d' % count)
+        y = 1450
+    else:
+        y+= 1
 
-
-    #     print('Current row: %s,  up100 row: %s' % (rows[y], rows[y-99]))
-    #     r = rows[y]
-    #     if r[1] - r[0] >= 100 and y >= 900 and rows[y-99][0] >= r[0] and rows[y-99][1] - rows[y-99][0] >= 100:
-    #         print("part 2:", (x * 10000 + y - 100))
-    #         break
-    # if len(rows[y]) == 2 and rows[y][1] - rows[y][0] > 100:
-    #     print(y, rows[y])
-
-    # if y in rows: print(rows[y])
-    # if y == 49:
-    #     print('Part 1:', count)
-    #     break
-    # y+= 1
-    # if xmax and xmin: print('DIFF', xmax - xmin)
-    # if xmin: print((xmin, xmax))
-
-# Row 819 has length 100  (641, 741)
-# Row 820 has length 100  (642, 742)
-# Row 823 has length 100  (644, 744)
-# Not 6440823 (644*10000 + 823)
-
-"""
-Keep track of highest xmin so far of right-justified 100-length section.
-Then when you encounter a section with xmin >= that, which is at least 100 in length,
-use the stored highest xmin to get the answer.
-"""
+# Part 1: 150
+# Part 2: 12201460
