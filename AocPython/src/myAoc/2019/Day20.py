@@ -1,5 +1,6 @@
 import re
 from collections import defaultdict
+import heapq
 
 grid = {}
 ports = {}
@@ -43,7 +44,10 @@ for y in range(h):
                 grid[loc] = "*"
                 rport[cc].append(loc)
 
-
+def jump(loc):
+    port = ports[loc]
+    for _loc in rport[port]:
+        if _loc != loc: return _loc
 
 for y in range(h):
     for x in range(w):
@@ -53,3 +57,26 @@ for y in range(h):
 for k,v in rport.items():
     print('%s : %s' % (k,v))
 
+
+def BFS(start):
+    seen = {}
+    x,y = start
+    queue = [(0,x,y)]
+    while queue:
+        d,x,y = heapq.heappop(queue)
+        if grid[(x,y)] == "*":
+            if ports[(x,y)] == 'ZZ':
+                return d
+            if ports[(x,y)] != 'AA':
+                rem_loc = jump((x,y))
+                heapq.heappush(queue, (d+1, rem_loc[0], rem_loc[1]))
+        if (x,y) not in seen or seen[(x,y)] > d:
+            seen[(x,y)] = d
+            neighbors = [n for n in [(x-1,y), (x+1,y), (x,y-1), (x,y+1)] if re.match(r"[\.\*]", grid[n])]
+            for nb in neighbors:
+                if (nb[0], nb[1]) not in seen or seen[(nb[0], nb[1])] > d:
+                    heapq.heappush(queue, (d+1, nb[0], nb[1]))
+
+start = rport['AA'][0]
+d = BFS(start)
+print('PART 1 %d' % d)
