@@ -12,9 +12,8 @@ y = 0
 for line in lines:
     x = 0
     for c in line:
-        if re.match(r"[\#\s\.]|[A-Z]", c):
-            grid[(x,y)] = c
-            x+=1
+        grid[(x,y)] = c
+        x+=1
     y+= 1
 h = y
 w = x
@@ -31,6 +30,7 @@ for x in range(w):
                 ports[loc] = cc
                 grid[loc] = "*"
                 rport[cc].append(loc)
+               
 for y in range(h):
     for x in range(w):
         if re.match(r"[A-Z]", grid[(x,y)]):
@@ -49,14 +49,13 @@ def jump(loc):
     for _loc in rport[port]:
         if _loc != loc: return _loc
 
-for y in range(h):
-    for x in range(w):
-        print(grid[(x,y)], end='')
-    print()
+# for y in range(h):
+#     for x in range(w):
+#         print(grid[(x,y)], end='')
+#     print()
 
-for k,v in rport.items():
-    print('%s : %s' % (k,v))
-
+# for k,v in rport.items():
+#     print('%s : %s' % (k,v))
 
 def BFS(start):
     seen = {}
@@ -80,3 +79,43 @@ def BFS(start):
 start = rport['AA'][0]
 d = BFS(start)
 print('PART 1 %d' % d)
+
+def BFS2(start):
+    level = 0
+    seen = {}
+    x,y = start
+    queue = [(0,x,y,level, False)]
+    while queue:
+        d,x,y,level,jmp = heapq.heappop(queue)
+        if grid[(x,y)] == "*":
+            #Outer
+            if x == 2 or x == w-3 or y == 2 or y == h-3:
+                if level == 0:
+                    if ports[(x,y)] == 'ZZ':
+                        return d
+                elif jmp:
+                    if ports[(x,y)] != 'AA' and ports[(x,y)] != 'ZZ':
+                        level-= 1
+                        rem_loc = jump((x,y))
+                        heapq.heappush(queue, (d+1, rem_loc[0], rem_loc[1], level, False))
+                        continue
+            #Inner
+            elif jmp:
+                level+= 1
+                rem_loc = jump((x,y))
+                heapq.heappush(queue, (d+1, rem_loc[0], rem_loc[1], level, False))
+                continue
+        if (x,y,level) not in seen or seen[(x,y,level)] > d:
+            seen[(x,y,level)] = d
+            neighbors = [n for n in [(x-1,y), (x+1,y), (x,y-1), (x,y+1)] if re.match(r"[\.\*]", grid[n])]
+            for nb in neighbors:
+                if (nb[0], nb[1], level) not in seen or seen[(nb[0], nb[1], level)] > d:
+                    heapq.heappush(queue, (d+1, nb[0], nb[1], level, True))
+
+start = rport['AA'][0]
+d = BFS2(start)
+print('PART 2 %d' % d)
+
+# Part 1: 692
+# Part 2: 8314
+
