@@ -6,6 +6,8 @@ grid = {}
 ports = {}
 rport = defaultdict(list)
 
+part2 = True
+
 f = open('./2019/data/day20')
 lines = f.read().split('\n')
 y = 0
@@ -57,30 +59,7 @@ def jump(loc):
 # for k,v in rport.items():
 #     print('%s : %s' % (k,v))
 
-def BFS(start):
-    seen = {}
-    x,y = start
-    queue = [(0,x,y)]
-    while queue:
-        d,x,y = heapq.heappop(queue)
-        if grid[(x,y)] == "*":
-            if ports[(x,y)] == 'ZZ':
-                return d
-            if ports[(x,y)] != 'AA':
-                rem_loc = jump((x,y))
-                heapq.heappush(queue, (d+1, rem_loc[0], rem_loc[1]))
-        if (x,y) not in seen or seen[(x,y)] > d:
-            seen[(x,y)] = d
-            neighbors = [n for n in [(x-1,y), (x+1,y), (x,y-1), (x,y+1)] if re.match(r"[\.\*]", grid[n])]
-            for nb in neighbors:
-                if (nb[0], nb[1]) not in seen or seen[(nb[0], nb[1])] > d:
-                    heapq.heappush(queue, (d+1, nb[0], nb[1]))
-
-start = rport['AA'][0]
-d = BFS(start)
-print('PART 1 %d' % d)
-
-def BFS2(start):
+def BFS(start, part):
     level = 0
     seen = {}
     x,y = start
@@ -88,23 +67,30 @@ def BFS2(start):
     while queue:
         d,x,y,level,jmp = heapq.heappop(queue)
         if grid[(x,y)] == "*":
-            #Outer
-            if x == 2 or x == w-3 or y == 2 or y == h-3:
-                if level == 0:
-                    if ports[(x,y)] == 'ZZ':
-                        return d
+            if part == 1:
+                if ports[(x,y)] == 'ZZ':
+                    return d
+                if ports[(x,y)] != 'AA':
+                    rem_loc = jump((x,y))
+                    heapq.heappush(queue, (d+1, rem_loc[0], rem_loc[1], level, False))
+            else:
+                #Outer
+                if x == 2 or x == w-3 or y == 2 or y == h-3:
+                    if level == 0:
+                        if ports[(x,y)] == 'ZZ':
+                            return d
+                    elif jmp:
+                        if ports[(x,y)] != 'AA' and ports[(x,y)] != 'ZZ':
+                            level-= 1
+                            rem_loc = jump((x,y))
+                            heapq.heappush(queue, (d+1, rem_loc[0], rem_loc[1], level, False))
+                            continue
+                #Inner
                 elif jmp:
-                    if ports[(x,y)] != 'AA' and ports[(x,y)] != 'ZZ':
-                        level-= 1
-                        rem_loc = jump((x,y))
-                        heapq.heappush(queue, (d+1, rem_loc[0], rem_loc[1], level, False))
-                        continue
-            #Inner
-            elif jmp:
-                level+= 1
-                rem_loc = jump((x,y))
-                heapq.heappush(queue, (d+1, rem_loc[0], rem_loc[1], level, False))
-                continue
+                    level+= 1
+                    rem_loc = jump((x,y))
+                    heapq.heappush(queue, (d+1, rem_loc[0], rem_loc[1], level, False))
+                    continue
         if (x,y,level) not in seen or seen[(x,y,level)] > d:
             seen[(x,y,level)] = d
             neighbors = [n for n in [(x-1,y), (x+1,y), (x,y-1), (x,y+1)] if re.match(r"[\.\*]", grid[n])]
@@ -113,8 +99,9 @@ def BFS2(start):
                     heapq.heappush(queue, (d+1, nb[0], nb[1], level, True))
 
 start = rport['AA'][0]
-d = BFS2(start)
-print('PART 2 %d' % d)
+for part in [1,2]:
+    d = BFS(start, part)
+    print('Part %d: %d' % (part,d))
 
 # Part 1: 692
 # Part 2: 8314
