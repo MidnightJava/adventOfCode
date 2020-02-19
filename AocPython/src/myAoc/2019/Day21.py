@@ -52,7 +52,6 @@ class Proc:
                     print(chr(output), end=' ')
                     pass
                 else:
-                    print('Part 1:', output)
                     return 'DONE'
             elif op == 5:#JMP IF TRUE
                 self.pos = self.code[p2] if self.code[p1] else self.pos+3
@@ -103,39 +102,59 @@ code = list(map(int, f.readline().split(',')))
 proc = Proc(code.copy())
 for instr in [ 'NOT A J', 'NOT C T', 'OR T J', 'AND D J']:
     proc.run(makeInstr(instr))
-proc.run(makeInstr('WALK'))
+res = proc.run(makeInstr('WALK'))
+if res == 'DONE': print('Part 1:', output)
 
 instrs = [
-    'OR X T',
-    'AND X T',
-    'OR T J',
-    'NOT X T',
-    'NOT X T',
-    'AND T J',
-    'NOT X T',
-    'NOT X T',
-    'AND T J',
-    'NOT X T',
-    'NOT X T',
-    'AND T J',
-    'NOT A T',
-    'OR T J'
+    'OR B T',
+'AND F T',
+'NOT T T',
+'AND T J',
+'OR C T',
+'AND G T',
+'NOT T T',
+'AND T J',
+'OR D T',
+'AND H T',
+'NOT T T',
+'AND T J',
+'NOT A T',
+'OR T J'
 ]
-registers = [('A','E'), ('C', 'G', ('B', 'F'), ('D', 'H')]
-indexes = [(0,1), (3,4), (6,7), (9,10)]
-for p in permutations(registers):
-    
+
+def replace_x(regs, indexes, i):
+    global instrs 
+    instrs[indexes[i][0]] = instrs[indexes[i][0]].replace('X', regs[i][0]  )
+    instrs[indexes[i][1]] = instrs[indexes[i][1]].replace('X', regs[i][1]  )
+
+# registers = [('A','E'), ('C', 'G'), ('B', 'F'), ('D', 'H')]
+# indexes = [(0,1), (3,4), (6,7), (9,10)]
+# for reg_p in permutations(registers):
+#     for i in range(4):
+#         replace_x(reg_p, indexes, i)
+
+#     proc = Proc(code.copy())
+#     for instr in instrs:
+#         # print(instr)
+#         proc.run(makeInstr(instr))
+#     res = proc.run(makeInstr('RUN'))
+#     if res == 'DONE':
+#         print('Part 2:', output)
+#         sys.exit()
 
 proc = Proc(code.copy())
 for instr in instrs:
     # print(instr)
     proc.run(makeInstr(instr))
-proc.run(makeInstr('RUN'))
+res = proc.run(makeInstr('RUN'))
+if res == 'DONE':
+    print('Part 2:', output)
 
 """
 Alternate Part1: (hole at 1,2, or 3 and ground at 4)[ 'NOT A J', 'NOT B T', 'OR T J''NOT C T', 'OR T J', 'AND D J']
 boolean: (NOT A OR NOT B OR NOT C) and D
 
+Part 2:
 Try:
 ((ground at 4 and ground at 8) or (hole at 1))
 
@@ -210,6 +229,22 @@ indexes: (0,1), (3,4), (6,7), (9,10)
 'AND T J',
 'NOT X T',
 'NOT X T',
+'AND T J',
+'NOT A T',
+'OR T J'
+
+not 1 or (not(2 and 6) and not (3 and 7) and not(4 and 8) and not (5 and 9))
+'OR B T',
+'AND F T',
+'NOT T T',
+'AND T J',
+'OR C T',
+'AND G T',
+'NOT T T',
+'AND T J',
+'OR D T',
+'AND H T',
+'NOT T T',
 'AND T J',
 'NOT A T',
 'OR T J'
