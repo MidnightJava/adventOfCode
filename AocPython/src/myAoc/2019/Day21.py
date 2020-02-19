@@ -3,6 +3,7 @@ import sys
 import time
 from collections import defaultdict
 from itertools import permutations
+from bitarray import bitarray
 
 intersections = set()
 loc = None
@@ -105,6 +106,11 @@ for instr in [ 'NOT A J', 'NOT C T', 'OR T J', 'AND D J']:
 res = proc.run(makeInstr('WALK'))
 if res == 'DONE': print('Part 1:', output)
 
+for i in range(2**9):
+    n = "{0:b}".format(i).rjust(9, '0')
+    ba = bitarray(n)
+    print(n, ba.count(1), ba[-1])
+
 instrs = [
     'OR B T',
 'AND F T',
@@ -166,11 +172,28 @@ OR T J
 
 TRY:
 
-(not (3 and 7) and not (2 and 6) and (not 1 and 5)) and 4 OR NOT 1
-'OR C T',
-'AND G T',
+(not (3 and 7) and not (2 and 6) and not (1 and 5)) and 4 OR NOT 1
+( ( (not 3 or not 7) and (not 2 or not 6) and (not 1 or not 5) and 4 ) or not 1 )
+'NOT C J',
+'NOT G T',
+'OR T J',
+'OR B T',
+'AND F T',
+'NOT T T',
+'AND T J',
+'OR A T',
+'AND E T',
+'NOT T T',
+'AND T J',
+'AND D J',
+'NOT A T',
+'OR T J'
+
+
+
 'NOT T T',
 'OR T J',
+'NOT B T',
 'OR B T',
 'AND F T',
 'NOT T T',
