@@ -159,13 +159,10 @@ instrs = [
     'NOT J J',
     'OR A T',
     'AND B T',
-    'AND F T',
+    'AND C T',
+    'AND D T',
     'NOT T T',
     'AND T J',
-    'NOT A T',
-    'AND T J',
-    'NOT E T',
-    'OR T J',
     'AND D J'
 ]
 
@@ -177,11 +174,62 @@ res = proc.run(makeInstr('RUN'))
 if res == 'DONE':
     print('Part 2:', output)
 
+# def replace_x(instrs, reg, i):
+#     instrs[i] = instrs[i].replace('X', reg)
 
-# def replace_x(regs, indexes, i):
-#     global instrs 
-#     instrs[indexes[i][0]] = instrs[indexes[i][0]].replace('X', regs[i][0]  )
-#     instrs[indexes[i][1]] = instrs[indexes[i][1]].replace('X', regs[i][1]  )
+# instrs = [
+#     'OR X J',
+#     'AND X J',
+#     'AND X J',
+#     'AND X J',
+#     'NOT J J',
+#     'OR X T',
+#     'AND X T',
+#     'AND X T',
+#     'NOT T T',
+#     'AND T J',
+#     'NOT X T',
+#     'NOT T T',
+#     'AND X T',
+#     'NOT T T',
+#     'AND T J'
+# ]
+
+# regs = 'ABCDEFGHI'
+# indices = [0, 1, 2,  3, 5, 6, 7, 10, 12]
+# for reg_p in permutations(regs):
+#     instrs_cpy = instrs.copy()
+#     for i in range(len(indices)):
+#         replace_x(instrs_cpy, reg_p[i], indices[i])
+
+#     proc = Proc(code.copy())
+#     for instr in instrs_cpy:
+#         # print(instr)
+#         proc.run(makeInstr(instr))
+#     res = proc.run(makeInstr('RUN'))
+#     if res == 'DONE':
+#         print('Part 2:', output)
+#         sys.exit()
+
+
+
+# instrs = [
+#     'OR A J',
+#     'AND B J',
+#     'AND C J',
+#     'AND G J',
+#     'NOT J J',
+#     'OR A T',
+#     'AND B T',
+#     'AND F T',
+#     'NOT T T',
+#     'AND T J',
+#     'NOT A T',
+#     'NOT T T',
+#     'AND E T',
+#     'NOT T T',
+#     'AND T J'
+# ]
 
 # # registers = [('A','E'), ('C', 'G'), ('B', 'F'), ('D', 'H')]
 # # indexes = [(0,1), (3,4), (6,7), (9,10)]
@@ -214,6 +262,22 @@ OR T J
 
 TRY:
 
+not(1 and 2 and 3 and 7) and not(1 and 2 and 3 and 4 and 8) and 4
+
+'OR A J',
+'AND B J',
+'AND C J',
+'AND G J',
+'NOT J J',
+'OR A T',
+'AND B T',
+'AND C T',
+'AND D T',
+'NOT T T',
+'AND T J',
+'AND D J'
+
+
 not(1 and 2 and 3 and 7) and not(1 and 2 and 6) and not(1 and 5) and 4
 'OR A J',
 'AND B J',
@@ -226,10 +290,11 @@ not(1 and 2 and 3 and 7) and not(1 and 2 and 6) and not(1 and 5) and 4
 'NOT T T',
 'AND T J',
 'NOT A T',
-'AND T J',
-'NOT E T',
-'OR T J',
-'AND D J'
+'NOT T T',
+'AND E T',
+'NOT T T',
+'AND T J'
+# 'AND D J'
 
 
 
