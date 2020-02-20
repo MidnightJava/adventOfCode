@@ -106,47 +106,68 @@ for instr in [ 'NOT A J', 'NOT C T', 'OR T J', 'AND D J']:
 res = proc.run(makeInstr('WALK'))
 if res == 'DONE': print('Part 1:', output)
 
-for i in range(2**9):
-    n = "{0:b}".format(i).rjust(9, '0')
-    ba = bitarray(n)
-    print(n, ba.count(1), ba[-1])
+# regs = 'ABCDEFGHI'
+# for i in range(2**9):
+#     n = "{0:b}".format(i).rjust(9, '0')
+#     ba = bitarray(n)
+#     holes = [regs[i] for i in range(9) if not ba[i]]
+#     ground = [regs[i] for i in range(9) if ba[i]]
+#     instrs = []
+#     instrs2 = []
+#     if holes:
+#         instrs.append('NOT %s J' % holes[0])
+#         instrs2.append('NOT %s J' % holes[0])
+#         for i in range(1, len(holes)):
+#             instrs.append('NOT %s T' % holes[i])
+#             instrs2.append('NOT %s T' % holes[i])
+#             instrs.append('OR T J')
+#             instrs2.append('AND T J')
+#         for i in range(len(ground)):
+#             instrs.append('AND %s J' % ground[i])
+#             instrs2.append('OR %s T' % ground[i])
+#             instrs2.append('AND T J')
+#         instrs.append('NOT A T')
+#         instrs2.append('NOT A T')
+#         instrs.append('OR T J')
+#         instrs2.append('OR T J')
+#         instrs.append('AND D J')
+#         instrs2.append('AND D J')
+
+#         proc = Proc(code.copy())
+#         for instr in instrs:
+#             # print(instr)
+#             proc.run(makeInstr(instr))
+#         res = proc.run(makeInstr('RUN'))
+#         if res == 'DONE':
+#             print('Part 2:', output)
+#             sys.exit()
+
+#         proc = Proc(code.copy())
+#         for instr in instrs2:
+#             # print(instr)
+#             proc.run(makeInstr(instr))
+#         res = proc.run(makeInstr('RUN'))
+#         if res == 'DONE':
+#             print('Part 2:', output)
+#             sys.exit()
 
 instrs = [
-    'OR B T',
-'AND F T',
-'NOT T T',
-'AND T J',
-'OR C T',
-'AND G T',
-'NOT T T',
-'AND T J',
-'OR D T',
-'AND H T',
-'NOT T T',
-'AND T J',
-'NOT A T',
-'OR T J'
+    'OR A J',
+    'AND B J',
+    'AND C J',
+    'AND G J',
+    'NOT J J',
+    'OR A T',
+    'AND B T',
+    'AND F T',
+    'NOT T T',
+    'AND T J',
+    'NOT A T',
+    'AND T J',
+    'NOT E T',
+    'OR T J',
+    'AND D J'
 ]
-
-def replace_x(regs, indexes, i):
-    global instrs 
-    instrs[indexes[i][0]] = instrs[indexes[i][0]].replace('X', regs[i][0]  )
-    instrs[indexes[i][1]] = instrs[indexes[i][1]].replace('X', regs[i][1]  )
-
-# registers = [('A','E'), ('C', 'G'), ('B', 'F'), ('D', 'H')]
-# indexes = [(0,1), (3,4), (6,7), (9,10)]
-# for reg_p in permutations(registers):
-#     for i in range(4):
-#         replace_x(reg_p, indexes, i)
-
-#     proc = Proc(code.copy())
-#     for instr in instrs:
-#         # print(instr)
-#         proc.run(makeInstr(instr))
-#     res = proc.run(makeInstr('RUN'))
-#     if res == 'DONE':
-#         print('Part 2:', output)
-#         sys.exit()
 
 proc = Proc(code.copy())
 for instr in instrs:
@@ -155,6 +176,27 @@ for instr in instrs:
 res = proc.run(makeInstr('RUN'))
 if res == 'DONE':
     print('Part 2:', output)
+
+
+# def replace_x(regs, indexes, i):
+#     global instrs 
+#     instrs[indexes[i][0]] = instrs[indexes[i][0]].replace('X', regs[i][0]  )
+#     instrs[indexes[i][1]] = instrs[indexes[i][1]].replace('X', regs[i][1]  )
+
+# # registers = [('A','E'), ('C', 'G'), ('B', 'F'), ('D', 'H')]
+# # indexes = [(0,1), (3,4), (6,7), (9,10)]
+# # for reg_p in permutations(registers):
+# #     for i in range(4):
+# #         replace_x(reg_p, indexes, i)
+
+# #     proc = Proc(code.copy())
+# #     for instr in instrs:
+# #         # print(instr)
+# #         proc.run(makeInstr(instr))
+# #     res = proc.run(makeInstr('RUN'))
+# #     if res == 'DONE':
+# #         print('Part 2:', output)
+# #         sys.exit()
 
 """
 Alternate Part1: (hole at 1,2, or 3 and ground at 4)[ 'NOT A J', 'NOT B T', 'OR T J''NOT C T', 'OR T J', 'AND D J']
@@ -172,22 +214,22 @@ OR T J
 
 TRY:
 
-(not (3 and 7) and not (2 and 6) and not (1 and 5)) and 4 OR NOT 1
-( ( (not 3 or not 7) and (not 2 or not 6) and (not 1 or not 5) and 4 ) or not 1 )
-'NOT C J',
-'NOT G T',
-'OR T J',
-'OR B T',
+not(1 and 2 and 3 and 7) and not(1 and 2 and 6) and not(1 and 5) and 4
+'OR A J',
+'AND B J',
+'AND C J',
+'AND G J',
+'NOT J J',
+'OR A T',
+'AND B T',
 'AND F T',
 'NOT T T',
 'AND T J',
-'OR A T',
-'AND E T',
-'NOT T T',
-'AND T J',
-'AND D J',
 'NOT A T',
-'OR T J'
+'AND T J',
+'NOT E T',
+'OR T J',
+'AND D J'
 
 
 
