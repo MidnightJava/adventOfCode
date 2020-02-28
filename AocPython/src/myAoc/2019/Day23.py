@@ -9,28 +9,29 @@ stop_threads = False
 part1_done = False
 last_y = None
 
-def send_msg():
-    global stop_threads, part1_done, last_y
-    while not stop_threads:
-        if not queues[50].empty():
-            addr, x, y = queues[50].get()
-            if addr <= 49:
-                queues[addr].put((x,y))
-            elif addr == 255:
-                if not part1_done:
-                    print('Part 1: %d\ttime %s' % (y, time.time() - start_time))
-                    part1_done = True
-                all_idle = True
-                for p in procs:
-                    if not p.idle: all_idle = False
-                if all_idle:
-                    queues[0].put((x,y))
-                    if last_y == y:
-                        print('Part 2: %d\ttime: %s' % (y, time.time() - start_time))
-                        stop_threads = True
-                    last_y = y
-        time.sleep(.1)
-threading.Thread(target=send_msg).start()
+class MsgHandler(threading.Thread):
+    def run(self):
+        global stop_threads, part1_done, last_y
+        while not stop_threads:
+            if not queues[50].empty():
+                addr, x, y = queues[50].get()
+                if addr <= 49:
+                    queues[addr].put((x,y))
+                elif addr == 255:
+                    if not part1_done:
+                        print('Part 1: %d\ttime %s' % (y, time.time() - start_time))
+                        part1_done = True
+                    all_idle = True
+                    for p in procs:
+                        if not p.idle: all_idle = False
+                    if all_idle:
+                        queues[0].put((x,y))
+                        if last_y == y:
+                            print('Part 2: %d\ttime: %s' % (y, time.time() - start_time))
+                            stop_threads = True
+                        last_y = y
+            time.sleep(.001)
+MsgHandler().start()
 
 output = None
 class Proc:
@@ -96,7 +97,7 @@ class Proc:
                 else:
                     self.idle = False
                 self.pos+= 2
-                time.sleep(.1)
+                if not self.idle: time.sleep(.1)
             elif op == 5:#JMP IF TRUE
                 self.pos = self.code[p2] if self.code[p1] else self.pos+3
             elif op == 6:#JMP IF FALSE
