@@ -30,7 +30,7 @@ class MsgHandler(threading.Thread):
                             print('Part 2: %d\ttime: %s' % (y, time.time() - start_time))
                             stop_threads = True
                         last_y = y
-            time.sleep(.001)
+            time.sleep(0)
 MsgHandler().start()
 
 output = None
@@ -97,7 +97,7 @@ class Proc:
                 else:
                     self.idle = False
                 self.pos+= 2
-                if not self.idle: time.sleep(.1)
+                if not self.idle: time.sleep(.001)
             elif op == 5:#JMP IF TRUE
                 self.pos = self.code[p2] if self.code[p1] else self.pos+3
             elif op == 6:#JMP IF FALSE
