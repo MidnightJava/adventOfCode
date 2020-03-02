@@ -63,9 +63,9 @@ def empty_grid():
             _grid[(x,y)] = '.'
     return _grid
 
-def transform_grid(level, grids):
+def transform_grid(level, grids, grids_c):
     grid = grids[level]
-    grid_c = grid.copy()
+    grid_c = grids_c[level]
     o_grid = grids[level+1]
     i_grid = grids[level-1]
     for y in range(5):
@@ -107,36 +107,40 @@ def transform_grid(level, grids):
                 nbrs.append(grid.get((x-1,y), '.'))
 
             # print(nbrs)
-            if grid_c[(x,y)] == '#':
+            if grid[(x,y)] == '#':
                 grid_c[(x,y)] = '#'  if nbrs.count('#') == 1 else '.'
-            elif grid_c[(x,y)] == '.':
+            elif grid[(x,y)] == '.':
                  grid_c[(x,y)] = '#' if nbrs.count('#') == 1 or nbrs.count('#') == 2 else '.'
             else:
                 print('Bad grid val: %s' % grid.get((x,y)))
-    grids[level] = grid_c
-
-def transform2(grids):
-    level = 0
-    while list(grids[level].values()).count('#') > 0:
-    # while level >= -2000:
-        transform_grid(level, grids)
-        level-= 1
-    level = 1
-    while list(grids[level].values()).count('#') > 0:
-    # while level <= 2000:
-        transform_grid(level, grids)
-        level+= 1
-    
 
 grids = defaultdict(empty_grid)
+def transform2():
+    global grids
+    grids_c = defaultdict(empty_grid)
+    for k,v in grids.items():
+        grids_c[k] = v.copy()
+    level = 0
+    while list(grids_c[level+1].values()).count('#') > 0:
+    # while level >= -11:
+        transform_grid(level, grids, grids_c)
+        level-= 1
+    level = 1
+    while list(grids_c[level-1].values()).count('#') > 0:
+    # while level <= 11:
+        transform_grid(level, grids, grids_c)
+        level+= 1
+    
+    grids = grids_c
 
-grids[0] = grid.copy()
+grids[0] = grid_orig.copy()
 for i in range(10):
-    transform2(grids)
+    transform2()
 
 count = 0
 for grid in grids.values():
     count+= list(grid.values()).count('#')
 
 print('Part 2: %d' % count)
-#Part 1: 26540495 too high
+#Part 1: 11042850
+# Part 2: 166 too low
