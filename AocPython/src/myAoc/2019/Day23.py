@@ -30,7 +30,7 @@ class MsgHandler(threading.Thread):
                             print('Part 2: %d\ttime: %s' % (y, time.time() - start_time))
                             stop_threads = True
                         last_y = y
-            time.sleep(0)
+            time.sleep(0)git 
 MsgHandler().start()
 
 output = None
