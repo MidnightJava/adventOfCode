@@ -121,13 +121,13 @@ def transform2():
     for k,v in grids.items():
         grids_c[k] = v.copy()
     level = 0
-    while list(grids_c[level+1].values()).count('#') > 0:
-    # while level >= -11:
+    # while list(grids_c[level].values()).count('#') > 0:
+    while level > -5:
         transform_grid(level, grids, grids_c)
         level-= 1
-    level = 1
-    while list(grids_c[level-1].values()).count('#') > 0:
-    # while level <= 11:
+    level = 0
+    # while list(grids_c[level].values()).count('#') > 0:
+    while level < 5:
         transform_grid(level, grids, grids_c)
         level+= 1
     
