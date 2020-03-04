@@ -38,7 +38,7 @@ def transform(grid):
     return grid
 
 y = 0
-for line  in open('./2019/data/day24a').readlines():
+for line  in open('./2019/data/day24').readlines():
     line = line.strip()
     x = 0
     for c in line:
@@ -46,15 +46,12 @@ for line  in open('./2019/data/day24a').readlines():
         x+= 1
     y+= 1
 
-# print_grid(grid)
 grid_orig = grid.copy()
 while not frozendict(grid) in seen:
     seen.add(frozendict(grid))
     grid = transform(grid)
-    # print_grid(grid)
     
 print('Part 1: %d' % bio_diversity(grid))
-# print_grid(grid)
 
 def empty_grid():
     _grid = {}
@@ -106,40 +103,30 @@ def transform_grid(level, grids, grids_c):
             else:
                 nbrs.append(grid.get((x-1,y), '.'))
 
-            # print(nbrs)
             if grid[(x,y)] == '#':
                 grid_c[(x,y)] = '#'  if nbrs.count('#') == 1 else '.'
             elif grid[(x,y)] == '.':
                  grid_c[(x,y)] = '#' if nbrs.count('#') == 1 or nbrs.count('#') == 2 else '.'
-            else:
-                print('Bad grid val: %s' % grid.get((x,y)))
 
 grids = defaultdict(empty_grid)
 def transform2():
     global grids
-    min_level = 1e9
-    max_level = -1e9
     grids_c = defaultdict(empty_grid)
     for k,v in grids.items():
         grids_c[k] = v.copy()
     level = 0
-    while list(grids_c[level].values()).count('#') > 0 or list(grids_c[level+1].values()).count('#') > 0:
-    # while level > -5:
+    while list(grids_c[level].values()).count('#') > 0 or list(grids_c[level+1].values()).count('#') > 0 or list(grids_c[level-1].values()).count('#') > 0: 
         transform_grid(level, grids, grids_c)
         level-= 1
-        min_level = min(min_level, level)
     level = 1
-    while list(grids_c[level].values()).count('#') > 0 or list(grids_c[level-1].values()).count('#') > 0:
-    # while level < 5:
+    while list(grids_c[level].values()).count('#') > 0 or list(grids_c[level-1].values()).count('#') > 0 or list(grids_c[level+1].values()).count('#') > 0:
         transform_grid(level, grids, grids_c)
         level+= 1
-        max_level = max(max_level, level)
     
-    print('Level range: (%d,%d)' % (min_level, max_level))
     grids = grids_c
 
 grids[0] = grid_orig.copy()
-for i in range(10):
+for i in range(200):
     transform2()
 
 count = 0
@@ -147,5 +134,5 @@ for grid in grids.values():
     count+= list(grid.values()).count('#')
 
 print('Part 2: %d' % count)
-#Part 1: 11042850
-# Part 2: 166 too low not 1905, 1891
+# Part 1: 11042850
+# Part 2: 1967
