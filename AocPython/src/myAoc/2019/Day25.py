@@ -1,4 +1,12 @@
 import re
+import heapq
+
+OPP_DOOR = {
+    'north' : 'south',
+    'south': 'north',
+    'east': 'west',
+    'west': 'east'
+}
 
 def makeInstr(s):
     l = []
@@ -122,15 +130,49 @@ f = open('./2019/data/day25')
 code = list(map(int, f.readline().split(',')))
 [code.append(0) for _ in range(10000)]
 
+def BFS():
+    inventory = set()
+    seen = {}
+    res = p.run([])
+    loc, doors, items, inv = extract_info(res)
+    queue = [(0, loc, doors)]
+    while queue:
+        d, loc, doors = heapq.heappop(queue)
+        for door in doors:
+            if loc+':'+door not in seen or seen[loc+':'+door] > d:
+                seen[loc + ':' + door] = d
+                res = p.run(makeInstr(door))
+                loc, _doors, items, inv = extract_info(res)
+                for item in items:
+                    if item != 'infinite loop':
+                        p.run(makeInstr('take ' + item))
+                res = p.run(makeInstr('inv'))
+                _, __, ___, inv = extract_info(res)
+                inventory.update(set(inv))
+                if 'infinite loop' in items:
+                    p.run(makeInstr(OPP_DOOR[door]))
+                else:
+                    heapq.heappush(queue, (d+1, loc, _doors))
+                    break
+    return inventory
+
+
+       
+
 p = Proc(code)
+# inv = BFS()
+# print(inv)
 cmd = []
 while True:
     res = p.run(cmd)
     print(res)
     loc, doors, items, inv = extract_info(res)
-    print('Loc: %s' % loc)
-    print('Doors: %s' % (doors))
-    print('Items: %s' % (items))
-    print('Inventory: %s' % (inv))
+    # print('Loc: %s' % loc)
+    # print('Doors: %s' % (doors))
+    # print('Items: %s' % (items))
+    # print('Inventory: %s' % (inv))
     inp = input(':')
     cmd = makeInstr(inp)
+
+#Go ino rooms not visited, keeping a breadcrumb trail of reverse moves. If you have nowhere to go, reverse one room and
+#try again to go into rooms not visited
