@@ -226,24 +226,29 @@ def find_items(p, door, visited, inventory):
     # print(res)
     loc, doors, items, _ = extract_info(res)
     if loc in visited: return
+    print("Entered %s" % loc)
     if loc == 'Security Checkpoint':
         res = p.run(makeInstr('inv'))
         _, __, ___, inv = extract_info(res)
-        print('In security checkpoint with %d items' % len(inv))
-        p.run(makeInstr(OPP_DOOR[door]))
-        visited.add(loc)
-        return find_items(p.copy(), door, visited.copy(), inventory.copy())
-    if loc != 'Hull Breach': visited.add(loc)
+        print('In security checkpoint with %d items. Going back through door %s' % (len(inv), OPP_DOOR[door]))
+        # p.run(makeInstr(OPP_DOOR[door]))
+        # visited.add(loc)
+        return find_items(p.copy(), OPP_DOOR[door], visited.copy(), inventory.copy())
+    # if loc != 'Hull Breach':
+    visited.add(loc)
     for item in items:
         if item != 'infinite loop' and item != 'giant electromagnet' and item != 'escape pod' and item != 'photons':
         # if item in comb:
             p.run(makeInstr('take ' + item))
+            print('Took item: %s' % item)
     res = p.run(makeInstr('inv'))
     _, __, ___, inv = extract_info(res)
     inventory.update(set(inv))
-    # print(inventory)
+    print('Inventory: %s' % inventory)
+    print('Doors out of %s: %s' %  (loc, doors))
     for _door in doors:
         # if _door != OPP_DOOR[door]:
+            print('Leaving %s through door %s' % (loc, _door))
             find_items(p.copy(), _door, visited.copy(), inventory.copy())
     res = p.run(makeInstr('inv'))
     _, __, ___, inv = extract_info(res)
@@ -265,9 +270,6 @@ p = Proc(code.copy())
 visited = set()
 inventory = set()
 find_items(p, 'north', visited, inventory)
-print(visited)
-print(inventory)
-print('%d items' % len(inventory))
 
 # MANUAL
 # p = Proc(code.copy())
@@ -276,10 +278,6 @@ print('%d items' % len(inventory))
 #     res = p.run(cmd)
 #     print(res)
 #     loc, doors, items, inv = extract_info(res)
-#     # print('Loc: %s' % loc)
-#     # print('Doors: %s' % (doors))
-#     # print('Items: %s' % (items))
-#     # print('Inventory: %s' % (inv))
 #     inp = input(':')
 #     cmd = makeInstr(inp)
 
