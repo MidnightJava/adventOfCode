@@ -152,14 +152,15 @@ code = list(map(int, f.readline().split(',')))
 [code.append(0) for _ in range(10000)]
 
 
-def mv_next_room(p, door, visited):
+def mv_next_room(p, door, visited, force=False):
     cmd = makeInstr(door)
     res = p.run(cmd)
     loc, doors, items, inv = extract_info(res)
     p.run(makeInstr(OPP_DOOR[door]))
-    if not loc in visited:
+    if force or not loc in visited or 'Pressure-Sensitive' in loc or loc == 'Corridor' or loc == 'Hull Breach':
         return res
     else:
+        print('BLOCKING ENTRY TO %s' % loc)
         return None
 
 
@@ -172,14 +173,16 @@ def get_items(p, comb):
     while True:
         res = p.run(cmd)
         loc, doors, items, _ = extract_info(res)
+        if loc == 'Security Checkpoint':
+            print('IN SECURITY CHECKPOINT')
         visited.add(loc)
         for item in items:
-            if item != 'infinite loop':
+            if item in comb:
                 p.run(makeInstr('take ' + item))
         res = p.run(makeInstr('inv'))
         _, __, ___, inv = extract_info(res)
         inventory.update(set(inv))
-        print(inventory)
+        # print(inventory)
         moved = False
         for door in doors:
             if not door in room_map[loc]:
@@ -196,52 +199,65 @@ def get_items(p, comb):
             cmd = makeInstr(path.pop())
             res = p.run(cmd)
             loc, doors, items, _ = extract_info(res)
+            if loc == 'Security Checkpoint':
+                print('IN SECURITY CHECKPOINT')
             for door in doors:
                 if not door in room_map[loc]:
-                    res = mv_next_room(p, door, visited)
+                    #This check is keeping us fom entering the security checkpoint
+                    #But if we force entry, we only get 3 items before exiting
+                    #We're blocked from getting into some other room that leads to security checkpoint
+                    res = mv_next_room(p, door, visited, False)
                     if res:
                         cmd = makeInstr(door)
                         moved = True
                         break
-    print(visited)
-    return inventory
+    return (sorted(visited), sorted(inventory))
 
 def find_items(p, door, visited, inventory):
     cmd = makeInstr(door)
     res = p.run(cmd)
-    if 'Pressure-Sensitive Floor' in res:
-        print(res)
     loc, doors, items, _ = extract_info(res)
     if loc in visited: return
+    if loc == 'Security Checkpoint':
+        res = p.run(makeInstr('inv'))
+        _, __, ___, inv = extract_info(res)
+        print('In security checkpoint with %d items' % len(inv))
+        p.run(makeInstr(OPP_DOOR[door]))
+        visited.add(loc)
+        return find_items(p.copy(), door, visited, inventory)
     visited.add(loc)
     for item in items:
-        # if item != 'infinite loop' and item != 'giant electromagnet' and item != 'escape pod' and item != 'photons':
-        if item in comb:
+        if item != 'infinite loop' and item != 'giant electromagnet' and item != 'escape pod' and item != 'photons':
+        # if item in comb:
             p.run(makeInstr('take ' + item))
     res = p.run(makeInstr('inv'))
     _, __, ___, inv = extract_info(res)
     inventory.update(set(inv))
     # print(inventory)
     for _door in doors:
-        if _door != OPP_DOOR[door]:
-            print(_door)
+        # if _door != OPP_DOOR[door]:
             find_items(p.copy(), _door, visited, inventory)
                 
 # for comb in combos:
 #     p = Proc(code.copy())
 #     inv = get_items(p, comb)
 
-# p = Proc(code.copy())
-# inv = get_items(p, final_inv)
-# print(inv)
-
+# LOOP
 p = Proc(code.copy())
-visited = set()
-inventory = set()
-find_items(p, 'east', visited, inventory)
+rooms, inv = get_items(p, final_inv)
+print(rooms)
+print(inv)
+print('Found %d items from %d rooms' % (len(inv), len(rooms)))
+
+# RECURSIVE
+# p = Proc(code.copy())
+# visited = set()
+# inventory = set()
+# find_items(p, 'east', visited, inventory)
 # print(visited)
 # print(inventory)
 
+# MANUAL
 # p = Proc(code.copy())
 # cmd = []
 # while True:
