@@ -4,16 +4,6 @@ import sys
 from itertools import combinations
 from collections import defaultdict
 
-combos = []
-final_inv = ['monolith', 'food ration', 'planetoid', 'space law space brochure', 'weather machine', 'jam', 'semiconductor', 'antenna']
-for r in range(1, len(final_inv)):
-    for comb in combinations(final_inv, 2):
-        combos.append(comb)
-
-# for comb in combos:
-#     print(comb)
-
-# print(len(combos))
 OPP_DOOR = {
     'north' : 'south',
     'south': 'north',
@@ -72,15 +62,9 @@ class Proc:
             elif op == 4: #OUTP
                 self.pos+= 2
                 output = self.code[p1]
-                # if 'Unrecognized command.\n\nCommand?' in self.out:
-                #     print(self.out, end='')
                 self.out+= chr(output)
                 if self.out.endswith('Command?\n'):
-                    # print(self.out)
                     break
-                if "PASSWORD" in self.out.upper():
-                    print(self.out)
-                    sys.exit()
             elif op == 5:#JMP IF TRUE
                 self.pos = self.code[p2] if self.code[p1] else self.pos+3
             elif op == 6:#JMP IF FALSE
@@ -114,7 +98,7 @@ def extract_info(s):
     inv = []
     loc = 'NOT FOUND'
     for line in lines:
-        m = re.search('==\s(.*)\s==', line)
+        m = re.search(r'==\s(.*)\s==', line)
         if m:
             loc = m.group(1)
         if line == 'Doors here lead:':
@@ -152,124 +136,50 @@ code = list(map(int, f.readline().split(',')))
 [code.append(0) for _ in range(10000)]
 
 
-def mv_next_room(p, door, visited, force=False):
+def find_items(p, door, visited, found):
     cmd = makeInstr(door)
     res = p.run(cmd)
-    loc, doors, items, inv = extract_info(res)
-    p.run(makeInstr(OPP_DOOR[door]))
-    if (force or loc not in visited):
-        return res
-    else:
-        print('BLOCKING ENTRY TO %s' % loc)
-        return None
-
-
-def get_items(p, comb):
-    inventory = set()
-    visited = set()
-    path = []
-    room_map = defaultdict(list)
-    direc = 'east'
-    cmd = makeInstr(direc)
-    while True:
-        res = p.run(cmd)
-        print(res)
-        loc, doors, items, _ = extract_info(res)
-        if loc == 'Security Checkpoint':
-            print('IN SECURITY CHECKPOINT 1')
-            cmd = makeInstr(OPP_DOOR[direc])
-            continue
-        visited.add(loc)
-        for item in items:
-            # if item in comb:
-            if item != 'infinite loop' and item != 'giant electromagnet'and item !="escape pod" and item != "molten lava" and item != "photons":
-                p.run(makeInstr('take ' + item))
-        res = p.run(makeInstr('inv'))
-        _, __, ___, inv = extract_info(res)
-        inventory.update(set(inv))
-        # print('Inventory', inventory)
-        moved = False
-        for door in doors:
-            if not door in room_map[loc]:
-                res = mv_next_room(p, door, visited, True)
-                if res and not 'ejected' in res and not "can't go that way" in res:
-                    room_map[loc].append(door)
-                    path.append(OPP_DOOR[door])
-                    moved = True
-                    cmd = makeInstr(door)
-                    direc = door
-                    break
-        if not doors and not path:
-            break
-        while path and not moved:
-            door = path.pop()
-            print(door)
-            cmd = makeInstr(door)
-            res = p.run(cmd)
-            loc, doors, items, _ = extract_info(res)
-            if loc == 'Security Checkpoint':
-                print('IN SECURITY CHECKPOINT 2')
-            for door in doors:
-                if not door in room_map[loc]:
-                    res = mv_next_room(p, door, visited, False)
-                    if res:
-                        room_map[loc].append(door)
-                        cmd = makeInstr(door)
-                        direc = door
-                        moved = True
-                        break
-    return (sorted(visited), sorted(inventory))
-
-def find_items(p, door, visited, inventory):
-    cmd = makeInstr(door)
-    res = p.run(cmd)
-    # print(res)
     loc, doors, items, _ = extract_info(res)
-    if loc in visited: return
-    print("Entered %s" % loc)
     if loc == 'Security Checkpoint':
         res = p.run(makeInstr('inv'))
         _, __, ___, inv = extract_info(res)
-        print('In security checkpoint with %d items. Going back through door %s' % (len(inv), OPP_DOOR[door]))
-        # p.run(makeInstr(OPP_DOOR[door]))
-        # visited.add(loc)
-        return find_items(p.copy(), OPP_DOOR[door], visited.copy(), inventory.copy())
-    # if loc != 'Hull Breach':
-    visited.add(loc)
+        if len(inv) == 8:
+            for r in range(1, len(inv)):
+                for comb in combinations(inv, r):
+                    for item in inv:
+                        if not item in comb:
+                            res = p.run(makeInstr('drop ' + item))
+                    cmd = makeInstr('east')
+                    res = p.run(cmd)
+                    # print(res)
+                    m = re.search(r'typing (\d+) on the keypad', res)
+                    if m:
+                        print('Part 1: %s' % m.group(1))
+                        sys.exit()
+                    for item in inv:
+                        res = p.run(makeInstr('take ' + item))
+        else:
+            res = p.run(makeInstr(OPP_DOOR[door]))
+            loc, doors, items, _ = extract_info(res)
     for item in items:
-        if item != 'infinite loop' and item != 'giant electromagnet' and item != 'escape pod' and item != 'photons':
-        # if item in comb:
-            p.run(makeInstr('take ' + item))
-            print('Took item: %s' % item)
+        if item != 'infinite loop' and item != 'giant electromagnet' and item != 'escape pod' and item != 'photons' and item != 'molten lava':
+            res = p.run(makeInstr('take ' + item))
     res = p.run(makeInstr('inv'))
     _, __, ___, inv = extract_info(res)
-    inventory.update(set(inv))
-    print('Inventory: %s' % inventory)
-    print('Doors out of %s: %s' %  (loc, doors))
+    res = p.run(makeInstr('inv'))
+    _, __, ___, inv = extract_info(res)
+    if len(inv) > found:
+        found = len(inv)
+        visited = defaultdict(set)
     for _door in doors:
-        # if _door != OPP_DOOR[door]:
-            print('Leaving %s through door %s' % (loc, _door))
-            find_items(p.copy(), _door, visited.copy(), inventory.copy())
-    res = p.run(makeInstr('inv'))
-    _, __, ___, inv = extract_info(res)
-    print('Exiting with items %s' % inv)
-                
-# for comb in combos:
-#     p = Proc(code.copy())
-#     inv = get_items(p, comb)
-
-# LOOP
-# p = Proc(code.copy())
-# rooms, inv = get_items(p, final_inv)
-# print(rooms)
-# print(inv)
-# print('Found %d items from %d rooms' % (len(inv), len(rooms)))
-
-# RECURSIVE
+        if not _door in visited[loc]:
+            visited[loc].add(_door)
+            find_items(p.copy(), _door, visited.copy(), found)
+    
 p = Proc(code.copy())
 visited = set()
 inventory = set()
-find_items(p, 'north', visited, inventory)
+find_items(p, 'north', defaultdict(set), 0)
 
 # MANUAL
 # p = Proc(code.copy())
@@ -281,5 +191,4 @@ find_items(p, 'north', visited, inventory)
 #     inp = input(':')
 #     cmd = makeInstr(inp)
 
-#Go ino rooms not visited, keeping a breadcrumb trail of reverse moves. If you have nowhere to go, reverse one room and
-#try again to go into rooms not visited
+#Part 1: 268468864
