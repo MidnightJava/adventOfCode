@@ -151,7 +151,6 @@ def find_items(p, door, visited, found):
                             res = p.run(makeInstr('drop ' + item))
                     cmd = makeInstr('east')
                     res = p.run(cmd)
-                    # print(res)
                     m = re.search(r'typing (\d+) on the keypad', res)
                     if m:
                         print('Part 1: %s' % m.group(1))
