@@ -1,3 +1,16 @@
+"""
+The input represents a series of line segements, defined by start and end
+points (inclusive) expressed in cartesian coordinates. Plot the line segments
+on a grid, and determine the number of points at which two or more segments
+intersect.
+
+Part 1: Consider only horizontal and verifical lines.
+
+Part 2: Consider also diagonal lines, which will always have a 45 degree slope.
+
+Provide a "Part" argument of 1 (default) or 2
+"""
+
 import sys
 
 verticals = []

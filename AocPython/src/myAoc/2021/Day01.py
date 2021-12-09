@@ -1,3 +1,14 @@
+"""
+Input represents successive depth soundings of concentric circles
+from your present position.
+
+Part 1: Determine the number fo times the depth increases from its previous measurement.
+
+Part 2: Consider successive sliding windows of three measurements. Determine the number
+of times the sum of measurements in a sliding window increases from the sum of measurements
+in the previous sliding window.
+"""
+
 with open('2021/data/day01') as f:
     prev = None
     count = 0
@@ -15,5 +26,5 @@ for i in xrange(3, len(measurements) + 1):
     
 print('Part 2: %d' % count)
 
-# Part1: 1226
-#Part 2: 1252
+# Part 1: 1226
+# Part 2: 1252

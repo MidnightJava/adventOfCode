@@ -1,3 +1,25 @@
+"""
+The input consists of a series of string values that represent binary numbers. The
+Object is to calulate some binary numbers by manipulating the input numbers. Report
+the decimal value of the calculated binary number.
+
+Part 1: Calculate Power Consumptiom, as the product of Gamma and Epsilon. These
+quantities are determined one bit at a time, by looking at the corresponding bit
+in the entire input stream. For Gamma, assign the most common value at that bit
+location among all numbers in the input. For Epsilon, assign the least common value.
+
+Part 2: Calculate Life Support Rating, as the product of Oxygen and CO2. These values
+are calcualted by recursively filtering the input values by selecting only the numbers
+that satisfy the bit criteria for each bit, considered one a time from left to right,
+until only one number remains.
+
+Oxygen bit criteria: Select numbers whose value at the current bit position is the most
+common value among all the input numbers.
+
+CO2: Select numbers whose value at the current bit position is the least
+common value among all the input numbers.
+"""
+
 lines = open('2021/data/day03').readlines()
 bits = zip(*lines)
 

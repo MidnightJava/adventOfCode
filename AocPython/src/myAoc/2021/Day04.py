@@ -1,3 +1,18 @@
+"""
+The input represents numerous bingo boards, expressed as a five-by-five
+matrix of numbers, and a series of numbers that represent the numbers called
+during a bingo game. Players win only with veritical or horizontal patterns.
+Diagonal lines do not count. A score is calculated for the winning board as:
+The sum of the nubers in the squares that were NOT called, multiplied by the
+last number that was called, resulting in the win.
+
+Part 1: Find the first board that wins and calculate its score.
+
+Part 2: Find the last board that wins and calculate its score.
+
+Provide a "Part" argument of 1 (default) or 2
+"""
+
 import sys
 from collections import defaultdict
 
