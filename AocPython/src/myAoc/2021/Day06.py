@@ -20,25 +20,31 @@ data = open('2021/data/day06').readlines()[0].split(',')
 # print('Part 1: %d' % len(fish))
 
 global num_fish
-num_fish = 0
 
-def sim_fish(n, days_left):
+def sim_fish(timer, days_left):
     # print(n,days_left)
     global num_fish
+    # print(num_fish)
     if days_left == 0:
         print(num_fish)
         sys.exit(0)
-    new_fish = int(math.floor((days_left - n) / 7 ))
-    num_fish+= new_fish
-    days = days_left
-    for i in range(new_fish):
-        days-= 7
-        if days > 0: sim_fish(8, days)
+    new_fish = int(math.floor((days_left - timer) / 7 ))
+    if new_fish > 0:
+        num_fish+= new_fish
+        days = days_left - timer
+        for i in range(new_fish):
+            if days > 0:
+                sim_fish(8 , days)
+                days-= 7
+            else:
+                num_fish-= 1
+                # print(days)
 
 fish = map(lambda x: int(x), data)
-# for f in [3,4,3,1,2]:
-for f in fish:
-    sim_fish(f, 80)
+num_fish = len(fish)
+# for t in [3,4,3,1,2]:
+for t in fish:
+    sim_fish(t, 80)
 
 print('Part 2: %d' % num_fish)
 
