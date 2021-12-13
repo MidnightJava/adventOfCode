@@ -1,53 +1,30 @@
-import math
-import sys
+from collections import defaultdict
+
 
 data = open('2021/data/day06').readlines()[0].split(',')
-# fish = map(lambda x: int(x), data)
-# fish2 = []
+days = [80, 256]
 
-# def more_fish(f):
-#     if f == 0:
-#         fish2.append(8)
-#         return 6
-#     else:
-#         return f - 1
+for part in [0, 1]:
+    fish = map(lambda x: int(x), data)
 
-# for _ in range(80):
-#     fish = map(more_fish, fish)
-#     fish = fish + fish2
-#     fish2 = []
+    d = defaultdict(int)
+    for f in fish: d[f]+= 1
 
-# print('Part 1: %d' % len(fish))
-
-global num_fish
-
-def sim_fish(timer, days_left):
-    # print(n,days_left)
-    global num_fish
-    # print(num_fish)
-    if days_left == 0:
-        print(num_fish)
-        sys.exit(0)
-    new_fish = int(math.floor((days_left - timer) / 7 ))
-    if new_fish > 0:
-        num_fish+= new_fish
-        days = days_left - timer
-        for i in range(new_fish):
-            if days > 0:
-                sim_fish(8 , days)
-                days-= 7
+    for day in range(days[part]):
+        zeros = None
+        for k, v in sorted(d.items()):
+            if k == 0:
+                zeros = v
             else:
-                num_fish-= 1
-                # print(days)
+                d[k-1]+= v
+                del d[k]
+        if zeros is not None:
+            d[6]+= zeros
+            d[8]+= zeros
+            d[0]-= zeros
 
-fish = map(lambda x: int(x), data)
-num_fish = len(fish)
-# for t in [3,4,3,1,2]:
-for t in fish:
-    sim_fish(t, 80)
-
-print('Part 2: %d' % num_fish)
-
+    print('Part %d: %d' % (part+1, sum(d.values())))
 
 
 # Part 1: 359344
+# Part 2: 1629570219571
