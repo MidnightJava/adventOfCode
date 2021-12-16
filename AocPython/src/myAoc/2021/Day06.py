@@ -1,6 +1,19 @@
 from collections import defaultdict, deque
 import time
+"""
+Determine the number of Lantern Fish that will exist after a given number of days.
+Lantern fish give birth every 7 days.
 
+The input represents each fish's reproduction timer, which counts down from 6 to 0.
+When it reaches 0, the fish produces another fish with a timer value of eight (it takes
+2 days to begin its 7-day reproduction cycle), and its own timer is reset to 6.
+
+Part 1: Find the number of fish after 80 days.
+
+Part 2: FInd the number of fish after 256 days.
+"""
+
+from collections import defaultdict
 
 data = open('2021/data/day06').readlines()[0].split(',')
 days = [80, 256]
