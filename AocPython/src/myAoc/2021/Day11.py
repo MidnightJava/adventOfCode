@@ -1,65 +1,78 @@
-import sys
+"""
+The input is a 10x10 grid representing the energy levels of
+octopuses. For each step, each octopus's level is increased by
+one. Then any octopus whose energy level is greater than 9 "flashes".
+This means every adjacent octopus's energy level is incresed by
+one. Diagonal adjacencies are included. Each octopus may flash at
+most once during each step.
+
+Part 1: Report the number of octopuses that have flashed after 100 steps.
+
+Part 2: Determine the number of the first step in which all octopuses flash.
+"""
+
+from copy import deepcopy
 
 global grid
 grid = []
 global count
 count = 0
 global seen
-seen = set()
 
-def print_grid():
-    for row in grid: print(row)
+def flash(row, col):
+    global count, seen, grid
+    seen.add((row,col))
+    count+= 1
+    for y in [row-1, row, row+1]:
+        for x in [col-1, col, col+1]:
+            if y>=0 and x >=0 and (y,x) != (row,col):
+                try:
+                    grid[y][x]+= 1
+                except IndexError:
+                    pass
 
-def flashable():
-    global grid
-    for row in grid:
-        for c in row:
-            if c>= 10: return True
-    return False
+    grid[row][col] = 0
+    flashable = True
+    while flashable:
+        flashable = False
+        for row in range(len(grid)):
+            for col in range(len(grid[0])):
+                if (row,col) not in seen and grid[row][col] > 9:
+                    flash(row, col)
+                    flashable = True
 
 
-def flash():
-    global count
-    for row in range(len(grid)):
-        for col in range(len(grid[0])):
-            if grid[row][col] == 10:
-                if (row,col) not in seen: count+= 1
-                seen.add((row,col))
-                grid[row][col] = 0
-                for y in [row-1, row, row+1]:
-                    for x in [col-1, col, col+1]:
-                        if y>=0 and x >=0 and (y,x) != (row,col):
-                            try:
-                                grid[y][x]+= 1
-                            except IndexError:
-                                pass
-                
-    # if flashable(): flash()
-    # print_grid()
-
-f = open('2021/data/day11a')
+f = open('2021/data/day11')
 for line in f:
     grid.append(map(lambda x: int(x), line.strip()))
+    grid_orig = deepcopy(grid)
 
-for step in range(100):
-    global seen
+for part in [1,2]:
     seen = set()
-    for row in range(len(grid)):
-        for col in range(len(grid[0])):
-            if grid[row][col] == 10:
-                print("ERROR")
-                sys.exit()
-            grid[row][col]+= 1
+    if part == 2:
+        grid = grid_orig
+    done = False
+    step = 0
+    while not done:
+        if step == 100 and part == 1:
+            res = count
+            break
+        elif len(seen) == 100 and part == 2:
+            res = step
+            break
+        for pt in seen:
+            y,x = pt
+            grid[y][x] = 0
+        seen = set()
+        for row in range(len(grid)):
+            for col in range(len(grid[0])):
+                grid[row][col]+= 1
 
-    # Try flashiing recursivvely again, this time allowing values past 10 and keeping track of flashed for each step.
-
-    while flashable(): flash()
+        for row in range(len(grid)):
+            for col in range(len(grid[0])):
+                if grid[row][col] > 9: flash(row, col)
+        step+= 1
     
-
-        
-    if step <= 5:
-        print('After STEP %d' % (step+1))
-        print_grid()
-
-print('Part 1: %d' % count)
-# Part 1: < 1983
+    print('Part %d: %d' % (part, res))
+# Part 1: 1755
+# Prt 2: 212
