@@ -1,4 +1,5 @@
 from __future__ import print_function
+import heapq
 
 grid = {}
 
@@ -13,20 +14,25 @@ for line in open('2021/data/day15').readlines():
         grid[(y,x)] = int(line[x])
     y+= 1
 
-def min_risk():
-    tc = [[0 for x in range(max_x+1)] for y in range(max_y+1)]
+def heuristic(risk, curr, end):
+    return abs(end[0] - curr[0]) + abs(end[1]-curr[1]) + risk
 
-    for y in range(1, max_y+1):
-        tc[y][0] = tc[y-1][0] + grid[(y,0)]
-    for x in range(1,max_x+1):
-        tc[0][x] = tc[0][x-1] + grid[(0,x)]
+start = (0,0)
+end = (max_y, max_x)
+queue = [(heuristic(0, start, end), 0, start)]
+visited = {}
+risks = []
+while queue:
+    _, risk, curr = heapq.heappop(queue)
+    y,x = curr
+    if curr == end:
+        risks.append(risk)
+    if curr in visited: continue
+    visited[curr] = risk
+    for nbr in [n for n in [(y, x-1), (y, x+1), (y-1,x), (y+1,x)] if n in grid]:
+        if not nbr in visited or visited[nbr] > risk + grid[nbr]:
+            heapq.heappush(queue, (heuristic(risk + grid[nbr], nbr, end), risk + grid[nbr], nbr))
 
-    for y in range(1, max_y+1):
-        for x in range(1, max_x+1):
-            tc[y][x] = min(tc[y][x-1], tc[y-1][x]) + grid[(y,x)]
+print('Part 1: %d' % min(risks))
 
-    return tc[max_y][max_x]
-
-print('Part 1: %d' % min_risk())
-
-# Part 1: < 1048 not 658, 661
+# Part 1: 656
