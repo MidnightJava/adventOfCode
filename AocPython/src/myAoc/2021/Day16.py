@@ -1,18 +1,23 @@
 def process(bits, num_p, num_b):
     vbits = bits[:3]
     tbits = bits[3:6]
-    bits = bits[6:]
     ver = int(vbits, 2)
     t = int(tbits, 2)
+    bits = bits[6:]
     if num_p is not None:
         while num_p >= 1:
             if t == 4:
                 done = False
+                sum = ''
                 while not done:
                     gbits= bits[:5]
                     bits = bits[5:]
+                    sum+= gbits[1:]
                     if gbits[0] == '0':
                         done = True
+                        # while len(bits) % 4 != 0:
+                        #     bits = bits[:-1]
+                        print(f"SUM {int(sum,2)}")
             else:
                 ibit = bits[0]
                 bits = bits[1:]
@@ -29,6 +34,9 @@ def process(bits, num_p, num_b):
                 else:
                     print("Invalid packet length type ID")
             num_p-= 1
+            while len(bits) % 8 != 0:
+                bits = bits[:-1]
+
     else:
         while num_b >= 1:
             if t == 4:
@@ -38,10 +46,10 @@ def process(bits, num_p, num_b):
                     if gbits[0] == '0': done = True
                     bits = bits[5:]
                     num_b-= 5
-                    if done and num_b  > 0:
-                        while num_b > 0:
-                            num_b-= 1
-                            bits = bits[:-1]
+                    # if done:
+                    #     while len(bits) % 4 != 0:
+                    #         num_b-= 1
+                    #         bits = bits[:-1]
             else:
                 ibit = bits[0]
                 bits = bits[1:]
@@ -60,9 +68,12 @@ def process(bits, num_p, num_b):
                     ver+= process(bits, l, None)
                 else:
                     print("Invalid packet length type ID")
+        while len(bits) % 8 != 0:
+            bits = bits[:-1]
+    print(bits)
     return ver
 
-for line in open('2021/data/day16a').readlines():
+for line in open('2021/data/day16b').readlines():
     msg = line.strip()
     bits =  bin(int(msg,16))[2:] #strip off leading '0b'
     while len(bits) % 4 != 0:
