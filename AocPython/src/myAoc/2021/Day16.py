@@ -42,7 +42,6 @@ def process(bits, num_p, num_b):
                         while num_b > 0:
                             num_b-= 1
                             bits = bits[:-1]
-                        done = True
             else:
                 ibit = bits[0]
                 bits = bits[1:]
