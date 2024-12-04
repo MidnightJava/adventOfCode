@@ -2,8 +2,9 @@ import re
 # muls = []
 p = r"mul\(\-?\d{1,3}\,\-?\d{1,3}\)"
 p2 = r"mul\((\-?\d{1,3})\,(\-?\d{1,3})\)"
-do = r"do\(\)"
-dont = r"don\'t\(\)"
+do = "do()"
+dont = "don't()"
+dodont =r"do\(\)|don\'t\(\)"
 total = 0
 
 def find_muls(s):
@@ -11,42 +12,80 @@ def find_muls(s):
   m = re.search(p, s)
   while m:
     mul = m.group(0)
-    print(mul)
-    # muls.append(mul)
+    # print(mul)
     m2 = re.match(p2, mul)
     total += (int(m2.group(1)) * int(m2.group(2)))
     s = s[m.end() -1:]
     m = re.search(p, s)
 
+# def filt(s):
+#   s2 = ""
+#   enabled = True
+#   start = 0
+#   cand = ""
+#   print(f"Original s: {s}", end='\n\n')
+#   for m in re.finditer(dodont, s):
+#     print(f"result: {m.group()}")
+#     if enabled:
+#       print("enabled")
+#       if m.group() == do:
+#         start = m.end()
+#         print(f"New start: {start}")
+#         print(f"s: {s[start:]}", end='\n\n')
+#       elif m.group() == dont:
+#         s2 += s[start: m.start()]
+#         print(f"s2: {s2}", end='\n\n')
+#         start = m.end()
+#         print(f"New start: {start}", end='\n\n')
+#         print(f"s: {s[start:]}", end='\n\n')
+#         enabled = False
+#     else:
+#       print("Not enabled")
+#       if m.group() == do:
+#         start = m.end()
+#         print(f"New start: {start}", end='\n\n')
+#         print(f"s: {s[start:]}", end='\n\n')
+#         enabled = True
+        
 def filt(s):
-  segs = []
+  # print('\n\n')
+  s2 = ""
   enabled = True
-  m = re.search(dont, s)
-  while m:
-    end = m.end()
-    start = m.start()
-    if enabled:
-      print("enabled")
-      print(f"s: {s}", end='\n\n')
-      segs.append(s[: start-1])
-      s = s[end:]
-      print(f"new s: {s}", end='\n\n')
-      m = re.search(do, s)
-      if not m: break
-      enabled = False
-    else:
-      print("disabled")
-      print(f"s: {s}", end='\n\n')
-      s = s[end:]
-      print(f"new s: {s}", end='\n\n')
-      m = re.search(dont, s)
-      if not m:
-        segs.append(s)
-        break
-      enabled = True
-    loop = True
+  start = 0
+  cand = ""
+  prev = dont
+  # print(f"Original s: {s}", end='\n\n')
+  for m in re.finditer(dodont, s):
+    # print(f"result: {m.group()}")
+    op = m.group()
+    if op == do:
+      if prev == do:
+        start = m.end()
+        # print(f"New start: {start}")
+        # print(f"s: {s[start:]}", end='\n\n')
+      elif prev == dont:
+        s2 += cand
+        cand = ""
+        start = m.end()
+    elif op == dont:
+      if prev == do:
+        cand = s[start: m.start()]
+        # start = m.end()
+      elif prev == dont:
+        cand = s[start: m.start()]
+        # start = m.end()
+
+    prev = op
+    # print("new loop", end='\n\n')
+
   
-  return "".join(segs)
+  if op == do:
+    s2 += s[start:]
+  else:
+    # cand += s[start:]
+    s2 += cand
+  
+  return s2
 
 # with open('2024/data/day03') as f:
 #   for line in f:
@@ -61,4 +100,4 @@ with open('2024/data/day03') as f:
   print(f"Part 2: {total}")
   
   # Part 1: 174103751
-  # Part 2: > 71020416, < 100426483 not 100079213 not 101629183
+  # Part 2: > 71020416, < 100426483 not 100079213 101629183  913656786 676478962 51913388 62681101 74179637 74112610 85611146
