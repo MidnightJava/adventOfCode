@@ -1,6 +1,26 @@
-# My solution (Part 2 incorrect)
+"""
+Part 1:
+
+Parse the input and find all instances of the text "mul(n,m)", where m and n are numbers with one
+to three digits. Instances of this pattern with whitespace inserted should not be selected. Find thee
+result of adding up the products of the two numbers in each selected mul() statement.
+
+Part 2:
+
+Do the processing per Part 1, except look for do() and don't() commands in the text. ENable mul processing
+when a do() command is encountered and disable processing when a don't() command is encountered. Only the
+most recent do() or don't() instruction applies
+"""
+
+"""
+In my solution, Part 2 incorrect, because I read "Only the most recent do() or don't() instruction applies"
+as meaning that only the most recent do() or don't() instruction applies. Apparently, what is meant by that
+statement is that only the most recent ONE OR MORE consecutive do() commands or ONE OR MORE consecutive don't()
+commands applies. My solution applies only the most recent don't() command. So if three consecutive don't()
+commands appear, it only disables mul processing after the last (most recent) one. Likewise, it only enables
+processing after the last do() command when they appear consecutively.
+"""
 import re
-# muls = []
 p = r"mul\(\-?\d{1,3}\,\-?\d{1,3}\)"
 p2 = r"mul\((\-?\d{1,3})\,(\-?\d{1,3})\)"
 do = "do()"
@@ -13,7 +33,6 @@ def find_muls(s):
   m = re.search(p, s)
   while m:
     mul = m.group(0)
-    # print(mul)
     m2 = re.match(p2, mul)
     total += (int(m2.group(1)) * int(m2.group(2)))
     s = s[m.end():]
@@ -61,9 +80,12 @@ with open('2024/data/day03') as f:
   print(f"Part 2: {total}")
   
   # Part 1: 174103751
-  # Part 2: 100411201
-  
-#Chat GPT's solution (correct)
+  # Part 2: 100411201 (wrong)
+
+"""
+Chat GPT's solution, applying the correct interpretation of how to handle consecutive do() or
+don't() commands
+"""
   
 import re
 
@@ -111,3 +133,6 @@ print(f"Part 1: {total_part1}")
 filtered_data = filt(data)
 total_part2 = find_muls(filtered_data)
 print(f"Part 2: {total_part2}")
+
+# Part 1: 174103751
+# Part 2: 100411201
