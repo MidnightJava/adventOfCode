@@ -1,3 +1,4 @@
+# My solution (Part 2 incorrect)
 import re
 # muls = []
 p = r"mul\(\-?\d{1,3}\,\-?\d{1,3}\)"
@@ -15,89 +16,98 @@ def find_muls(s):
     # print(mul)
     m2 = re.match(p2, mul)
     total += (int(m2.group(1)) * int(m2.group(2)))
-    s = s[m.end() -1:]
+    s = s[m.end():]
     m = re.search(p, s)
-
-# def filt(s):
-#   s2 = ""
-#   enabled = True
-#   start = 0
-#   cand = ""
-#   print(f"Original s: {s}", end='\n\n')
-#   for m in re.finditer(dodont, s):
-#     print(f"result: {m.group()}")
-#     if enabled:
-#       print("enabled")
-#       if m.group() == do:
-#         start = m.end()
-#         print(f"New start: {start}")
-#         print(f"s: {s[start:]}", end='\n\n')
-#       elif m.group() == dont:
-#         s2 += s[start: m.start()]
-#         print(f"s2: {s2}", end='\n\n')
-#         start = m.end()
-#         print(f"New start: {start}", end='\n\n')
-#         print(f"s: {s[start:]}", end='\n\n')
-#         enabled = False
-#     else:
-#       print("Not enabled")
-#       if m.group() == do:
-#         start = m.end()
-#         print(f"New start: {start}", end='\n\n')
-#         print(f"s: {s[start:]}", end='\n\n')
-#         enabled = True
         
 def filt(s):
-  # print('\n\n')
   s2 = ""
-  enabled = True
-  start = 0
+  idx = 0
   cand = ""
-  prev = dont
-  # print(f"Original s: {s}", end='\n\n')
+  prev = do
   for m in re.finditer(dodont, s):
-    # print(f"result: {m.group()}")
     op = m.group()
     if op == do:
       if prev == do:
-        start = m.end()
-        # print(f"New start: {start}")
-        # print(f"s: {s[start:]}", end='\n\n')
+        idx = m.end()
       elif prev == dont:
         s2 += cand
         cand = ""
-        start = m.end()
+        idx = m.end()
     elif op == dont:
       if prev == do:
-        cand = s[start: m.start()]
-        # start = m.end()
+        cand = s[idx: m.start()]
       elif prev == dont:
-        cand = s[start: m.start()]
-        # start = m.end()
+        cand = s[idx: m.start()]
 
     prev = op
-    # print("new loop", end='\n\n')
 
   
   if op == do:
-    s2 += s[start:]
+    s2 += s[idx:]
   else:
-    # cand += s[start:]
     s2 += cand
-  
   return s2
 
-# with open('2024/data/day03') as f:
-#   for line in f:
-#     find_muls(line)
-#   print(f"Part 1: {total}")
+with open('2024/data/day03') as f:
+  for line in f:
+    find_muls(line)
+  print(f"Part 1: {total}")
   
 total = 0
 with open('2024/data/day03') as f:
   for line in f:
-    line = filt(line.strip())
-    find_muls(line)
+    line = filt(line[::])
+    find_muls(line[::])
   print(f"Part 2: {total}")
   
   # Part 1: 174103751
-  # Part 2: > 71020416, < 100426483 not 100079213 101629183  913656786 676478962 51913388 62681101 74179637 74112610 85611146
+  # Part 2: 100411201
+  
+#Chat GPT's solution (correct)
+  
+import re
+
+# Patterns
+mul_pattern = r"mul\(\-?\d{1,3},\-?\d{1,3}\)"
+mul_values_pattern = r"mul\((\-?\d{1,3}),(\-?\d{1,3})\)"
+control_pattern = r"do\(\)|don't\(\)"
+
+def find_muls(s):
+    total = 0
+    for m in re.finditer(mul_pattern, s):
+        mul = m.group(0)
+        m2 = re.match(mul_values_pattern, mul)
+        total += int(m2.group(1)) * int(m2.group(2))
+    return total
+
+def filt(s):
+    # Parse `do()` and `don't()` instructions
+    enabled = True
+    result = ""
+    last_pos = 0
+
+    for m in re.finditer(control_pattern, s):
+        control = m.group()
+        if enabled:
+            result += s[last_pos:m.start()]  # Append enabled region
+        enabled = (control == "do()")
+        last_pos = m.end()
+    
+    # Add remaining portion if still enabled
+    if enabled:
+        result += s[last_pos:]
+    
+    return result
+
+# Read the input and calculate the results
+with open('2024/data/day03') as f:
+    data = f.read()
+
+# Part 1
+total_part1 = find_muls(data)
+print(f"Part 1: {total_part1}")
+
+# Part 2
+filtered_data = filt(data)
+total_part2 = find_muls(filtered_data)
+print(f"Part 2: {total_part2}")
