@@ -20,6 +20,7 @@ def solve1(pos, dir, visited, data):
     if data[pos] == '#':
       dir = next_dir(dir)
       pos = (y + dir[0], x + dir[1])
+      
     visited.add(pos)
 
 with open("2024/data/day06") as f:
@@ -65,21 +66,35 @@ def solve2(pos, dir, visited, data):
         visited.add(state)
         pos = next_pos
 
-
+def solve3(pos, dir, visited, data, generator = False):
+    visited = set()
+    while True:
+      y, x = pos
+      pos = (y + dir[0], x + dir[1])
+      if not pos in data:
+        return None
+      while data[pos] == '#':
+        dir = next_dir(dir)
+        pos = (y + dir[0], x + dir[1])
+        if not pos in data:
+          return None
+      if pos in visited:
+        continue
+      visited.add(pos)
+      if generator:
+        yield pos
+        
 count = 0
-
-for y in range(rows):
-    for x in range(cols):
-        if data[(y, x)] in ('#', start_char):
-            continue  # Skip invalid placements
-        
-        _data = data.copy()
-        _data[(y, x)] = '#'  # Place obstacle
-        
-        dir = up
-        start = [k for k, v in _data.items() if v == start_char][0]
-        if solve2(start, dir, set(), _data) == True:
-            count += 1
+            
+for pos in solve3(start, up, visited, data, True):
+  if data[pos] in ('#'):
+    continue
+  _data = data.copy()
+  _data[pos] = "#"
+  dir = up
+  start = [k for k, v in _data.items() if v == start_char][0]
+  if solve2(start, dir, set(), _data) == True:
+      count += 1
 
 print(f"Part 2: {count}")
 
