@@ -30,31 +30,55 @@ def evaluate2(res, equation):
   if n == 1: return res if int(equation[0]) == res else 0
   for i in range(2**(n-1)):
     _equation = list(map(lambda x: int(x), equation[::]))
-    _equation2 = list(map(lambda x: int(x), equation[::]))
-    _equation3 = list(map(lambda x: int(x), equation[::]))
     bits = bin(i)[2:].zfill(n-1)
     ops = list(map(lambda x: "+" if x == '0' else "*", list(bits)))
     op = ops.pop(0)
-    _res = 0
-    _res2 = 0
-    _res3 = 0
+    results = set()
     if op == "+":
-      _res = _equation.pop(0) + _equation.pop(0)
-      _res2 = int(str(_equation2.pop(0)) + str(_equation2.pop(0)))
-      _res3 = int(str(_equation.pop(0)) + str(_equation2.pop(0)))
+      results.add(_equation[0] + _equation[1])
+      results.add(int(str(_equation[0]) + str(_equation[1])))
     elif op =="*":
-      _res = _equation.pop(0) * _equation.pop(0)
-      _res2 = int(str(_equation2.pop(0)) + str(_equation2.pop(0)))
+      results.add(_equation[0] * _equation[1])
+      results.add(int(str(_equation[0]) + str(_equation[1])))
+    idx = 2
     for op in ops:
+      results2 = results.copy()
       if op == "+":
-        _res += _equation.pop(0)
-        _res2 = int(str(_res2) + str(_equation2.pop(0)))
+        for r in results:
+         results2.add(r + _equation[idx])
+         results2.add(int(str(r) + str(_equation[idx])))
       elif op =="*":
-        _res *= _equation.pop(0)
-        _res2 = int(str(_res2) + str(_equation2.pop(0)))
-    if res == _res or res == _res2:
-      return res
+        for r in results:
+          results2.add(r *_equation[idx])
+          results2.add(int(str(r) + str(_equation[idx])))
+      results = results2
+      idx += 1
+    for r in results:
+      if res == r: return res
   return 0
+
+def evaluate3(res, equation, results):
+  # if len(equation) == 1 and len(results) == 0:
+  #   return res if equation == res else 0
+  if not len(equation):
+    if not len(results):
+      print("No results")
+    else:
+      for r in results:
+        if r == res:
+          return res
+      return 0
+  if not len(results):
+    results.add(equation[0])
+    return evaluate3(res, equation[1:], results)
+  else:
+    results2 = results.copy()
+    for r in results:
+      results2 = set(filter(lambda x: x != r, results2))
+      results2.add(r + equation[0])
+      results2.add(r * equation[0])
+      results2.add(int(str(r) + str(equation[0])))
+    return evaluate3(res, equation[1:], results2)
 
 # concact item 0 with the rest, then items 0and 1 with the rest, etc.
 def concat_options(eq):
@@ -98,7 +122,7 @@ def concat_options(eq):
 #     return 0
   
 
-with open("2024/data/day07a") as f:
+with open("2024/data/day07") as f:
   for line in f.readlines():
     parts = line.strip().split(":")
     data[int(parts[0].strip())] = parts[1].split()
@@ -119,10 +143,18 @@ score = 0
 #     res = evaluate(k, equation)
 #     score += res
 
+# for k,v in data.items():
+#   res = evaluate2(k, v)
+#   if res != 0: print(f"Res {res}")
+#   score += res
+  
 for k,v in data.items():
-  res = evaluate2(k, v)
+  equation = list(map(lambda x: int(x), v))
+  res = evaluate3(k, equation, set())
+  if res != 0: print(f"Res {res}")
   score += res
 
 print(f"Part 2: {score}")
 
-# Part 1 x > 358332626678
+# Part 1: 3749
+# Part 2: x < 97903014900743 x > 23172614
