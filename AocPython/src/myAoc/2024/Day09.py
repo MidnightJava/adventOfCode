@@ -1,5 +1,8 @@
 import re
 import time
+from collections import defaultdict
+
+disk_indices = defaultdict(int)
 
 def write_disk1(s):
   disk = ""
@@ -97,13 +100,15 @@ def write_disk(s):
 def move_file(filenum, disk):
   locs = sorted([n for n in disk.keys() if disk[n] == filenum])
   size = len(locs)
-  for i in range(len(disk)):
+  start = disk_indices[size]
+  for i in range(start, len(disk)):
     if i > locs[0]: break
     if all(disk[loc] == -1 for loc in range(i,  i + size)):
       for loc in locs:
         disk[loc] = -1
       for j in range(i, i + size):
         disk[j] = filenum
+      disk_indices[size] = j
       break
   return disk
 
