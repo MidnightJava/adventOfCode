@@ -1,8 +1,7 @@
 import re
 import time
-from collections import Counter
 
-def write_disk(s):
+def write_disk1(s):
   disk = ""
   idx = 0
   file_num = 0
@@ -37,72 +36,88 @@ def move_next_block(disk):
 def defrag(disk):
   while fragmented(disk):
     disk = move_next_block(disk)
-    # print(disk.index('.'))
   return disk
 
-# def calculate_score(disk):
-#   disk = disk.replace("|", "")
-#   score = 0
-#   idx = 0
-#   while True:
-#     m = re.search(r"\|(\d)\|", disk)
-#     if not m: break
-#     score += idx * int(m.group(1))
-#     disk = disk[m.end():]
-#     idx += 1
-#   return score
+def calculate_score1(disk):
+   score = 0
+   idx = 0
+   while True:
+     m = re.search(r"\|(\d)\|", disk)
+     if not m: break
+     score += idx * int(m.group(1))
+     disk = disk[m.end():]
+     idx += 1
+   return score
+
 
 def calculate_score(disk):
-  disk = disk.replace("|", "")
   score = 0
-  idx = 0
-  for c in disk:
-    if c != ".":
-      score += idx * int(c)
-    idx += 1
+  for k, v in disk.items():
+    if v > 0:
+      score += k * v
   return score
 
 def get_file_numbers(disk):
-  m = re.search(r"\|(\d+)\|$", disk)
-  initial_num = int(m.group(1))
-  for i in range(initial_num, -1, -1):
-    yield i
-
-    
+  unique_nums = set(filter(lambda x: x >= 0, disk.values()))
+  nums = sorted(unique_nums, reverse=True)
+  for n in nums: yield n
+   
   
-# with open("2024/data/day09a") as f:
-#   map = f.read()
-#   start = time.time()
-#   # print(f"disk map: {map}")
-#   disk = write_disk(map)
-#   # print(f"disk: {disk}")
-#   disk  = defrag(disk)
-#   # print(disk)
-#   # print(disk.replace("|", ""))
-#   score = calculate_score(disk)
-#   print(f"Part 1: {score}, time: {time.time() - start:.0f} secs")
+with open("2024/data/day09") as f:
+  map = f.read()
+  start = time.time()
+  disk = write_disk1(map)
+  disk  = defrag(disk)
+  # print(disk)
+  # print(disk.replace("|", ""))
+  score = calculate_score1(disk)
+  print(f"Part 1: {score}, time: {time.time() - start:.0f} secs")
 
-def move_file(n, disk):
-  m1 = re.search(f"((?:\|{n}\|)+)", disk)
-  num = m1.group(1).count(f"|{n}|")
-  quant = "{" + f"{num}" + "}"
-  m2 = re.search(f"\.{quant}", disk[:m1.start()])
-  if m2:
-    blocks = m1.group(1)
-    disk = disk[:m1.start()]   + '.' * num + disk[m1.end():]
-    disk = disk[:m2.start()] + blocks + disk[m2.end():]
+def write_disk(s):
+  disk = {}
+  read_idx = 0
+  write_idx = 0
+  file_num = 0
+  for c in s:
+    if read_idx % 2 == 0:
+      l = int(c)
+      for j in range(l):
+        disk[write_idx] = file_num
+        write_idx += 1
+      file_num += 1
+    else:
+      free = int(c)
+      for j in range(free):
+        disk[write_idx] = -1
+        write_idx += 1
+    read_idx += 1
+  return dict(sorted(disk.items()))
+
+def move_file(filenum, disk):
+  locs = sorted([n for n in disk.keys() if disk[n] == filenum])
+  size = len(locs)
+  for i in range(len(disk)):
+    if i > locs[0]: break
+    if all(disk[loc] == -1 for loc in range(i,  i + size)):
+      for loc in locs:
+        disk[loc] = -1
+      for j in range(i, i + size):
+        disk[j] = filenum
+      break
   return disk
+
+def show_disk(disk):
+  return ''.join([ '.' if v == -1 else str(v) for v in disk.values() ])
 
 with open("2024/data/day09") as f:
   map = f.read()
   start = time.time()
-  # print(f"disk map: {map}")
   disk = write_disk(map)
-  # print(f"disk: {disk}")
-  for i in get_file_numbers(disk):
-    disk = move_file(i, disk)
+  for n in get_file_numbers(disk):
+    disk = move_file(n, disk)
+  # print(f"final expanded disk:\t{show_disk(disk)}")
   score = calculate_score(disk)
   print(f"Part 2: {score}, time: {time.time() - start:.0f} secs")
   # Part 1: 6337367222422
+  # Part 2: 6361380647183
 
-  '|0||0||9||9||2||1||1||1||7||7||7|.|4||4|.|3||3||3|....|5||5||5||5|.|6||6||6||6|.....|8||8||8||8|..'
