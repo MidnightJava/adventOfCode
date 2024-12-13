@@ -42,7 +42,7 @@ def calculate_score1(disk):
    score = 0
    idx = 0
    while True:
-     m = re.search(r"\|(\d)\|", disk)
+     m = re.search(r"\|(\d+)\|", disk)
      if not m: break
      score += idx * int(m.group(1))
      disk = disk[m.end():]
@@ -62,11 +62,12 @@ def get_file_numbers(disk):
   nums = sorted(unique_nums, reverse=True)
   for n in nums: yield n
    
-  
 with open("2024/data/day09") as f:
   map = f.read()
   start = time.time()
+  # print(f"disk map: {map}")
   disk = write_disk1(map)
+  # print(f"disk: {disk}")
   disk  = defrag(disk)
   # print(disk)
   # print(disk.replace("|", ""))
