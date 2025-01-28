@@ -43,33 +43,6 @@ for i in range(n_blinks):
   prev = 0 if i  == 0 else results[i-1]
 print(f"Part 1: {len(_stones)}")
 
-n_blinks = 75
-
-def get_stone_count(stone, total, reps, seen):
-  # print(f"rep {reps}")
-  if reps == n_blinks:
-    # print(f"Returning {total} after {reps} reps")
-    return total
-  stones = next_stone(stone)
-  # total = len(stones)
-  reps += 1
-  for stone in stones:
-    if stone in seen:
-      total += seen[stone]
-    else:
-      _total = get_stone_count(stone, total, reps, seen)
-      seen[stone] = _total
-      total += _total
-    # print(f"Total so far: {total}\n\n")
-  return total
-
-
-score = 0
-for stone in stones:
-  score += get_stone_count(stone, 0, 0, {})
-  # print(score)
-print(f"Part 2: {score}")
-
 
 """
 All stones will be either 0, 1, or a multiple of 2024, until they reach an even number of
