@@ -1,10 +1,11 @@
-stones = []
+from collections import defaultdict
+
 n_blinks = 25
-stones = []
-results = []
+stones = None
 
 def parse(l):
-  return list(map(int, l.split()))
+  global stones
+  stones = defaultdict(int, {int(item): 1 for item in l.split()})
 
 def next_stone(stone):
   if stone == 0: return [1]
@@ -16,38 +17,18 @@ def next_stone(stone):
   else: return [stone * 2024]
   
 def blink(stones):
-  doubles = 0
-  _stones = stones[::]
-  j = 0
-  for i, stone in enumerate(stones):
-    k = i +j
-    new_stones = next_stone(stone)
-    if len(new_stones) == 1:
-      _stones[k] = new_stones[0]
-    elif len(new_stones) == 2:
-      _stones[k] = new_stones[0]
-      _stones.insert(k+1, new_stones[1])
-      j += 1
-      doubles += 1
-    else:
-      print(f"Error: {len(new_stones)} created")
-  return _stones, (doubles, len(stones))
+  new_stones = defaultdict(int)
+  for k, v in stones.items():
+    for stone in next_stone(k):
+      new_stones[stone] += v
+  return new_stones
 
-with open("2024/data/day11") as f:
-  stones = parse(f.read().strip())
-    
-_stones = stones[::]
-for i in range(n_blinks):
-  _stones, doubles = blink(_stones[::])
-  results.append(len(_stones))
-  prev = 0 if i  == 0 else results[i-1]
-print(f"Part 1: {len(_stones)}")
-
-
-"""
-All stones will be either 0, 1, or a multiple of 2024, until they reach an even number of
-digits and split. Find a pattern in multiples of 2024 having an even number of digits.
-"""
+for i, n in enumerate([25, 75]):
+  with open("2024/data/day11") as f:
+    parse(f.read().strip())
+  for j in range(n):
+    stones = blink(stones)
+  print(f"Part {i+1}: {sum(stones.values())}")
 
 
 # Part 1: 194782
