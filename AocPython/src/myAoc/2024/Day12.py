@@ -25,11 +25,12 @@ def get_perim2(region, locs):
   perim = 0
   global grid
   for y in range(height):
-    start_fence = False
+    start_fence = start_fence2 = False
     for x in range(width):
       if not (y,x) in locs:
         if start_fence: perim += 1
-        start_fence = False
+        if start_fence2: perim += 1
+        start_fence = start_fence2 = False
         continue
       if grid[(y,x)] == region:
         if (y-1,x) not in grid or grid[(y-1,x)] != region:
@@ -38,29 +39,22 @@ def get_perim2(region, locs):
           if start_fence:
             start_fence = False
             perim += 1
-    if start_fence: perim += 1
-    start_fence = False
-    for x in range(width):
-      if not (y,x) in locs:
-        if start_fence: perim += 1
-        start_fence = False
-        continue
-      if grid[(y,x)] == region:
         if (y+1,x) not in grid or  grid[(y+1,x)] != region:
-          start_fence = True
+          start_fence2 = True
         else:
-         if start_fence:
-          start_fence = False
+         if start_fence2:
+          start_fence2 = False
           perim += 1
     if start_fence: perim += 1
+    if start_fence2: perim += 1
             
-  start_fence = False
   for x in range(width):
-    start_fence = False
+    start_fence = start_fence2 = False
     for y in range(height):
       if not (y,x) in locs:
         if start_fence: perim += 1
-        start_fence = False
+        if start_fence2: perim += 1
+        start_fence = start_fence2 = False
         continue
       if grid[(y,x)] == region:
         if (y,x-1) not in grid or grid[(y,x-1)] != region:
@@ -69,21 +63,14 @@ def get_perim2(region, locs):
           if start_fence:
             start_fence = False
             perim += 1
-    if start_fence: perim += 1
-    start_fence = False
-    for y in range(height):
-      if not (y,x) in locs:
-        if start_fence: perim += 1
-        start_fence = False
-        continue
-      if grid[(y,x)] == region:
         if (y, x+1) not in grid or grid[(y,x+1)] != region:
-            start_fence = True
+            start_fence2 = True
         else:
-          if start_fence:
-            start_fence = False
+          if start_fence2:
+            start_fence2 = False
             perim += 1
     if start_fence: perim += 1
+    if start_fence2: perim += 1
   
   return perim
 
