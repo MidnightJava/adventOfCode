@@ -12,7 +12,7 @@ def read_lines(file):
             break
         yield lines[:3]
 
-with open("2024/data/day13") as f:
+with open("2024/data/day13a") as f:
   for lines in read_lines(f):
     m = re.match(r"Button A\: X\+(\d+), Y\+(\d+)", lines[0])
     a = (int(m.group(1)), int(m.group(2)))
@@ -40,11 +40,40 @@ print(f"Part 1: {total}")
 total = 0
 for rec in data:
   (a, b, target) = (rec["a"], rec["b"], rec["target"])
-  target = (target[0] * 10000000000000, target[1] * 10000000000000)
-  """
-  If a and b both divide evenly into target on the x and ye axes, you know you can win the prize.
-  Then use the largest of the a and be modulus results above in the product call, i.e. product(range(max_modulus), repeat=2)
-  """
+  target = (target[0] + 10000000000000, target[1] + 10000000000000)
+  perms = product(range(10000), repeat=2)
+  scores = []
+  for perm in perms:
+    x = a[0] * perm[0] + b[0] * perm[1]
+    y = a[1] * perm[0] + b[1] * perm[1]
+    if (x,y) == target:
+      score = 3 * perm[0] + perm[1]
+      scores.append(score)
+  if len(scores): total += min(scores)
     
 print(f"Part 2: {total}")
+# max_mod = None
+# for rec in data:
+#   (a, b, target) = (rec["a"], rec["b"], rec["target"])
+#   target = (target[0] + 10000000000000, target[1] + 10000000000000)
+#   ax = divmod(target[0], a[0])
+#   ay = divmod(target[1], a[1])
+#   bx = divmod(target[0], b[0])
+#   by = divmod(target[1], b[1])
+#   if ax[1] == 0 and ay[1] == 0 and bx[1] == 0 and by[1] == 0:
+#      max_mod = max(max_mod, ax[0], ay[0], bx[0], by[0])
+
+# for rec in data:
+#   (a, b, target) = (rec["a"], rec["b"], rec["target"])
+#   perms = product(range(max_mod), repeat=2)
+#   scores = []
+#   for perm in perms:
+#     x = a[0] * perm[0] + b[0] * perm[1]
+#     y = a[1] * perm[0] + b[1] * perm[1]
+#     if (x,y) == target:
+#       score = 3 * perm[0] + perm[1]
+#       scores.append(score)
+#   if len(scores): total += min(scores)
+    
+# print(f"Part 2: {total}")
     
