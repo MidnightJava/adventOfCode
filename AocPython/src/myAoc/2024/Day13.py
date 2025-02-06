@@ -1,5 +1,41 @@
 from itertools import islice, product
 import re
+import math
+
+from math import gcd, floor, ceil
+
+def extended_gcd(a, b):
+    """Extended Euclidean Algorithm: Returns (g, x, y) such that g = gcd(a, b) and ax + by = g"""
+    if a == 0:
+        return (b, 0, 1)
+    else:
+        g, x1, y1 = extended_gcd(b % a, a)
+        x = y1 - (b // a) * x1
+        y = x1
+        return (g, x, y)
+
+def find_minimum_a(c1, c2, c3):
+    """Finds the integer solution (a, b) with the smallest a for a*c1 + b*c2 = c3."""
+    g, x0, y0 = extended_gcd(c1, c2)
+
+    # Check if the equation has integer solutions
+    if c3 % g != 0:
+        return None  # No integer solution exists
+    
+    # Scale the initial solution
+    scale = c3 // g
+    a0 = x0 * scale
+    b0 = y0 * scale
+
+    # Step to adjust `a` for minimization
+    step = c2 // g  # Step size for a in the general solution
+
+    # Find the smallest `a` by choosing `k`
+    k_min = -floor(a0 / step)  # This chooses the smallest positive `a`
+    a_min = a0 + k_min * step
+    b_min = b0 - k_min * (c1 // g)
+
+    return (a_min, b_min)
 
 data = []
 
@@ -41,46 +77,28 @@ total = 0
 for rec in data:
   (a, b, target) = (rec["a"], rec["b"], rec["target"])
   target = (target[0] + 10000000000000, target[1] + 10000000000000)
-  i = j = 0
-  done = False
-  while not done:
-    i += 1
-    while not done:
-      j += 1
-      if i * a[0] + j * b[0] == target[0] and i * a[1] + j * b[1] == target[1]:
-        total += (j + 3 * i)
-        done = True
-        print('done 1')
-        break
-      elif  i * a[0] + j * b[0] > target[0] or i * a[1] + j * b[1] > target[1]:
-        done = True
-        print('done 2')
-        break
+  solution = find_minimum_a(a[0], b[0], target[0])
+  if solution:
+     solution2 = find_minimum_a(a[1], b[1], target[1])
+     if solution[0] == solution2[0] and solution[1] == solution2[1]:
+        total += (3 * solution[0] + solution[1])
+        print(a, b, target, solution)
     
     
-print(f"Part 2: {total}")
-# max_mod = None
-# for rec in data:
-#   (a, b, target) = (rec["a"], rec["b"], rec["target"])
-#   target = (target[0] + 10000000000000, target[1] + 10000000000000)
-#   ax = divmod(target[0], a[0])
-#   ay = divmod(target[1], a[1])
-#   bx = divmod(target[0], b[0])
-#   by = divmod(target[1], b[1])
-#   if ax[1] == 0 and ay[1] == 0 and bx[1] == 0 and by[1] == 0:
-#      max_mod = max(max_mod, ax[0], ay[0], bx[0], by[0])
+# # print(f"Part 2: {total}")
+# c1, c2, c3 = 34, 67, 10000000005400
+# solution = find_minimum_a(c1, c2, c3)
+# if solution:
+#     print(f"Minimum a solution found: a = {solution[0]}, b = {solution[1]}")
+# else:
+#     print("No integer solution exists.")
 
-# for rec in data:
-#   (a, b, target) = (rec["a"], rec["b"], rec["target"])
-#   perms = product(range(max_mod), repeat=2)
-#   scores = []
-#   for perm in perms:
-#     x = a[0] * perm[0] + b[0] * perm[1]
-#     y = a[1] * perm[0] + b[1] * perm[1]
-#     if (x,y) == target:
-#       score = 3 * perm[0] + perm[1]
-#       scores.append(score)
-#   if len(scores): total += min(scores)
-    
-# print(f"Part 2: {total}")
-    
+
+
+# Part 1:
+# Part 2: 29877
+# x < 4342237642345787
+# x < 141216321806444 
+# x > 87110658696094
+#     558400153034
+#     1571376573209
