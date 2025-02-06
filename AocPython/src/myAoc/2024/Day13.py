@@ -41,15 +41,22 @@ total = 0
 for rec in data:
   (a, b, target) = (rec["a"], rec["b"], rec["target"])
   target = (target[0] + 10000000000000, target[1] + 10000000000000)
-  perms = product(range(10000), repeat=2)
-  scores = []
-  for perm in perms:
-    x = a[0] * perm[0] + b[0] * perm[1]
-    y = a[1] * perm[0] + b[1] * perm[1]
-    if (x,y) == target:
-      score = 3 * perm[0] + perm[1]
-      scores.append(score)
-  if len(scores): total += min(scores)
+  i = j = 0
+  done = False
+  while not done:
+    i += 1
+    while not done:
+      j += 1
+      if i * a[0] + j * b[0] == target[0] and i * a[1] + j * b[1] == target[1]:
+        total += (j + 3 * i)
+        done = True
+        print('done 1')
+        break
+      elif  i * a[0] + j * b[0] > target[0] or i * a[1] + j * b[1] > target[1]:
+        done = True
+        print('done 2')
+        break
+    
     
 print(f"Part 2: {total}")
 # max_mod = None
