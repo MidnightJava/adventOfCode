@@ -78,11 +78,15 @@ for rec in data:
   (a, b, target) = (rec["a"], rec["b"], rec["target"])
   target = (target[0] + 10000000000000, target[1] + 10000000000000)
   solution = find_minimum_a(a[0], b[0], target[0])
+  print(f"a: {a} b: {b} target: {target}")
   if solution:
-     solution2 = find_minimum_a(a[1], b[1], target[1])
-     if solution[0] == solution2[0] and solution[1] == solution2[1]:
-        total += (3 * solution[0] + solution[1])
-        print(a, b, target, solution)
+    print(f"solution: {solution}")
+    print(f"caclulated target: {(a[0]* solution[0], b[0]* solution[1])}")
+    solution2 = find_minimum_a(a[1], b[1], target[1])
+    if solution2:
+      total += (3 * solution[0] + solution[1])
+      print(f"solution2: {solution2}")
+      print(f"caclulated target: {(a[1]* solution2[0], b[1]* solution2[1])}")
     
     
 # # print(f"Part 2: {total}")
